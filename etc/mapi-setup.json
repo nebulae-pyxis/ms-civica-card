@@ -1,0 +1,8 @@
+[
+    {
+        "name": "civica-card",
+        "type": "graphql",        
+        "src": "api/sales-gateway/graphql/civica-card",
+        "preBuildCommands": []
+    }
+]

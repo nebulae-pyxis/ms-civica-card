@@ -1,0 +1,15 @@
+"Hello world sample, please remove"
+type HelloWorldcivicaCard{
+  "text"
+  sn: String!  
+}
+
+type Query {
+  "Hello world sample, please remove"
+  getHelloWorldFromcivicaCard: HelloWorldcivicaCard
+}
+
+type Subscription {
+  "Hello world sample, please remove"
+  civicaCardHelloWorldSubscription: HelloWorldcivicaCard  
+}
