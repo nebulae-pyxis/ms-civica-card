@@ -25,11 +25,60 @@ module.exports = {
     //// QUERY ///////
 
     Query: {
-        getHelloWorldFromcivicaCard(root, args, context) {
+        getReadApduCommands(root, args, context) {
             return broker
                 .forwardAndGetReply$(
-                    "HelloWorld",
-                    "sales-gateway.graphql.query.getHelloWorldFromcivicaCard",
+                    "CivicaCard",
+                    "sales-gateway.graphql.query.getReadApduCommands",
+                    { root, args, jwt: context.encodedToken },
+                    2000
+                )
+                .mergeMap(response => getResponseFromBackEnd$(response))
+                .toPromise();
+        },
+        setReadApduCommandsResp(root, args, context) {
+            return broker
+                .forwardAndGetReply$(
+                    "CivicaCard",
+                    "sales-gateway.graphql.query.setReadApduCommandsResp",
+                    { root, args, jwt: context.encodedToken },
+                    2000
+                )
+                .mergeMap(response => getResponseFromBackEnd$(response))
+                .toPromise();
+        },
+        getWriteApduCommands(root, args, context) {
+            return broker
+                .forwardAndGetReply$(
+                    "CivicaCard",
+                    "sales-gateway.graphql.query.getWriteApduCommands",
+                    { root, args, jwt: context.encodedToken },
+                    2000
+                )
+                .mergeMap(response => getResponseFromBackEnd$(response))
+                .toPromise();
+        },
+        setWriteApduCommands(root, args, context) {
+            return broker
+                .forwardAndGetReply$(
+                    "CivicaCard",
+                    "sales-gateway.graphql.query.setWriteApduCommands",
+                    { root, args, jwt: context.encodedToken },
+                    2000
+                )
+                .mergeMap(response => getResponseFromBackEnd$(response))
+                .toPromise();
+        }
+
+    },
+
+    //// MUTATIONS ///////
+    Mutation: {
+        reloadCard(root, args, context) {
+            return broker
+                .forwardAndGetReply$(
+                    "CivicaCard",
+                    "sales-gateway.graphql.mutation.reloadCard",
                     { root, args, jwt: context.encodedToken },
                     2000
                 )
@@ -37,24 +86,6 @@ module.exports = {
                 .toPromise();
         }
     },
-
-    //// MUTATIONS ///////
-
-
-    //// SUBSCRIPTIONS ///////
-    Subscription: {
-        civicaCardHelloWorldSubscription: {
-            subscribe: withFilter(
-                (payload, variables, context, info) => {
-                    return pubsub.asyncIterator("civicaCardHelloWorldSubscription");
-                },
-                (payload, variables, context, info) => {
-                    return true;
-                }
-            )
-        }
-
-    }
 };
 
 

@@ -1,15 +1,43 @@
-"Hello world sample, please remove"
-type HelloWorldcivicaCard{
-  "text"
-  sn: String!  
+type ReadApduCommandsList{
+  apduCommands: String,
+}
+
+type ReadApduCommandsFormated{
+  cardFormated: CardData
+}
+
+type CardData {
+  id: String
+}
+
+type WriteApduCommands {
+  readApduCommands: [String],
+  writeApduCommands: [String]
+}
+
+type WriteApduCommandsResp {
+  cardData: CardData,
+  saleSuccess: Boolean
+}
+
+type ReaderKey {
+  readerKey: String
+}
+
+type ReloadCardResp {
+  saleToken: String
 }
 
 type Query {
-  "Hello world sample, please remove"
-  getHelloWorldFromcivicaCard: HelloWorldcivicaCard
+  getReadApduCommands(challengeKey: String, uid: String): ReadApduCommandsList,
+  setReadApduCommandsResp(apduCommandsList: [String]): ReadApduCommandsFormated,
+  getWriteApduCommands(conversationId: String, cardId: String): WriteApduCommands,
+  setWriteApduCommands(conversationId: String, cardId: String,
+   readApduCommandsResp: String, writeApduCommandsResp: String),
+  getReaderKey: ReaderKey
+
 }
 
-type Subscription {
-  "Hello world sample, please remove"
-  civicaCardHelloWorldSubscription: HelloWorldcivicaCard  
+type Mutation {
+  reloadCard(conversationId: String, cardId: String, reloadValue: Double): ReloadCardResp
 }
