@@ -1,6 +1,6 @@
 "use strict";
 
-const helloWorld = require("../../domain/HelloWorld")();
+const civicaCard = require("../../domain/CivicaCard")();
 const broker = require("../../tools/broker/BrokerFactory")();
 const Rx = require("rxjs");
 const jsonwebtoken = require("jsonwebtoken");
@@ -146,9 +146,29 @@ class GraphQlService {
     return [
       //Sample incoming request, please remove
       {
-        aggregateType: "HelloWorld",
-        messageType: "sales-gateway.graphql.query.getHelloWorldFromcivicaCard"
-      }     
+        aggregateType: "civicaCard",
+        messageType: "sales-gateway.graphql.query.getReadCardSeconduthToken"
+      },
+      {
+        aggregateType: "civicaCard",
+        messageType: "sales-gateway.graphql.query.getReadCardApduCommands"
+      },
+      {
+        aggregateType: "civicaCard",
+        messageType: "sales-gateway.graphql.query.extractReadCardData"
+      },
+      {
+        aggregateType: "civicaCard",
+        messageType: "sales-gateway.graphql.query.getCardReloadInfo"
+      },
+      {
+        aggregateType: "civicaCard",
+        messageType: "sales-gateway.graphql.query.extractReadWriteCardData"
+      },
+      {
+        aggregateType: "civicaCard",
+        messageType: "sales-gateway.graphql.query.getConversation"
+      }
     ];
   }
 
@@ -159,10 +179,34 @@ class GraphQlService {
   generateFunctionMap() {    
     return {
       //Sample incoming request, please remove
-      "sales-gateway.graphql.query.getHelloWorldFromcivicaCard": {
-        fn: helloWorld.getHelloWorld$,
-        obj: helloWorld
-      },      
+      "sales-gateway.graphql.query.getReadCardSeconduthToken": {
+        fn: civicaCard.getReadCardSeconduthToken$,
+        obj: civicaCard
+      },
+      "sales-gateway.graphql.query.getReaderKey": {
+        fn: civicaCard.getReaderKey$,
+        obj: civicaCard
+      },
+      "sales-gateway.graphql.query.getReadCardApduCommands": {
+        fn: civicaCard.getReadCardApduCommands$,
+        obj: civicaCard
+      },
+      "sales-gateway.graphql.query.extractReadCardData": {
+        fn: civicaCard.extractReadCardData$,
+        obj: civicaCard
+      },
+      "sales-gateway.graphql.query.getCardReloadInfo": {
+        fn: civicaCard.getCardReloadInfo$,
+        obj: civicaCard
+      },
+      "sales-gateway.graphql.query.extractReadWriteCardData": {
+        fn: civicaCard.extractReadWriteCardData$,
+        obj: civicaCard
+      },
+      "sales-gateway.graphql.query.getConversation": {
+        fn: civicaCard.getConversation$,
+        obj: civicaCard
+      },
     };
   }
 }
