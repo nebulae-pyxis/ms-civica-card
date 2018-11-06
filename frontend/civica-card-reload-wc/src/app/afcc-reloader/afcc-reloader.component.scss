@@ -1,0 +1,17 @@
+.afcc-container {
+ min-width: 500px;
+ min-height: 500px;
+}
+
+.afcc-header{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content:space-between;
+
+}
+
+.example-card {
+  min-width: 350px;
+  min-height: 500px;
+}

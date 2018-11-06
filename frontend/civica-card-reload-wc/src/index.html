@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AfccReloadWc</title>
+  <base href="/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <afcc-reloader width='400' height='500' jwt="eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkT2tQVkRITVcyVGRfZkJudGhmX1lHbHhqd21meENRem9kTDVrRWRGZTdnIn0.eyJqdGkiOiI0MWYyZjBiNi0yNTljLTQ4NzMtYjZjMy1hNzdiMzE3MTVkNGEiLCJleHAiOjE1NDA5NDM2MzMsIm5iZiI6MCwiaWF0IjoxNTQwOTEwNDE3LCJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwODAvYXV0aC9yZWFsbXMvREVWX1RQTSIsImF1ZCI6IkVNSSIsInN1YiI6ImQ1OGNiNDA3LTZhODAtNGU0ZC05NjdkLTVhNmE2MmZmM2JjZiIsInR5cCI6IkJlYXJlciIsImF6cCI6IkVNSSIsIm5vbmNlIjoiM2IzNGIzODItNjkyOS00NzBlLTg0MmYtMzIxZDZhNTI4NTgxIiwiYXV0aF90aW1lIjoxNTQwOTA3NjMzLCJzZXNzaW9uX3N0YXRlIjoiNWJiZDJjOWYtZGZhZi00MjFhLWJlMDItNDFlYTg4ZmRjMGZkIiwiYWNyIjoiMCIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZXZlbG9wZXIiLCJvcGVyYXRvciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sIm5hbWUiOiJEYW5pZWwgVG9ib24iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJkcmltYXgiLCJnaXZlbl9uYW1lIjoiRGFuaWVsIiwiZmFtaWx5X25hbWUiOiJUb2JvbiIsImVtYWlsIjoiZGFuaWVsLnRvYm9uQG5lYnVsYWUuY29tLmNvIn0.q9wJkn-lsAT7ZenAHxgKGIgiwW4urrzy0HanNiIB9Vukwumj13KXQZk6j2Fct5pV1496_xpLBSQa01XffQNOWBFzkjYB7WZenGLI3zN0u-Y7FVeEFq0qVIpIicSRZ-CbLYQguZYhknFI-9j29GF7-d2jM7UqJaKYdMQlTrfAojtuEHynqz3eJSvUDsL372fKoP-t4ewQQvahOmK8KyPUwsRwAemdLPYpsvrdzfoh7yMrIlRAKCO4eMXkkgPThtXuPSCoMdKCrjP_KT_AWx8TlKwktdYW5pipZOK9hzJkNAx33l6FYzEppVlp1j3rXZ48Kc-vc4rdWzVaq0q15VSNAg"></afcc-reloader>
+  <script>
+    const afccReloader = document.querySelector('afcc-reloader');
+    afccReloader.addEventListener('reloaderConnected', (event) => {
+      console.log(`"action" emitted: ${event.detail}`);
+      afccReloader.setJwt = 'test3';
+    });
+    afccReloader.setJwt = 'test';
+  </script>
+</body>
+</html>
