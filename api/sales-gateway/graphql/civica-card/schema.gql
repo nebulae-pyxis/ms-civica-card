@@ -1,64 +1,43 @@
-type ReaderKey {
-  readerKey: String;
+type ReadApduCommandsList{
+  apduCommands: String,
 }
 
-type ReadCardSecondAuthToken {
-  authToken: String;
-}
-
-type ReadCardApduCommands {
-  apduCommands: [String]
+type ReadApduCommandsFormated{
+  cardFormated: CardData
 }
 
 type CardData {
   id: String
 }
 
-type CardReloadInfo {
-  cardReloadSaleToken: CardReloadSaleToken
-  writeApduCommands: [String],
+type WriteApduCommands {
   readApduCommands: [String],
-  receipt: String
+  writeApduCommands: [String]
 }
 
-type CardReloadSaleToken {
-  state: String,
-  token: String
+type WriteApduCommandsResp {
+  cardData: CardData,
+  saleSuccess: Boolean
 }
 
-type ReadWriteCardData {
-  readCardData: [String],
-  writeCardData: [String]
+type ReaderKey {
+  readerKey: String
 }
 
-type AbortCardReloadResp {
-  isAborted: Boolean
-}
-
-type Conversation {
-  id: String,
-  operationState: String,
-  initCardData: CardData,
-  initCardState: String,
-  reloadValue: Integer,
-  receipt: String,
-  business: String,
-  terminal: String,
-  endCardData: CardData,
-  endCardState: String,
+type ReloadCardResp {
+  saleToken: String
 }
 
 type Query {
-  getReadCardSeconduthToken(conversationId: String, cardUid: String, challengeKey: String): ReadCardSecondAuthToken @requireAuth
-  getReaderKey: ReaderKey @requireAuth
-  getReadCardApduCommands(conversationId: String, cardAuthConfirmationToken: String): ReadCardApduCommands @requireAuth
-  extractReadCardData(conversationId: String, apduResponses: [String]): CardData @requireAuth
-  getCardReloadInfo(conversationId: String, cardAuthConfirmationToken: String, reloadValue: Integer): CardReloadInfo @requireAuth
-  extractReadWriteCardData(conversationId: String, readApduResp: [String], writeApduResp: [String]): ReadWriteCardData @requireAuth
-  getConversation(conversationId: String): Conversation @requireAuth
+  getReadApduCommands(challengeKey: String, uid: String): ReadApduCommandsList,
+  setReadApduCommandsResp(apduCommandsList: [String]): ReadApduCommandsFormated,
+  getWriteApduCommands(conversationId: String, cardId: String): WriteApduCommands,
+  setWriteApduCommands(conversationId: String, cardId: String,
+   readApduCommandsResp: String, writeApduCommandsResp: String),
+  getReaderKey: ReaderKey
 
 }
 
 type Mutation {
-  abortCardReload(conversationId: String): AbortCardReloadResp,
+  reloadCard(conversationId: String, cardId: String, reloadValue: Double): ReloadCardResp
 }

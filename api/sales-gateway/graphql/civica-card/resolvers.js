@@ -19,98 +19,66 @@ function getResponseFromBackEnd$(response) {
         });
 }
 
+
 module.exports = {
 
     //// QUERY ///////
 
     Query: {
-        getReadCardSeconduthToken(root, args, context) {
+        getReadApduCommands(root, args, context) {
             return broker
                 .forwardAndGetReply$(
                     "CivicaCard",
-                    "sales-gateway.graphql.query.getReadCardSeconduthToken",
+                    "sales-gateway.graphql.query.getReadApduCommands",
                     { root, args, jwt: context.encodedToken },
                     2000
                 )
                 .mergeMap(response => getResponseFromBackEnd$(response))
                 .toPromise();
         },
-        getReaderKey(root, args, context) {
+        setReadApduCommandsResp(root, args, context) {
             return broker
                 .forwardAndGetReply$(
                     "CivicaCard",
-                    "sales-gateway.graphql.query.getReaderKey",
+                    "sales-gateway.graphql.query.setReadApduCommandsResp",
                     { root, args, jwt: context.encodedToken },
                     2000
                 )
                 .mergeMap(response => getResponseFromBackEnd$(response))
                 .toPromise();
         },
-        getReadCardApduCommands(root, args, context) {
+        getWriteApduCommands(root, args, context) {
             return broker
                 .forwardAndGetReply$(
                     "CivicaCard",
-                    "sales-gateway.graphql.query.getReadCardApduCommands",
+                    "sales-gateway.graphql.query.getWriteApduCommands",
                     { root, args, jwt: context.encodedToken },
                     2000
                 )
                 .mergeMap(response => getResponseFromBackEnd$(response))
                 .toPromise();
         },
-        extractReadCardData(root, args, context) {
+        setWriteApduCommands(root, args, context) {
             return broker
                 .forwardAndGetReply$(
                     "CivicaCard",
-                    "sales-gateway.graphql.query.extractReadCardData",
+                    "sales-gateway.graphql.query.setWriteApduCommands",
                     { root, args, jwt: context.encodedToken },
                     2000
                 )
                 .mergeMap(response => getResponseFromBackEnd$(response))
                 .toPromise();
-        },
-        getCardReloadInfo(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.getCardReloadInfo",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        extractReadWriteCardData(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.extractReadWriteCardData",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        getConversation(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.getConversation",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
+        }
 
     },
 
     //// MUTATIONS ///////
     Mutation: {
-        abortCardReload(root, args, context) {
+        reloadCard(root, args, context) {
             return broker
                 .forwardAndGetReply$(
                     "CivicaCard",
-                    "sales-gateway.graphql.mutation.abortCardReload",
+                    "sales-gateway.graphql.mutation.reloadCard",
                     { root, args, jwt: context.encodedToken },
                     2000
                 )
