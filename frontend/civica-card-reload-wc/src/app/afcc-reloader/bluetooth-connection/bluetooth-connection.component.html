@@ -18,7 +18,8 @@
         <p>Explore y seleccione la lectora</p>
       </mat-list-item>
       <mat-list-item>
-          <button mat-stroked-button color="primary" (click)="connect()" >Iniciar conexión</button>
+          <button mat-stroked-button color="primary" *ngIf="(operabilityState$ | async).valueOf() === 'DISCONNECTED'" (click)="connect()" >Iniciar conexión</button>
+          <button mat-stroked-button color="primary" *ngIf="(operabilityState$ | async).valueOf() === 'CONNECTING'" >Conectando</button>
         </mat-list-item>
     </mat-list>
   </div>

@@ -124,14 +124,14 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
       error => {
         console.log(error);
         this.openSnackBar('Fallo al comunicarse con la lectora');
-        this.operabilityState$.next(OperabilityState.DISCONNECTED);
+        this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
         this.afccRealoderService.deviceConnectionStatus$.next(
           ConnectionStatus.DISCONNECTED
         );
       },
       () => {
         console.log('Se completa OBS');
-        this.operabilityState$.next(OperabilityState.DISCONNECTED);
+        this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
         this.afccRealoderService.deviceConnectionStatus$.next(
           ConnectionStatus.DISCONNECTED
         );
