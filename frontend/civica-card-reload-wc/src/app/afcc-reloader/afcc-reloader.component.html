@@ -1,0 +1,31 @@
+<mat-card [ngStyle]="{'width': width, 'height': height}" class="example-card">
+    <mat-card-header>
+      <div *ngIf="!(showBackButton() | async)" mat-card-avatar>
+          <svg-icon src="assets/bluetooth.svg" [svgStyle]="{'width':40, 'height': 40, 'fill':'#3f51b5'}"></svg-icon>
+      </div>
+      <button *ngIf="showBackButton() | async"  mat-card-avatar (click)="backToHome()" color="primary" mat-mini-fab>
+          <svg-icon src="assets/back.svg" [svgStyle]="{'fill':'#fff'}"></svg-icon>
+      </button>
+      <button *ngIf="showDisconnectDevice() | async" mat-stroked-button (click)="disconnectDevice()" style=" position: absolute; right: 20px;" color="warn">Desconectar</button>
+      <mat-card-title style="font-size: 19px;"><b>Venta carga</b></mat-card-title>
+      <mat-card-subtitle>Tarjetas Civica</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <div class="vertical-container">
+            <mat-divider></mat-divider>
+            <div class="vertical-container">
+                <app-unknown-position *ngIf="(operabilityState$ | async).valueOf() === 'UNKNOWN_POSITION'"></app-unknown-position>
+                <app-bluetooth-connection *ngIf="(operabilityState$ | async).valueOf() === 'DISCONNECTED'"></app-bluetooth-connection>
+                <app-afcc-info *ngIf="(operabilityState$ | async).valueOf() === 'CONNECTED'"></app-afcc-info>
+                <app-read-card *ngIf="(operabilityState$ | async).valueOf() === 'READING_CARD' || (operabilityState$ | async).valueOf() === 'CARD_READED'"></app-read-card>
+                <app-internal-error *ngIf="(operabilityState$ | async).valueOf() === 'INTERNAL_ERROR'"></app-internal-error>
+                <app-read-card-error *ngIf="(operabilityState$ | async).valueOf() === 'READING_CARD_ERROR'"></app-read-card-error>
+                <app-reload-card *ngIf="(operabilityState$ | async).valueOf() === 'RELOADING_CARD'"></app-reload-card>
+                <app-reload-card-aborted *ngIf="(operabilityState$ | async).valueOf() === 'RELOAD_CARD_ABORTED'"></app-reload-card-aborted>
+                <app-reload-card-error *ngIf="(operabilityState$ | async).valueOf() === 'RELOADING_CARD_ERROR'"></app-reload-card-error>
+                <app-reload-card-successfully *ngIf="(operabilityState$ | async).valueOf() === 'RELOAD_CARD_SUCCESS'"></app-reload-card-successfully>
+                <app-afcc-idle *ngIf="(operabilityState$ | async).valueOf() === 'IDLE'"></app-afcc-idle>
+            </div>
+        </div>
+    </mat-card-content>
+  </mat-card>

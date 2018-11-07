@@ -1,0 +1,24 @@
+<div style="margin-top: 20px;">
+    <b style="font-size: 16px; color: #444">Recarga exitosa, retire la tarjeta</b>
+  </div>
+  <div style="margin-top: 20px;" class="horizontal-container">
+    <svg-icon src="assets/success.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#0ABD12'}"></svg-icon>
+    <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
+      <div style="margin-top: 20px;" class="horizontal-container">
+        <label><b>Saldo inicial:</b></label>
+        <label>$1,200</label>
+      </div>
+      <div style="margin-top: 20px;" class="horizontal-container">
+        <label><b>Valor carga:</b></label>
+        <label>{{reloadValue | currency:'USD':'$':'4.0-0'}}</label>
+      </div>
+      <div style="margin-top: 20px;" class="horizontal-container">
+        <label><b>Saldo Final:</b></label>
+        <label>{{finalValue | currency:'USD':'$':'4.0-0'}}</label>
+      </div>
+      <div style="margin-top: 20px;" class="horizontal-container">
+        <label><b>Estado:</b></label>
+        <label>Venta exitosa</label>
+      </div>
+    </div>
+  </div>
