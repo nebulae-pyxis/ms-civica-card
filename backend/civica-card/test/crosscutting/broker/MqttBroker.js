@@ -2,6 +2,16 @@
 const assert = require('assert');
 const Rx = require('rxjs');
 const uuidv4 = require('uuid/v4');
+const {
+    switchMap,
+    delay,
+    filter,
+    map,
+    first,
+    mapTo,
+    mergeMap,
+    reduce
+} = require('rxjs/operators');
 
 //LIBS FOR TESTING
 const MqttBroker = require('../../../bin/tools/broker/MqttBroker');
@@ -32,21 +42,25 @@ describe('MQTT BROKER', function () {
     describe('Publish and listent on MQTT', function () {
         it('Publish and recive response using send$ + getMessageReply$', function (done) {
             mqttBroker.send$('TestMqttBroker', 'TestMqttBroker', payload)
-                .switchMap((sentMessageId) => Rx.forkJoin(
-                    //listen for the reply
-                    mqttBroker.getMessageReply$('TestMqttBrokerResponse', sentMessageId, 1800, false),
-
-                    //send a dummy reply, but wait a litle bit before send it so the listener is ready
-                    Rx.of({})
-                        .delay(200)
-                        .switchMap(() => mqttBroker.send$('TestMqttBrokerResponse', 'TestMqttBroker', { x: 1, y: 2, z: 3 }, { correlationId: sentMessageId }))
-
-                )).subscribe(
+                .pipe(
+                    switchMap((sentMessageId) => Rx.forkJoin(
+                        //listen for the reply
+                        mqttBroker.getMessageReply$('TestMqttBrokerResponse', sentMessageId, 1800, false),
+                        //send a dummy reply, but wait a litle bit before send it so the listener is ready
+                        Rx.of({})
+                            .pipe(
+                                delay(200),
+                                switchMap(() => mqttBroker.send$('TestMqttBrokerResponse', 'TestMqttBroker', { x: 1, y: 2, z: 3 }, { correlationId: sentMessageId })))
+                    ))
+                )
+                .subscribe(
                     ([response, sentResponseMessageId]) => {
                         assert.deepEqual(response, { x: 1, y: 2, z: 3 });
                     },
                     error => {
+                        console.error(error.stack || error);
                         return done(new Error(error));
+
                     },
                     () => {
                         return done();
@@ -61,9 +75,10 @@ describe('MQTT BROKER', function () {
                 //send payload and listen for the reply
                 mqttBroker.sendAndGetReply$('TestMqttBroker', 'TestMqttBrokerResponse', 'TestMqttBroker', payload, 1800, false, { messageId }),
                 //send a dummy reply, but wait a litle bit before send it so the listener is ready
-                Rx.of({})
-                    .delay(200)
-                    .switchMap(() => mqttBroker.send$('TestMqttBrokerResponse', 'TestMqttBrokerResponse', { x: 1, y: 2, z: 3 }, { correlationId: messageId }))
+                Rx.of({}).pipe(
+                    delay(200),
+                    switchMap(() => mqttBroker.send$('TestMqttBrokerResponse', 'TestMqttBrokerResponse', { x: 1, y: 2, z: 3 }, { correlationId: messageId }))
+                )
             ).subscribe(
                 ([response, sentResponseMessageId]) => {
                     assert.deepEqual(response, { x: 1, y: 2, z: 3 });
@@ -77,15 +92,15 @@ describe('MQTT BROKER', function () {
             );
         });
         it('subscribe and wait for messges', function (done) {
-            
+
             Rx.forkJoin(
                 //send payload and listen for the reply
-                mqttBroker.getMessageListener$(['TestMqttBroker'], ['Event'], false)
-                    .first(),
+                mqttBroker.getMessageListener$(['TestMqttBroker'], ['Event'], false).pipe(first()),
                 //send a dummy reply, but wait a litle bit before send it so the listener is ready
-                Rx.of({})
-                    .delay(200)
-                    .switchMap(() => mqttBroker.send$( 'TestMqttBroker', 'Event', { event: 'yai' }))
+                Rx.of({}).pipe(
+                    delay(200),
+                    switchMap(() => mqttBroker.send$('TestMqttBroker', 'Event', { event: 'yai' }))
+                )
             ).subscribe(
                 ([event, sentEventId]) => {
                     assert.deepEqual(event.data, { event: 'yai' });

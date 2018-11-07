@@ -5,9 +5,9 @@ const Rx = require('rxjs');
 const uuidv4 = require('uuid/v4');
 const {
   switchMap,
+  timeout,
   filter,
   map,
-  timeout,
   first,
   mapTo,
   mergeMap,
@@ -96,7 +96,7 @@ class MqttBroker {
   getMessageReply$(
     topic,
     correlationId,
-    timeout = this.replyTimeout,
+    replyTimeout = this.replyTimeout,
     ignoreSelfEvents = true
   ) {
     return this.configMessageListener$([topic]).pipe(
@@ -109,7 +109,7 @@ class MqttBroker {
           ),
           filter(msg => msg && msg.correlationId === correlationId),
           map(msg => msg.data),
-          timeout(timeout),
+          timeout(replyTimeout),
           first()
         )
       )
@@ -188,7 +188,7 @@ class MqttBroker {
    * Disconnect the broker and return an observable that completes when disconnected
    */
   disconnectBroker$() {
-    return Rx.fromPromise(this.mqttClient.end());
+    return Rx.from(this.mqttClient.end());
   }
 }
 

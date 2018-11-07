@@ -27,7 +27,8 @@
   "homepage": "https://github.com/nebulae-pyxis/ms-civica-card#readme",
   "devDependencies": {
     "chai": "^4.1.2",
-    "mocha": "^5.0.5"
+    "mocha": "^5.0.5",
+    "pcsclite": "^0.6.0"
   },
   "dependencies": {
     "@nebulae/event-store": "^1.0.0",
@@ -36,6 +37,7 @@
     "jsonwebtoken": "^8.2.1",
     "mongodb": "^3.0.6",
     "rxjs": "^6.3.3",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "uuidv4": "^2.0.0"
   }
 }
