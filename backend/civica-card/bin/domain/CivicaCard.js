@@ -2,11 +2,24 @@
 
 const Rx = require('rxjs');
 const { map, mergeMap, catchError } = require('rxjs/operators');
+const { SamClusterClient } = require('../tools/mifare');
+
 
 let instance;
 
 class CivicaCard {
-  constructor() {}
+  constructor() {
+
+    this.transaction = {
+      appId: 'CIVICA-CARD-BACKEND',
+      transactionId: uuidv4()
+    };
+    this.samClusterClient = new SamClusterClient({
+      mqttServerUrl: 'tcp://rcswsyrt:wAQAois_Sqt5@m15.cloudmqtt.com:16858',
+      replyTimeout: 1000
+    });
+
+  }
 
   //#region  mappers for API responses
   errorHandler$(err) {
@@ -40,37 +53,44 @@ class CivicaCard {
   }
 
   //#endregion
-    
+
   //#region  mappers for API responses
-  getReadCardSecondAuthToken$({ root, args, jwt }, authToken) { 
+  getReadCardSecondAuthToken$({ root, args, jwt }, authToken) {
     console.log('llegan args: ', args);
-    return Rx.of({authToken: 'ACA HEXA DE RESPUESTA'}).pipe(
-      mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
-      catchError(error => this.handleError$(error))
-    );
+    //return Rx.of({ authToken: 'ACA HEXA DE RESPUESTA' })
+    return this.samClusterClient.requestSamFirstStepAuth$({
+      uid: args.cardUid,
+      cardFirstSteptAuthChallenge: args.challengeKey
+    }, this.transaction, this.samClusterClient.KEY_DEBIT)
+      .pipe(
+        tap(samFirstStepAuthResponse => console.log(`  samFirstStepAuthResponso: SamId:${samFirstStepAuthResponse.samId}, secondStepSamToken: ${samFirstStepAuthResponse.secondStepSamToken.toString('hex')}`)),
+        tap(samFirstStepAuthResponse => transaction.samId = samFirstStepAuthResponse.samId),
+        mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
+        catchError(error => this.handleError$(error))
+      );
   }
-  
-  getReaderKey$({ root, args, jwt }, authToken) { 
+
+  getReaderKey$({ root, args, jwt }, authToken) {
     return Rx.of(undefined);
   }
 
-  getReadCardApduCommands$({ root, args, jwt }, authToken) { 
+  getReadCardApduCommands$({ root, args, jwt }, authToken) {
     return Rx.of(undefined);
   }
 
-  extractReadCardData$({ root, args, jwt }, authToken) { 
+  extractReadCardData$({ root, args, jwt }, authToken) {
     return Rx.of(undefined);
   }
 
-  getCardReloadInfo$({ root, args, jwt }, authToken) { 
+  getCardReloadInfo$({ root, args, jwt }, authToken) {
     return Rx.of(undefined);
   }
 
-  extractReadWriteCardData$({ root, args, jwt }, authToken) { 
+  extractReadWriteCardData$({ root, args, jwt }, authToken) {
     return Rx.of(undefined);
   }
 
-  getConversation$({ root, args, jwt }, authToken) { 
+  getConversation$({ root, args, jwt }, authToken) {
     return Rx.of(undefined);
   }
   //#endregion

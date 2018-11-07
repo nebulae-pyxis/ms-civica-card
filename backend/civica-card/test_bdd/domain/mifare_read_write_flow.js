@@ -4,7 +4,7 @@ const expect = require('chai').expect
 const Rx = require('rxjs');
 const uuidv4 = require('uuid/v4');
 
-const SamClusterClient = require('../../bin/domain/mifare/SamClusterClient');
+const {SamClusterClient} = require('../../bin/tools/mifare');
 let samClusterClient = undefined;
 
 const {
@@ -120,8 +120,6 @@ describe('De-Prepare', function () {
 })
 
 
-
-
 const connectReader$ = (reader) => {
     return Rx.bindNodeCallback(reader.connect.bind(reader))({ share_mode: reader.SCARD_SHARE_SHARED })
         .pipe(
@@ -130,15 +128,8 @@ const connectReader$ = (reader) => {
 }
 
 const sendApduCommandToCard$ = ({ reader, protocol, apdu, resLen }) => {
-    return Rx.bindNodeCallback(reader.transmit.bind(reader))(Buffer.from(apdu), resLen, protocol)
-    .pipe(
-        tap(readerResponse => console.log('+++++++++++++++++++++++'))
-    );
+    return Rx.bindNodeCallback(reader.transmit.bind(reader))(Buffer.from(apdu), resLen, protocol);
 }
-
-
-
-
 
 const readCard$ = ({ reader, protocol }) => {
 
