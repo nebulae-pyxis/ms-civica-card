@@ -64,7 +64,8 @@ class CivicaCard {
     }, this.transaction, this.samClusterClient.KEY_DEBIT)
       .pipe(
         tap(samFirstStepAuthResponse => console.log(`  samFirstStepAuthResponso: SamId:${samFirstStepAuthResponse.samId}, secondStepSamToken: ${samFirstStepAuthResponse.secondStepSamToken.toString('hex')}`)),
-        tap(samFirstStepAuthResponse => transaction.samId = samFirstStepAuthResponse.samId),
+        tap(samFirstStepAuthResponse => transaction.samId = samFirstStepAuthResponse.samId),   
+        map(samFirstStepAuthResponse => samFirstStepAuthResponse.secondStepSamToken.toString('hex')),
         mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
         catchError(error => this.handleError$(error))
       );
