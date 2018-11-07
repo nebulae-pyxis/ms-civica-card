@@ -73,10 +73,10 @@ export class AfccRealoderService {
   }
 
   // #region CONNECTION ACR1255
-  stablishNewConnection() {
+  stablishNewConnection$() {
     this.deviceConnectionStatus$.next(ConnectionStatus.CONNECTING);
     // Discover and connect to a device
-    this.readerAcr1255
+    return this.readerAcr1255
       .stablishNewConnection$(
         this.bluetoothService,
         this.cypherAesService,
@@ -102,29 +102,7 @@ export class AfccRealoderService {
             )
           )
         )
-    )
-    .subscribe(
-      status => {
-        if (status === ConnectionStatus.IDLE) {
-          this.reloaderStandByMode$.next('reloader enter on standByMode');
-        } else if (status === ConnectionStatus.CONNECTED) {
-          this.reloaderWorkingMode$.next('reloader end the standByMode');
-        }
-        const operabilityState: keyof typeof OperabilityState = status;
-        this.operabilityState$.next((operabilityState as OperabilityState));
-        this.deviceConnectionStatus$.next(status as String);
-      },
-      error => {
-        console.log(error);
-      },
-      () => {
-        console.log('Se completa OBS');
-        this.operabilityState$.next(OperabilityState.DISCONNECTED);
-        this.deviceConnectionStatus$.next(
-          ConnectionStatus.DISCONNECTED
-        );
-      }
-    );
+      );
   }
 
 
@@ -154,6 +132,14 @@ export class AfccRealoderService {
     this.changeCypherMasterKey(this.keyReader);
     this.operabilityState$.next(OperabilityState.DISCONNECTED);
     this.disconnectDevice();
+  }
+
+  initBluetoothValues() {
+    this.cypherAesService = new CypherAes();
+    this.readerAcr1255 = new ReaderAcr1255();
+    this.myfarePlusSl3 = new MyfarePlusSl3();
+    this.sessionKey = undefined;
+    this.cypherAesService.config(this.keyReader);
   }
 
   // #endregion
@@ -186,20 +172,23 @@ export class AfccRealoderService {
 
   // #region Authentication MIFARE SL3
   readCard$() {
+    this.readCardAttempts++;
     if (this.readCardAttempts >= 10) {
+      console.log('TIMEOUT!!!!!!!');
       return Rx.of({ status: 'TIMEOUT' });
     } else if (!this.readingCard) {
+      console.log('LEE TARJETA');
       this.readingCard = true;
-      this.readCardAttempts++;
       return this.myfarePlusSl3.readCurrentCard$(
         this.bluetoothService,
         this.readerAcr1255,
         this.sessionKey,
         this.cypherAesService,
-        this.deviceConnectionStatus$,
+        this.conversation,
         this.gateway
       );
     }
+    console.log(`Retorna READING: readCardAttempts= ${this.readCardAttempts}  readingCard= ${this.readingCard}`);
     return Rx.of({status: 'READING'});
   }
 

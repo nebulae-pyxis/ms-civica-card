@@ -3,8 +3,8 @@ import { AfccRealoderService } from '../../afcc-realoder.service';
 import { OperabilityState } from '../../utils/operability-sate';
 import { MatDialog } from '@angular/material';
 import { ReloadConfirmationDialogComponent } from './reload-confirmation-dialog/reload-confirmation-dialog.component';
-import { interval, of } from 'rxjs';
-import { mergeMap, catchError, tap } from 'rxjs/operators';
+import { interval, of, Subject } from 'rxjs';
+import { mergeMap, catchError, tap, takeUntil } from 'rxjs/operators';
 import { v4 as uuid } from 'uuid';
 
 @Component({
@@ -16,6 +16,7 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   value = '0';
   readIntervalObj;
   operationState;
+  private ngUnsubscribe = new Subject();
   constructor(
     private afccReloadService: AfccRealoderService,
     private dialog: MatDialog
@@ -23,11 +24,12 @@ export class ReadCardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('new uid: ', uuid());
-    this.readIntervalObj = interval(2000)
+    interval(2000)
       .pipe(
         mergeMap(() =>
           this.afccReloadService.readCard$().pipe(
-            catchError(error => {
+          catchError(error => {
+            console.log('FALLO: ', error);
               this.afccReloadService.readingCard = false;
               return of('Error reading the card: ', error);
             })
@@ -37,17 +39,24 @@ export class ReadCardComponent implements OnInit, OnDestroy {
         if ((result as any).status === 'COMPLETED') {
           this.afccReloadService.readingCard = false;
           this.afccReloadService.readCardAttempts = 0;
-          this.readIntervalObj.unsubscribe();
+          this.ngUnsubscribe.next();
           this.afccReloadService.operabilityState$.next(OperabilityState.CARD_READED);
         } else if ((result as any).status === 'TIMEOUT') {
           this.afccReloadService.readingCard = false;
           this.afccReloadService.readCardAttempts = 0;
-          this.readIntervalObj.unsubscribe();
+          this.ngUnsubscribe.next();
           this.readCardError();
         }
-      })
+      }),
+      takeUntil(this.ngUnsubscribe)
       )
       .subscribe(result => {
+        console.log('SE COMPLETA Y LLEGA RESULTADO!!!!!!!!!!!!!!!');
+      },
+      error => { },
+      () => {
+        this.afccReloadService.readCardAttempts = 0;
+        this.afccReloadService.readingCard = false;
       });
     this.afccReloadService.operabilityState$.subscribe(state => {
       this.operationState = state;
@@ -56,7 +65,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.readIntervalObj.unsubscribe();
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   readCardError() {

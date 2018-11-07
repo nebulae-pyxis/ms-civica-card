@@ -1,17 +1,18 @@
-import { Component, OnInit, ViewEncapsulation, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { AfccRealoderService } from '../afcc-realoder.service';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { OperabilityState } from '../utils/operability-sate';
 import { BackButtonDialogComponent } from './back-button-dialog/back-button-dialog.component';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { GatewayService } from '../api/gateway.service';
+import { ConnectionStatus } from '../utils/connection-status';
 @Component({
   selector: 'afcc-reloader',
   templateUrl: './afcc-reloader.component.html',
   styleUrls: ['./afcc-reloader.component.scss']
 })
-export class AfccReloaderComponent implements OnInit {
+export class AfccReloaderComponent implements OnInit, OnDestroy {
 
   operabilityState$ = new BehaviorSubject<OperabilityState>(OperabilityState.DISCONNECTED);
 
@@ -53,8 +54,11 @@ export class AfccReloaderComponent implements OnInit {
   @Input() position: any;
   // #endregion
 
+  connectionSub;
+
   constructor(private afccRealoderService: AfccRealoderService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
   ) {
    }
   ngOnInit() {
@@ -89,9 +93,50 @@ export class AfccReloaderComponent implements OnInit {
     this.afccRealoderService.reloaderStandByMode$.subscribe(val => {
       this.reloaderStandByMode.next(val);
     });
-     this.afccRealoderService.operabilityState$.subscribe(state => {
+    this.afccRealoderService.operabilityState$.subscribe(state => {
+      if (state === OperabilityState.CONNECTING) {
+       this.stablishNewConnection();
+      }
+      if (state === OperabilityState.DISCONNECTED) {
+        this.afccRealoderService.initBluetoothValues();
+      }
        this.operabilityState$.next(state);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.connectionSub.unsubscribe();
+  }
+
+  stablishNewConnection() {
+    this.connectionSub = this.afccRealoderService.stablishNewConnection$()
+      .subscribe(
+      status => {
+        if (status === ConnectionStatus.IDLE) {
+          this.afccRealoderService.reloaderStandByMode$.next('reloader enter on standByMode');
+        } else if (status === ConnectionStatus.CONNECTED) {
+          this.afccRealoderService.reloaderWorkingMode$.next('reloader end the standByMode');
+        }
+        const operabilityState: keyof typeof OperabilityState = status;
+        this.operabilityState$.next((operabilityState as OperabilityState));
+        this.afccRealoderService.deviceConnectionStatus$.next(status as String);
+      },
+      error => {
+        console.log(error);
+        this.openSnackBar('Fallo al comunicarse con la lectora');
+        this.operabilityState$.next(OperabilityState.DISCONNECTED);
+        this.afccRealoderService.deviceConnectionStatus$.next(
+          ConnectionStatus.DISCONNECTED
+        );
+      },
+      () => {
+        console.log('Se completa OBS');
+        this.operabilityState$.next(OperabilityState.DISCONNECTED);
+        this.afccRealoderService.deviceConnectionStatus$.next(
+          ConnectionStatus.DISCONNECTED
+        );
+      }
+    );
   }
 
   showBackButton() {
@@ -115,6 +160,7 @@ export class AfccReloaderComponent implements OnInit {
 
   disconnectDevice() {
     this.afccRealoderService.disconnectDevice();
+    this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
   }
 
   backToHome() {
@@ -127,6 +173,10 @@ export class AfccReloaderComponent implements OnInit {
           this.operabilityState$.next(OperabilityState.CONNECTED);
         }
       });
+  }
+
+  openSnackBar(text) {
+    this.snackBar.open(text, 'Cerrar', { duration: 2000 });
   }
 
 }

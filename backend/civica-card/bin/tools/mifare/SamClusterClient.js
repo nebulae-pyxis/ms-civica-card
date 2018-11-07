@@ -92,10 +92,13 @@ class SamClusterClient {
         apduBuffer.write(cardSecondStepAuthConfirmation, bufferIndex, cardSecondStepAuthConfirmation.length, 'hex');
         bufferIndex += dataLen;
         apduBuffer[bufferIndex++] = 0x00;
-
+        console.log(`samId: ${samId} appId: ${appId} transactionId: ${transactionId} apduBuffer: ${apduBuffer}`);
         
 
         return this.broker.sendAndGetReply$(appId, transactionId, samId, apduBuffer).pipe(
+            tap(resp => { 
+                console.log('llega resp de SAM: ',resp)
+            }),
             map(response => ({ 
                 raw : response.data.toString('hex'),
                 keyEnc : response.data.slice(0,16).toString('hex'),

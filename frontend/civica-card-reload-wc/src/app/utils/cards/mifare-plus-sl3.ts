@@ -13,9 +13,12 @@ import { DeviceUiidResp } from "../communication_profile/messages/response/devic
 import { AuthCardFirstStepResp } from "../communication_profile/card-messages/response/auth-card-first-step-resp";
 import { CardPowerOff } from "../communication_profile/messages/request/card-power-off";
 import { CardPowerOn } from "../communication_profile/messages/request/card-power-on";
-import { Observable } from "rxjs";
-import { getReadCardSecondAuthToken } from '../../api/gql/afcc-reloader.js';
+import { Observable, of } from "rxjs";
+import { getReadCardSecondAuthToken, getReadCardApduCommands } from '../../api/gql/afcc-reloader.js';
 import { v4 as uuid } from 'uuid';
+import { CardPowerOnResp } from "../communication_profile/messages/response/card-power-on-resp";
+import { AuthCardSecondStepResp } from "../communication_profile/card-messages/response/auth-card-second-step";
+import { AuthCardSecondStep } from "../communication_profile/card-messages/request/auth-card-second-step";
 
 export class MyfarePlusSl3 {
 
@@ -111,12 +114,56 @@ export class MyfarePlusSl3 {
     );
   }
 
+  /**
+   * Send to the card the request of auth
+   */
+  cardAuthenticationSecondStep$(
+    bluetoothService: BluetoothService,
+    readerAcr1255: ReaderAcr1255,
+    cypherAesService: CypherAes,
+    sessionKey,
+    cardAuthenticationFirstStepResp,
+  ) {
+    return of(cardAuthenticationFirstStepResp).pipe(
+      map(firstStepResp => {
+        const firstStepRespFormated = JSON.parse(JSON.stringify(firstStepResp));
+        if (!firstStepRespFormated.authToken) {
+          throw new Error('card auth not found');
+        }
+        const authToken = Array.from(cypherAesService.hexToBytes(
+          firstStepRespFormated.authToken
+        ) as Uint8Array);
+        if (authToken[-2] === 0x90) {
+          throw new Error('Authentication with the card failed');
+        }
+        firstStepRespFormated.data = authToken;
+        return firstStepRespFormated;
+      }),
+      mergeMap(respFormated => {
+        const cardAuthSecondStep = new AuthCardSecondStep(
+          new Uint8Array([0x72].concat(respFormated.data.slice(0, -2)))
+        );
+        const message = readerAcr1255.generateMessageRequestFormat(
+          cardAuthSecondStep,
+          cypherAesService
+        );
+        return bluetoothService.sendAndWaitResponse$(
+          message,
+          GattService.NOTIFIER.SERVICE,
+          GattService.NOTIFIER.WRITER,
+          [{ position: 3, byteToMatch: MessageType.APDU_COMMAND_RESP }],
+          sessionKey
+        );
+      })
+    );
+  }
+
   readCurrentCard$(
     bluetoothService,
     readerAcr1255,
     sessionKey,
-    cypherAesService,
-    deviceConnectionStatus$,
+    cypherAesService: CypherAes,
+    conversation,
     gateway
   ) {
     console.log('inicia metodo de lectura');
@@ -127,7 +174,10 @@ export class MyfarePlusSl3 {
       cypherAesService,
       sessionKey
     ).pipe(
-      mergeMap(uid => {
+      mergeMap(result => {
+      const cardPowerOnResp = new CardPowerOnResp(result);
+      // console.log('ATR: ', cypherAesService.bytesTohex(result));
+      // console.log('ATR data: ', cypherAesService.bytesTohex(cardPowerOnResp.data));
         return this.cardAuthenticationFirstStep$(bluetoothService,
           readerAcr1255,
           cypherAesService,
@@ -135,9 +185,22 @@ export class MyfarePlusSl3 {
           '0440');
       }),
       mergeMap(rndaVsUid => {
-        return this.getReadCardSeconduthToken(gateway, rndaVsUid);
+        return this.getReadCardSeconduthToken(gateway, rndaVsUid, conversation);
+      }),
+      mergeMap(serverResp => {
+        return this.cardAuthenticationSecondStep$(bluetoothService,
+          readerAcr1255,
+          cypherAesService,
+          sessionKey,
+          serverResp);
+      }),
+      mergeMap(authCardConfirmation => {
+        const authCardSecondStep = new AuthCardSecondStepResp(authCardConfirmation);
+        return this.getReadCardApduCommands(gateway, cypherAesService.bytesTohex(authCardSecondStep.data.slice(1
+        )), conversation);
       }),
       mergeMap(result => {
+        console.log('llegan APDUS', result);
         return this.cardPowerOff$(
           bluetoothService,
           readerAcr1255,
@@ -167,18 +230,33 @@ export class MyfarePlusSl3 {
     // );
   }
 
-  getReadCardSeconduthToken(gateway: GatewayService, rndaVsUid): Observable<number> {
+  getReadCardSeconduthToken(gateway: GatewayService, rndaVsUid, conversation): Observable<number> {
+    conversation.conversationId = uuid();
     return gateway.apollo
     .query<any>({
       query: getReadCardSecondAuthToken,
       variables: {
-        conversationId: uuid(),
+        conversationId: conversation.conversationId,
         cardUid: rndaVsUid.uid,
         challengeKey: rndaVsUid.rndA
       }
       , errorPolicy: 'all'
       })
-    .pipe(map(rawData => rawData.data.getDeviceTableSize));
+    .pipe(map(rawData => rawData.data.getReadCardSecondAuthToken));
+  }
+
+  getReadCardApduCommands(gateway: GatewayService, cardAuthConfirmationToken, conversation): Observable<number> {
+    console.log('conversationId: ', conversation.conversationId);
+    return gateway.apollo
+    .query<any>({
+      query: getReadCardApduCommands,
+      variables: {
+        conversationId: conversation.conversationId,
+        cardAuthConfirmationToken,
+      }
+      , errorPolicy: 'all'
+      })
+    .pipe(map(rawData => rawData.data.getReadCardApduCommands));
   }
 
    /**

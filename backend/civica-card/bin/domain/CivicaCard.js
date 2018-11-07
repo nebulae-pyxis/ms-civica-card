@@ -1,15 +1,15 @@
 'use strict';
 
 const Rx = require('rxjs');
-const { map, mergeMap, catchError } = require('rxjs/operators');
+const { map, mergeMap, catchError, tap, mapTo } = require('rxjs/operators');
 const { SamClusterClient } = require('../tools/mifare');
-
+const uuidv4 = require('uuid/v4');
+const { CustomError, DefaultError } = require('../tools/customError');
 
 let instance;
 
 class CivicaCard {
   constructor() {
-
     this.transaction = {
       appId: 'CIVICA-CARD-BACKEND',
       transactionId: uuidv4()
@@ -18,7 +18,6 @@ class CivicaCard {
       mqttServerUrl: 'tcp://rcswsyrt:wAQAois_Sqt5@m15.cloudmqtt.com:16858',
       replyTimeout: 1000
     });
-
   }
 
   //#region  mappers for API responses
@@ -52,20 +51,55 @@ class CivicaCard {
     );
   }
 
+  handleError$(err) {
+    return Rx.of(err).pipe(
+      map(err => {
+        const exception = { data: null, result: {} };
+        const isCustomError = err instanceof CustomError;
+        if (!isCustomError) {
+          err = new DefaultError(err);
+        }
+        exception.result = {
+          code: err.code,
+          error: { ...err.getContent() }
+        };
+        return exception;
+      })
+    );
+  }
+
   //#endregion
 
   //#region  mappers for API responses
   getReadCardSecondAuthToken$({ root, args, jwt }, authToken) {
-    console.log('llegan args: ', args);
+    //console.log('llegan args: ', args);
     //return Rx.of({ authToken: 'ACA HEXA DE RESPUESTA' })
-    return this.samClusterClient.requestSamFirstStepAuth$({
-      uid: args.cardUid,
-      cardFirstSteptAuthChallenge: args.challengeKey
-    }, this.transaction, this.samClusterClient.KEY_DEBIT)
+    return this.samClusterClient
+      .requestSamFirstStepAuth$(
+        {
+          uid: args.cardUid,
+          cardFirstSteptAuthChallenge: args.challengeKey
+        },
+        this.transaction,
+        this.samClusterClient.KEY_DEBIT
+      )
       .pipe(
-        tap(samFirstStepAuthResponse => console.log(`  samFirstStepAuthResponso: SamId:${samFirstStepAuthResponse.samId}, secondStepSamToken: ${samFirstStepAuthResponse.secondStepSamToken.toString('hex')}`)),
-        tap(samFirstStepAuthResponse => transaction.samId = samFirstStepAuthResponse.samId),   
-        map(samFirstStepAuthResponse => samFirstStepAuthResponse.secondStepSamToken.toString('hex')),
+        tap(samFirstStepAuthResponse =>
+          console.log(
+            `  samFirstStepAuthResponso: SamId:${
+              samFirstStepAuthResponse.samId
+            }, secondStepSamToken: ${samFirstStepAuthResponse.secondStepSamToken.toString(
+              'hex'
+            )}`
+          )
+        ),
+        tap(
+          samFirstStepAuthResponse =>
+            (this.transaction.samId = samFirstStepAuthResponse.samId)
+        ),
+        map(samFirstStepAuthResponse => ({
+          authToken: samFirstStepAuthResponse.secondStepSamToken.toString('hex')
+        })),
         mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
         catchError(error => this.handleError$(error))
       );
@@ -76,7 +110,26 @@ class CivicaCard {
   }
 
   getReadCardApduCommands$({ root, args, jwt }, authToken) {
-    return Rx.of(undefined);
+    console.log('args APDUS: ', args);
+    //cardSecondStepAuthConfirmation, { appId, transactionId, samId }
+    return this.samClusterClient
+      .requestSamSecondStepAuth$(
+        args.cardAuthConfirmationToken,
+        this.transaction
+      )
+      .pipe(
+        tap(samSecondStepAuthResp =>
+          console.log(
+            `  samSecondStepAuthResp :${JSON.stringify(samSecondStepAuthResp)}`
+          )
+        ),
+        mapTo(({ apduCommands: ['test', 'list'] })),
+        mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
+        tap(resp => {
+          console.log('Se envia respuesta a api: ', resp);
+        }),
+        catchError(error => this.handleError$(error))
+      );
   }
 
   extractReadCardData$({ root, args, jwt }, authToken) {

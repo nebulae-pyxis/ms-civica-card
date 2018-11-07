@@ -10,3 +10,14 @@ export const getReadCardSecondAuthToken = gql`
     }
   }
 `;
+
+export const getReadCardApduCommands = gql`
+   query getReadCardApduCommands(
+    $conversationId: String, $cardAuthConfirmationToken: String
+  ){
+    getReadCardApduCommands(conversationId: $conversationId, 
+      cardAuthConfirmationToken: $cardAuthConfirmationToken){
+        apduCommands 
+    }
+  }
+`;

@@ -23,7 +23,7 @@ export class BluetoothConnectionComponent implements OnInit {
   }
 
   connect() {
-    this.afccReloaderService.stablishNewConnection();
+    this.afccReloaderService.operabilityState$.next(OperabilityState.CONNECTING);
   }
 
 
