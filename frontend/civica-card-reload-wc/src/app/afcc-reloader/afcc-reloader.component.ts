@@ -55,15 +55,11 @@ export class AfccReloaderComponent implements OnInit {
 
   constructor(private afccRealoderService: AfccRealoderService,
     private dialog: MatDialog,
-   private gatewayService: GatewayService) {
+  ) {
    }
   ngOnInit() {
-    console.log('Llega JWT: ', this.jwt);
-    this.gatewayService.token = this.jwt;
-    this.gatewayService.initService();
-    this.afccRealoderService.getDeviceTableSize().subscribe(result => {
-      console.log('llega resultado de gql: ', result);
-    });
+     this.afccRealoderService.gateway.token = this.jwt;
+     this.afccRealoderService.gateway.initService();
     if (this.position) {
       this.afccRealoderService.conversation.position = this.position;
       this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
@@ -102,9 +98,9 @@ export class AfccReloaderComponent implements OnInit {
     return this.operabilityState$.pipe(
       map(state => {
         this.afccRealoderService.operation$.next(state);
-        return state === OperabilityState.READING_CARD || state === OperabilityState.READING_CARD_ERROR ||
-          state === OperabilityState.INTERNAL_ERROR || state === OperabilityState.RELOAD_CARD_SUCCESS
-          || state === OperabilityState.RELOAD_CARD_ABORTED;
+        return state === OperabilityState.READING_CARD || state === OperabilityState.CARD_READED
+          || state === OperabilityState.READING_CARD_ERROR || state === OperabilityState.INTERNAL_ERROR
+          || state === OperabilityState.RELOAD_CARD_SUCCESS || state === OperabilityState.RELOAD_CARD_ABORTED;
       })
     );
   }

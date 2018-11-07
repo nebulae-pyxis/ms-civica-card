@@ -146,28 +146,28 @@ class GraphQlService {
     return [
       //Sample incoming request, please remove
       {
-        aggregateType: "civicaCard",
-        messageType: "sales-gateway.graphql.query.getReadCardSeconduthToken"
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.query.getReadCardSecondAuthToken"
       },
       {
-        aggregateType: "civicaCard",
-        messageType: "sales-gateway.graphql.query.getReadCardApduCommands"
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.query.getReadCardApduCommands"
       },
       {
-        aggregateType: "civicaCard",
-        messageType: "sales-gateway.graphql.query.extractReadCardData"
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.query.extractReadCardData"
       },
       {
-        aggregateType: "civicaCard",
-        messageType: "sales-gateway.graphql.query.getCardReloadInfo"
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.query.getCardReloadInfo"
       },
       {
-        aggregateType: "civicaCard",
-        messageType: "sales-gateway.graphql.query.extractReadWriteCardData"
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.query.extractReadWriteCardData"
       },
       {
-        aggregateType: "civicaCard",
-        messageType: "sales-gateway.graphql.query.getConversation"
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.query.getConversation"
       }
     ];
   }
@@ -179,31 +179,31 @@ class GraphQlService {
   generateFunctionMap() {    
     return {
       //Sample incoming request, please remove
-      "sales-gateway.graphql.query.getReadCardSeconduthToken": {
-        fn: civicaCard.getReadCardSeconduthToken$,
+      "salesgateway.graphql.query.getReadCardSecondAuthToken": {
+        fn: civicaCard.getReadCardSecondAuthToken$,
         obj: civicaCard
       },
-      "sales-gateway.graphql.query.getReaderKey": {
+      "salesgateway.graphql.query.getReaderKey": {
         fn: civicaCard.getReaderKey$,
         obj: civicaCard
       },
-      "sales-gateway.graphql.query.getReadCardApduCommands": {
+      "salesgateway.graphql.query.getReadCardApduCommands": {
         fn: civicaCard.getReadCardApduCommands$,
         obj: civicaCard
       },
-      "sales-gateway.graphql.query.extractReadCardData": {
+      "salesgateway.graphql.query.extractReadCardData": {
         fn: civicaCard.extractReadCardData$,
         obj: civicaCard
       },
-      "sales-gateway.graphql.query.getCardReloadInfo": {
+      "salesgateway.graphql.query.getCardReloadInfo": {
         fn: civicaCard.getCardReloadInfo$,
         obj: civicaCard
       },
-      "sales-gateway.graphql.query.extractReadWriteCardData": {
+      "salesgateway.graphql.query.extractReadWriteCardData": {
         fn: civicaCard.extractReadWriteCardData$,
         obj: civicaCard
       },
-      "sales-gateway.graphql.query.getConversation": {
+      "salesgateway.graphql.query.getConversation": {
         fn: civicaCard.getConversation$,
         obj: civicaCard
       },

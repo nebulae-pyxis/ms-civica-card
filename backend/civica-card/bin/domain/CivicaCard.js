@@ -1,6 +1,7 @@
 'use strict';
 
 const Rx = require('rxjs');
+const { map, mergeMap, catchError } = require('rxjs/operators');
 
 let instance;
 
@@ -41,8 +42,12 @@ class CivicaCard {
   //#endregion
     
   //#region  mappers for API responses
-  getReadCardSeconduthToken$({ root, args, jwt }, authToken) { 
-    return Rx.of(undefined);
+  getReadCardSecondAuthToken$({ root, args, jwt }, authToken) { 
+    console.log('llegan args: ', args);
+    return Rx.of({authToken: 'ACA HEXA DE RESPUESTA'}).pipe(
+      mergeMap(rawResponse => this.buildSuccessResponse$(rawResponse)),
+      catchError(error => this.handleError$(error))
+    );
   }
   
   getReaderKey$({ root, args, jwt }, authToken) { 

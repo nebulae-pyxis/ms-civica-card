@@ -6,9 +6,9 @@ import { ConnectionStatus } from './utils/connection-status';
 import { CypherAes } from './utils/cypher-aes';
 import { ReaderAcr1255 } from './utils/readers/reader-acr1255';
 import * as Rx from 'rxjs';
-import { getDeviceTableSize } from './api/gql/afcc-reloader.js';
 import { switchMap, mergeMap, takeUntil, filter, map } from 'rxjs/operators';
 import { GatewayService } from './api/gateway.service';
+import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 
 @Injectable({
   providedIn: 'root'
@@ -46,11 +46,17 @@ export class AfccRealoderService {
   sessionKey;
   // #endregion
 
+  // #region VARIABLES MIFARE SL3
+  readingCard = false;
+  readCardAttempts = 0;
+  myfarePlusSl3: MyfarePlusSl3;
+  // #endregion
 
   constructor(private bluetoothService: BluetoothService,
-    private gateway: GatewayService) {
+    public gateway: GatewayService) {
     this.cypherAesService = new CypherAes();
     this.readerAcr1255 = new ReaderAcr1255();
+    this.myfarePlusSl3 = new MyfarePlusSl3();
     // TODO: ESTA LLAVE SE DEBE CONSULTAR POR GRAPHQL Y SE DEBE QUITAR DEL CONSTRUCTOR
     const key = [65, 67, 82, 49, 50, 53, 53, 85, 45, 74, 49, 32, 65, 117, 116, 104];
     this.keyReader = key;
@@ -64,14 +70,6 @@ export class AfccRealoderService {
         this.conversation.state = operabilityState;
         }
     });
-  }
-
-  getDeviceTableSize(): Rx.Observable<number> {
-    return this.gateway.apollo
-    .query<any>({
-      query: getDeviceTableSize
-    })
-    .pipe(map(rawData => rawData.data.getDeviceTableSize));
   }
 
   // #region CONNECTION ACR1255
@@ -182,6 +180,27 @@ export class AfccRealoderService {
    */
   getBatteryLevel$() {
     return this.bluetoothService.getBatteryLevel$();
+  }
+
+  // #endregion
+
+  // #region Authentication MIFARE SL3
+  readCard$() {
+    if (this.readCardAttempts >= 10) {
+      return Rx.of({ status: 'TIMEOUT' });
+    } else if (!this.readingCard) {
+      this.readingCard = true;
+      this.readCardAttempts++;
+      return this.myfarePlusSl3.readCurrentCard$(
+        this.bluetoothService,
+        this.readerAcr1255,
+        this.sessionKey,
+        this.cypherAesService,
+        this.deviceConnectionStatus$,
+        this.gateway
+      );
+    }
+    return Rx.of({status: 'READING'});
   }
 
   // #endregion

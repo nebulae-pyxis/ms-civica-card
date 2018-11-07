@@ -5,21 +5,21 @@
   <svg-icon src="assets/card.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#838583'}"></svg-icon>
   <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
     <mat-form-field class="example-full-width">
-      <input matInput placeholder="Saldo" value="$1.200">
+      <input matInput placeholder="Saldo" value="">
     </mat-form-field>
     <mat-form-field class="example-full-width">
-      <input matInput placeholder="Estado" value="Ok">
+      <input matInput placeholder="Estado" value="">
     </mat-form-field>
-    <mat-form-field  class="example-full-width">
+    <mat-form-field *ngIf="operationState === 'CARD_READED'" class="example-full-width">
       <input matInput placeholder="Valor recarga"  [(ngModel)]="value" currencyMask [options]="{ prefix: '$ ', thousands: '.', precision: '0' }">
     </mat-form-field>
-    <div class="button-container">
+    <div *ngIf="operationState === 'CARD_READED'" class="button-container">
       <button style="margin-right: 10px" (click)="reloadCard()" mat-stroked-button color="primary">realizar recarga</button>
       <button mat-stroked-button (click)="cancelReloadCard()" color="warn">Cancelar</button>
     </div>
   </div>
 </div>
-<div style="margin-top: 20px">
+<div *ngIf="operationState === 'CARD_READED'" style="margin-top: 20px">
   <div class="sale-button-container">
     <button class="pos-button" (click)="reloadCardShortCut(2000)" mat-raised-button color="primary">2.000$</button>
     <button class="pos-button" (click)="reloadCardShortCut(5000)" mat-raised-button color="primary">5.000$</button>

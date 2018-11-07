@@ -15,7 +15,7 @@ export class ReadCardErrorComponent implements OnInit {
   }
 
   retry() {
-    this.afccReloaderService.operabilityState$.next(OperabilityState.RELOADING_CARD);
+    this.afccReloaderService.operabilityState$.next(OperabilityState.CONNECTED);
   }
 
 }

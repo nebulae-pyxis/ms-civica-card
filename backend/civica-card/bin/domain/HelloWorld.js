@@ -17,7 +17,6 @@ let instance;
 
 class HelloWorld {
   constructor() {
-    this.initHelloWorldEventGenerator();
   }
 
   /**
