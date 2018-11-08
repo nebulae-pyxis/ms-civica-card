@@ -56,6 +56,21 @@ module.exports = {
                 ).toPromise();
         },
 
+        generateCivicaCardReloadReadApduCommands(root, args, context) {
+            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'generateCivicaCardReloadReadApduCommands', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
+                .mergeMap(() =>
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadReadApduCommands", { root, args, jwt: context.encodedToken }, 1000)
+                        .mergeMap(response => getResponseFromBackEnd$(response))
+                ).toPromise();
+        },
+
+        // processCivicaCardReloadReadApduCommandRespones(root, args, context) {
+        //     return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'processCivicaCardReloadReadApduCommandRespones', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
+        //         .mergeMap(() =>
+        //             broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.processCivicaCardReloadReadApduCommandRespones", { root, args, jwt: context.encodedToken }, 1000)
+        //                 .mergeMap(response => getResponseFromBackEnd$(response))
+        //         ).toPromise();
+        // },
 
     },
 };

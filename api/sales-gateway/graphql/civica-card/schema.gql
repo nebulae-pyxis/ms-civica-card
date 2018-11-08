@@ -14,9 +14,6 @@ type CivicaCardReloadConversation {
   operationState: String,
   readerType: String,
   cardType: String
-
-  
-
   # initCardData: CardData,
   # initCardState: String,
   # reloadValue: Int,
@@ -27,9 +24,25 @@ type CivicaCardReloadConversation {
   # endCardState: String,
 }
 
+# input ProcessCivicaCardReloadReadApduCommandResponesInput {
+#   conversationId: String,
+#   commands: [String]  
+# }
+
 type CivicaCardReloadSecondAuthToken {
   conversationId: String,
   token: String,  
+}
+
+type BinaryCommands {
+  order: Int,
+  cmd: String, 
+  resp: String 
+}
+
+type CivicaCardData {
+  cardNumber: Int,
+  balance: Int
 }
 
 type Query{
@@ -53,6 +66,17 @@ type Mutation {
     cardChallenge: String,
     cardRole: String
   ): CivicaCardReloadSecondAuthToken @requireAuth
+
+  generateCivicaCardReloadReadApduCommands(
+    conversationId: String,
+    cardAuthConfirmationToken: String,
+    dataType: String
+  ): [BinaryCommands]  @requireAuth
+
+  # processCivicaCardReloadReadApduCommandRespones(
+  #   input: ProcessCivicaCardReloadReadApduCommandResponesInput  
+  # ): CivicaCardData  @requireAuth
+
 
 
 }

@@ -6,6 +6,7 @@ const Rx = require("rxjs");
 const jsonwebtoken = require("jsonwebtoken");
 const { map, mergeMap, catchError, tap } = require('rxjs/operators');
 const jwtPublicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, "\n");
+const {handleError$} = require('../../tools/GraphqlResponseTools');
 
 
 let instance;
@@ -97,7 +98,7 @@ class GraphQlService {
         Rx.of(message).pipe(
           map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] }))
           , catchError(err =>
-            helloWorld.errorHandler$(err).pipe(
+            handleError$(err).pipe(
               map(response => ({
                 errorResponse: { response, correlationId: message.id, replyTo: message.attributes.replyTo },
                 failedValidations: ['JWT']
@@ -158,6 +159,14 @@ class GraphQlService {
         aggregateType: "CivicaCard",
         messageType: "salesgateway.graphql.mutation.generateCivicaCardReloadSecondAuthToken"
       },
+      {
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.mutation.generateCivicaCardReloadReadApduCommands"
+      },
+      {
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.mutation.processCivicaCardReloadReadApduCommandRespones"
+      },
 
       // {
       //   aggregateType: "CivicaCard",
@@ -205,36 +214,14 @@ class GraphQlService {
         fn: civicaCardCQRS.generateCivicaCardReloadSecondAuthToken$,
         obj: civicaCardCQRS
       },
-
-
-      // "salesgateway.graphql.query.getReadCardSecondAuthToken": {
-      //   fn: civicaCard.getReadCardSecondAuthToken$,
-      //   obj: civicaCard
-      // },
-      // "salesgateway.graphql.query.getReaderKey": {
-      //   fn: civicaCard.getReaderKey$,
-      //   obj: civicaCard
-      // },
-      // "salesgateway.graphql.query.getReadCardApduCommands": {
-      //   fn: civicaCard.getReadCardApduCommands$,
-      //   obj: civicaCard
-      // },
-      // "salesgateway.graphql.query.extractReadCardData": {
-      //   fn: civicaCard.extractReadCardData$,
-      //   obj: civicaCard
-      // },
-      // "salesgateway.graphql.query.getCardReloadInfo": {
-      //   fn: civicaCard.getCardReloadInfo$,
-      //   obj: civicaCard
-      // },
-      // "salesgateway.graphql.query.extractReadWriteCardData": {
-      //   fn: civicaCard.extractReadWriteCardData$,
-      //   obj: civicaCard
-      // },
-      // "salesgateway.graphql.query.getConversation": {
-      //   fn: civicaCard.getConversation$,
-      //   obj: civicaCard
-      // },
+      "salesgateway.graphql.mutation.generateCivicaCardReloadReadApduCommands": {
+        fn: civicaCardCQRS.generateCivicaCardReloadReadApduCommands$,
+        obj: civicaCardCQRS
+      },
+      "salesgateway.graphql.mutation.processCivicaCardReloadReadApduCommandRespones": {
+        fn: civicaCardCQRS.processCivicaCardReloadReadApduCommandRespones$,
+        obj: civicaCardCQRS
+      },
     };
   }
 }
