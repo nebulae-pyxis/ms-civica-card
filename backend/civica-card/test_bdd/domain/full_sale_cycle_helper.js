@@ -61,7 +61,6 @@ const requestCardSecondStepAuth$ = ({ secondStepSamToken, reader, protocol }) =>
         .pipe( 
             map(respBuffer => respBuffer.slice(1, respBuffer.length)),          
             map(respBuffer => respBuffer.toString('hex')),
-            tap(cardSecondStepAuthConfirmation => console.log(`cardSecondStepAuthConfirmation: ${cardSecondStepAuthConfirmation}`))
         );
 };
 

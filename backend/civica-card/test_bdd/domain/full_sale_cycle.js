@@ -232,10 +232,14 @@ describe('CivicaCardReloadConversation', function () {
 
 
 describe('READ Card', function () {
-    describe('Read Card', function () {
+    describe('Auth Card', function () {
 
         let atr;
         let uid;
+        let reader;
+        let protocol;
+        let cardSecondStepAuthConfirmation;
+
         it('wait for card', function (done) {
             this.timeout(10000);
             Rx.fromEvent(pcscReader, 'status').pipe(
@@ -244,11 +248,48 @@ describe('READ Card', function () {
                 //filter(s => s.state & pcscReader.SCARD_STATE_PRESENT),
                 tap(s => { atr = s.atr; console.log(`ATR = ${JSON.stringify(s.atr)}`) }),
                 mergeMap(s => connectReader$(pcscReader)),
-                tap(result => console.log(`  connectReader: ${JSON.stringify(result)} `)),
-                mergeMap(({ reader, protocol }) => readCard$({ reader, protocol })),
                 first(),
             ).subscribe(
-                (evt) => console.log(evt),
+                (evt) => {
+                    reader = evt.reader; protocol = evt.protocol; 
+                    console.log(`  connectReader: ${JSON.stringify(evt)} `);
+                },
+                (error) => done(error),
+                () => done()
+            );
+        });
+
+        it('read card uid', function (done) {
+            this.timeout(1000);
+            requestUid$({ reader, protocol })
+            .subscribe(
+                (evt) => {
+                    console.log(`  card uid: ${evt} `);
+                    uid = evt;
+                },
+                (error) => done(error),
+                () => done()
+            );
+        });
+
+        it('auth card', function (done) {
+            this.timeout(10000);
+
+            Rx.of('').pipe(
+                delay(500),
+                mergeMap(() => requestCardFirstStepAuth$({ reader, protocol })),
+                mergeMap(cardFirstSteptAuthChallenge => generateCivicaCardReloadSecondAuthToken$(civicaCardReloadConversationId, uid, cardFirstSteptAuthChallenge, 'DEBIT')),
+                mergeMap((samFirstStepAuthResponse) => {
+                    const secondStepSamToken = Buffer.alloc(samFirstStepAuthResponse.length/2);
+                    secondStepSamToken.write(samFirstStepAuthResponse,0,samFirstStepAuthResponse.length,'hex');
+                    return requestCardSecondStepAuth$({ secondStepSamToken, reader, protocol });
+                }),
+                first(),
+            ).subscribe(
+                (evt) => {
+                    cardSecondStepAuthConfirmation = evt;
+                    console.log(`  card cardSecondStepAuthConfirmation: ${cardSecondStepAuthConfirmation}`);
+                },
                 (error) => done(error),
                 () => done()
             );
@@ -257,26 +298,6 @@ describe('READ Card', function () {
 })
 
 
-const readCard$ = ({ reader, protocol }) => {
-    return requestUid$({ reader, protocol })
-        .pipe(
-            delay(500),
-            mergeMap((uid) => requestCardFirstStepAuth$({ reader, protocol })
-                .pipe(
-                    mergeMap(cardFirstSteptAuthChallenge => generateCivicaCardReloadSecondAuthToken$(civicaCardReloadConversationId, uid, cardFirstSteptAuthChallenge, 'DEBIT')),
-                    //tap(samFirstStepAuthResponse => console.log(`  samFirstStepAuthResponso: SamId:${samFirstStepAuthResponse.samId}, secondStepSamToken: ${samFirstStepAuthResponse.secondStepSamToken.toString('hex')}`)),
-                    mergeMap((samFirstStepAuthResponse) => {
-                        const secondStepSamToken = Buffer.alloc(samFirstStepAuthResponse.length/2);
-                        secondStepSamToken.write(samFirstStepAuthResponse,0,samFirstStepAuthResponse.length,'hex');
-                        return requestCardSecondStepAuth$({ secondStepSamToken, reader, protocol });
-                    }),
-                    //mergeMap(cardSecondStepAuthConfirmation => samClusterClient.requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, transaction))
-                )
-            ),
-            tap(result => console.log(`  requestFirstStepAuth: ${result.toString('hex')} `))
-        );
-};
-
 const generateCivicaCardReloadSecondAuthToken$ = (conversationId, cardUid, cardChallenge, cardRole) => {
     return Rx.from(
         gqlClient.query(`
@@ -284,8 +305,7 @@ const generateCivicaCardReloadSecondAuthToken$ = (conversationId, cardUid, cardC
             generateCivicaCardReloadSecondAuthToken(conversationId: "${conversationId}",cardUid: "${cardUid}",cardChallenge: "${cardChallenge}",cardRole: "${cardRole}",){ token }
           }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
     ).pipe(
-        first(),
-        tap((body) => console.log(`##%%%%%%%%%%%%${JSON.stringify(body)}`)),
+        first(),        
         tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken).not.to.be.null),
         tap((body) => expect(body.errors).to.be.undefined),
         tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
