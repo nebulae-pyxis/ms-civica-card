@@ -9,10 +9,11 @@ const SamClusterMqttBroker = require('./SamClusterMqttBroker');
 
 class SamClusterClient {
 
-    constructor({ mqttServerUrl, replyTimeout }) {
+    constructor({ mqttServerUrl, replyTimeout, appId }) {
         this.KEY_CREDIT = 1;
         this.KEY_DEBIT = 2;
         this.KEY_PUBLIC = 7;
+        this.appId = appId;
         this.broker = new SamClusterMqttBroker({ mqttServerUrl, replyTimeout });
     }
 
@@ -25,12 +26,11 @@ class SamClusterClient {
      * request a SAM to execute the first step auth
      * @param {string} card.uid Card uid hexa;  hexa string
      * @param {string} card.cardFirstSteptAuthChallenge Card First Stept Auth Challenge; hexa string
-     * @param {string} transaction.appId trasaction Application ID
      * @param {string} transaction.transactionId trasaction  ID
      * @param {number} key SAM key to use. SamClusterClient.KEY_*
      * @returns 
      */
-    requestSamFirstStepAuth$({ uid, cardFirstSteptAuthChallenge }, { appId, transactionId }, key) {
+    requestSamFirstStepAuth$({ uid, cardFirstSteptAuthChallenge }, { transactionId }, key) {
         const apduBuffer = Buffer.alloc(32);
 
         const sl = 3; //SL level
@@ -69,20 +69,18 @@ class SamClusterClient {
         apduBufferIndex += 8;
         apduBuffer[apduBufferIndex++] = 0x00;
 
-        console.log(`this.broker.sendAndGetReply$(${appId}, ${transactionId}, undefined, ${apduBuffer})`);
-        return this.broker.sendAndGetReply$(appId, transactionId, undefined, apduBuffer).pipe(
+        return this.broker.sendAndGetReply$(this.appId, transactionId, undefined, apduBuffer).pipe(
             map(response => ({ secondStepSamToken: response.data, samId: response.samId }))
         );
     };
 
     /**
      * 
-     * @param {string} cardSecondStepAuthConfirmation card second step auth confirmation
-     * @param {string} transaction.appId trasaction Application ID
+     * @param {string} cardSecondStepAuthConfirmation card second step auth confirmation    
      * @param {string} transaction.transactionId trasaction  ID
      * @param {string} transaction.samId Sam id to use
      */
-    requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, { appId, transactionId, samId }) {
+    requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, {  transactionId, samId }) {
         const dataLen = (cardSecondStepAuthConfirmation.length / 2);
         const apduBuffer = Buffer.alloc(6 + dataLen);
         let bufferIndex = 0;
@@ -94,36 +92,18 @@ class SamClusterClient {
         apduBuffer.write(cardSecondStepAuthConfirmation, bufferIndex, cardSecondStepAuthConfirmation.length, 'hex');
         bufferIndex += dataLen;
         apduBuffer[bufferIndex++] = 0x00;
-        console.log(`samId: ${samId} appId: ${appId} transactionId: ${transactionId} apduBuffer: ${apduBuffer}`);
         
 
-        return this.broker.sendAndGetReply$(appId, transactionId, samId, apduBuffer).pipe(
-            tap(resp => { 
-                console.log('llega resp de SAM: ',resp)
-            }),
+        return this.broker.sendAndGetReply$(this.appId, transactionId, samId, apduBuffer).pipe(
             map(response => ({ 
                 raw : response.data.toString('hex'),
-                keyEnc : response.data.slice(0,16).toString('hex'),
-                keyMac : response.data.slice(16,32).toString('hex'),
-                ti : response.data.slice(32,36).toString('hex'),
-                readCount : response.data.slice(36,38).toString('hex'),
-                writeCount : response.data.slice(38,40).toString('hex'),
+                keyEnc : response.data.slice(0,16),
+                keyMac : response.data.slice(16,32),
+                ti : response.data.slice(32,36),
+                readCount : response.data.readInt16BE(36),
+                writeCount : response.data.readInt16BE(38)
              }))
         );
-
-        // 32 e9 ce a6 97 35 08 b3 62 31 ae a8 38 02 9e 94 fc 27 fc 52 00 56 54 4b 21 62 16 18 3c 50 6f dc 90 af
-        /*
-        
-                keyEnc := respSam2[0:16]
-                keyMac := respSam2[16:32]
-                log.Printf("key Mac: [% X]\n", keyMac)
-                Ti := respSam2[32:36]
-                log.Printf("Ti: [% X]\n", Ti)
-                readCounter := respSam2[36:38]
-                writeCounter := respSam2[38:40]
-                log.Printf("Read Counter: [% X]\n", readCounter)
-                log.Printf("Write Counter: [% X]\n", writeCounter)
-        */
     }
 
 

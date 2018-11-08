@@ -1,11 +1,10 @@
 'use strict'
-
-const Rx = require("rxjs");
 const CivicaCardReloadConversationDA = require("../../data/CivicaCardReloadConversationDA");
+const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
 const { CustomError, ENTITY_NOT_FOUND_ERROR_CODE } = require('../../tools/customError');
-const { SamClusterClient } = require('../../tools/mifare/');
+const {SamClusterClient,BytecodeCompiler,CivicaCardReadWriteFlow} = require('../../tools/mifare/');
 
 /**
  * Singleton instance
@@ -15,13 +14,14 @@ let instance;
 class CivicaCardCQRS {
 
     constructor() {
-        this.id = (Math.floor(Math.random() * Math.floor(100)));
     }
 
     start$() {
         return Rx.Observable.create(observer => {
             const mqttServerUrl = process.env.SAM_CLUSTER_MQTT_CONN_STR;
-            this.samClusterClient = new SamClusterClient({ mqttServerUrl, replyTimeout: 2000 });
+            const appId = `civica-card_be_civicacardcqrs_${(Math.floor(Math.random() * Math.floor(100)))}`
+            this.samClusterClient = new SamClusterClient({ mqttServerUrl, replyTimeout: 2000, appId });
+            this.bytecodeCompiler = new BytecodeCompiler(this.samClusterClient);
             observer.next(`samClusterClient connected to ${mqttServerUrl}`);
             observer.complete();
         });
@@ -79,13 +79,13 @@ class CivicaCardCQRS {
     /**
     * generates CivicaCard SecondAuthToken using the SAM cluster
     */
-    generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {        
+    generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
             mergeMap(conversation => {
                 return this.samClusterClient.requestSamFirstStepAuth$(
                     { uid: conversation.cardUid, cardFirstSteptAuthChallenge: args.cardChallenge },
-                    { appId: `civica-card_be_civicacardcqrs_${this.id}`, transactionId: conversation._id },
+                    { transactionId: conversation._id },
                     args.cardRole == 'DEBIT' ? this.samClusterClient.KEY_DEBIT : args.cardRole == 'CREDIT' ? this.samClusterClient.KEY_CREDIT : args.cardRole == 'PUBLIC' ? this.samClusterClient.KEY_PUBLIC : 0)
                     .pipe(map(samFirstStepAuthResponse => ({ samFirstStepAuthResponse, conversation })));
             }
@@ -109,11 +109,28 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                map(c => ({})),
+                map(conversation => (
+                    {
+                        conversation,
+                        bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType)
+                    }
+                )),
+                mergeMap( ({conversation,bytecode}) => this.bytecodeCompiler.compile$(bytecode,conversation.cardType,conversation.readerType , { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken } )),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-                catchError(error => GraphqlResponseTools.handleError$(error))
+                catchError(error => {
+                    console.error(error.stack || error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
             );
     }
+
+
+
+
+
+
+
+
 
     /**
      * process and translate binary commands respone sequence to infer civica card data
@@ -129,7 +146,7 @@ class CivicaCardCQRS {
             );
     }
 
-  
+
 
 
 }
