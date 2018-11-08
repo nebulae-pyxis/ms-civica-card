@@ -233,7 +233,6 @@ describe('CivicaCardReloadConversation', function () {
 
 describe('READ Card', function () {
     describe('Auth Card', function () {
-
         let atr;
         let uid;
         let reader;
