@@ -40,8 +40,6 @@ type Mutation {
   # abortCardReload(conversationId: String): AbortCardReloadResp,
   startCivicaCardReloadConversation(
     id: ID!,
-    userJwt: String,
-    userName: String,
     posId: String,
     posUser: String,
     posTerminal: String,

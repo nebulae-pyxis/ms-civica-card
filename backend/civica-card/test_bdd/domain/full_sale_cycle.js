@@ -174,9 +174,7 @@ describe('CivicaCardReloadConversation', function () {
             const mutation = `
             mutation {
                 startCivicaCardReloadConversation(
-                    id: "${civicaCardReloadConversation_start_args.id}",
-                    userJwt: "${jwt}", 
-                    userName: "${civicaCardReloadConversation_start_args.userName}", 
+                    id: "${civicaCardReloadConversation_start_args.id}",                    
                     posId: "${civicaCardReloadConversation_start_args.posId}", 
                     posUser: "${civicaCardReloadConversation_start_args.posUser}", 
                     posTerminal: "${civicaCardReloadConversation_start_args.posTerminal}", 

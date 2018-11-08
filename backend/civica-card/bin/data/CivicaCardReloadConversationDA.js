@@ -74,8 +74,8 @@ class CivicaCardReloadConversationDA {
       { '_id': id },
       { '$set': { 'currentCardAuth.samId': samId } },
       { 'multi': false }
-    )).pipe(
-      tap(x => console.log(x))
+    )).pipe(      
+      tap(x => {if(x.result.nModified < 1) throw(new Error(`CivicaCardReloadConversation(id:${id}) not found`)); })
     );
   }
 
