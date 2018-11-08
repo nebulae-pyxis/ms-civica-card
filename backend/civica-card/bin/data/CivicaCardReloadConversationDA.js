@@ -40,6 +40,7 @@ class CivicaCardReloadConversationDA {
 
     const conversation = {
       _id: id,
+      timestamp: Date.now(),
       user: {
         jwt: userJwt,
         name: userName

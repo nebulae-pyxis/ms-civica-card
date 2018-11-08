@@ -31,7 +31,7 @@ class CivicaCardCQRS {
      * Creates and returns a CivicaCardReloadConversation
      */
     startCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.create$({ ...args, userJwt: authToken, userName: authToken.name })
+        return CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name })
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),

@@ -1,7 +1,7 @@
 
 type CivicaCardReloadConversation {
   id: String ,
-  timestamp: Int,
+  timestamp: BigInt,
 
   userJwt: String,
   userName: String,

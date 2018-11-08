@@ -319,23 +319,7 @@ const generateCivicaCardReloadSecondAuthToken$ = (cardUid, cardChallenge, cardRo
     return Rx.from(
         gqlClient.query(`
         mutation {
-            generateCivicaCardReloadSecondAuthToken(conversationId: "${civicaCardReloadConversationId}",cardUid: "${cardUid}",cardChallenge: "${cardChallenge}",cardRole: "${cardRole}",){order, cmd, resp}
-          }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
-    ).pipe(
-        first(),
-        tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken).not.to.be.null),
-        tap((body) => console.log(`generateCivicaCardReloadSecondAuthToken: ${body}`)),
-        //tap((body) => expect(body.errors).to.be.undefined),
-        //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
-        //map((body) => body.data.generateCivicaCardReloadSecondAuthToken.token)
-    )
-}
-
-const generateCivicaCardReloadReadApduCommands$ = (cardSecondStepAuthConfirmation, dataType) => {
-    return Rx.from(
-        gqlClient.query(`
-        mutation {
-            generateCivicaCardReloadReadApduCommands(conversationId: "${civicaCardReloadConversationId}",cardAuthConfirmationToken: "${cardSecondStepAuthConfirmation}",dataType: "${dataType}"){ token }
+            generateCivicaCardReloadSecondAuthToken(conversationId: "${civicaCardReloadConversationId}",cardUid: "${cardUid}",cardChallenge: "${cardChallenge}",cardRole: "${cardRole}",){token}
           }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
     ).pipe(
         first(),
@@ -343,6 +327,22 @@ const generateCivicaCardReloadReadApduCommands$ = (cardSecondStepAuthConfirmatio
         tap((body) => expect(body.errors).to.be.undefined),
         tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
         map((body) => body.data.generateCivicaCardReloadSecondAuthToken.token)
+    )
+}
+
+const generateCivicaCardReloadReadApduCommands$ = (cardSecondStepAuthConfirmation, dataType) => {
+    return Rx.from(
+        gqlClient.query(`
+        mutation {
+            generateCivicaCardReloadReadApduCommands(conversationId: "${civicaCardReloadConversationId}",cardAuthConfirmationToken: "${cardSecondStepAuthConfirmation}",dataType: "${dataType}"){ order, cmd, resp }
+          }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
+    ).pipe(
+        first(),
+        tap((body) => console.log(`generateCivicaCardReloadReadApduCommands: ${JSON.stringify(body)}`)),
+        tap((body) => expect(body.data.generateCivicaCardReloadReadApduCommands).not.to.be.null),        
+        //tap((body) => expect(body.errors).to.be.undefined),
+        //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
+        //map((body) => body.data.generateCivicaCardReloadSecondAuthToken.token)        
     )
 }
 
