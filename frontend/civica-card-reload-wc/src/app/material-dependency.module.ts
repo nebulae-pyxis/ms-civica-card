@@ -7,6 +7,7 @@ import {
   MatDividerModule,
   MatDialogModule,
   MatSnackBarModule,
+  MatProgressBarModule,
   MatCardModule,
   MatListModule
 } from '@angular/material';
@@ -19,6 +20,7 @@ import {
     MatDividerModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatProgressBarModule,
     MatCardModule,
     MatListModule
   ],
@@ -29,6 +31,7 @@ import {
     MatDividerModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatProgressBarModule,
     MatCardModule,
     MatListModule
   ],

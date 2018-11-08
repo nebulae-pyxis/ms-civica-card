@@ -177,7 +177,7 @@ export class AfccRealoderService {
       console.log('TIMEOUT!!!!!!!');
       return Rx.of({ status: 'TIMEOUT' });
     } else if (!this.readingCard) {
-      console.log('LEE TARJETA');
+      console.log('LEE TARJETA con la sesion: ', this.sessionKey);
       this.readingCard = true;
       return this.myfarePlusSl3.readCurrentCard$(
         this.bluetoothService,

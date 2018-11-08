@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { AfccRealoderService } from '../../afcc-realoder.service';
-import { catchError } from 'rxjs/operators';
+import { catchError, takeUntil } from 'rxjs/operators';
 import * as Rx from 'rxjs';
 import { ConnectionStatus } from '../../utils/connection-status';
 import { MatSnackBar } from '@angular/material';
@@ -11,9 +11,10 @@ import { OperabilityState } from '../../utils/operability-sate';
   templateUrl: './bluetooth-connection.component.html',
   styleUrls: ['./bluetooth-connection.component.scss']
 })
-export class BluetoothConnectionComponent implements OnInit {
+export class BluetoothConnectionComponent implements OnInit, OnDestroy {
 
-
+  operabilityState$ = new Rx.BehaviorSubject<OperabilityState>(OperabilityState.DISCONNECTED);
+  ngUnsubscribe = new Rx.Subject<any>();
   constructor(
     private afccReloaderService: AfccRealoderService,
     private snackBar: MatSnackBar
@@ -22,8 +23,19 @@ export class BluetoothConnectionComponent implements OnInit {
   ngOnInit() {
   }
 
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
+
   connect() {
     this.afccReloaderService.operabilityState$.next(OperabilityState.CONNECTING);
+    this.afccReloaderService.operabilityState$.pipe(
+      takeUntil(this.ngUnsubscribe)
+    )
+      .subscribe(state => {
+      this.operabilityState$.next(state);
+    });
   }
 
 
