@@ -12,6 +12,7 @@ class SamClusterClient {
     constructor({ mqttServerUrl, replyTimeout }) {
         this.KEY_CREDIT = 1;
         this.KEY_DEBIT = 2;
+        this.KEY_PUBLIC = 7;
         this.broker = new SamClusterMqttBroker({ mqttServerUrl, replyTimeout });
     }
 
@@ -68,6 +69,7 @@ class SamClusterClient {
         apduBufferIndex += 8;
         apduBuffer[apduBufferIndex++] = 0x00;
 
+        console.log(`this.broker.sendAndGetReply$(${appId}, ${transactionId}, undefined, ${apduBuffer})`);
         return this.broker.sendAndGetReply$(appId, transactionId, undefined, apduBuffer).pipe(
             map(response => ({ secondStepSamToken: response.data, samId: response.samId }))
         );

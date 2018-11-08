@@ -7,8 +7,9 @@ if (process.env.NODE_ENV !== 'production') {
 const eventSourcing = require('./tools/EventSourcing')();
 const eventStoreService = require('./services/event-store/EventStoreService')();
 const mongoDB = require('./data/MongoDB').singleton();
-const HelloWorldDA = require('./data/HelloWorldDA');
+const CivicaCardReloadConversationDA = require('./data/CivicaCardReloadConversationDA');
 const graphQlService = require('./services/sales-gateway/GraphQlService')();
+const {civicaCardCQRS} = require('./domain/civica-card/');
 const Rx = require('rxjs');
 
 const start = () => {
@@ -16,8 +17,9 @@ const start = () => {
         eventSourcing.eventStore.start$(),
         eventStoreService.start$(),
         mongoDB.start$(),
-        HelloWorldDA.start$(),
-        graphQlService.start$()
+        CivicaCardReloadConversationDA.start$(),
+        graphQlService.start$(),
+        civicaCardCQRS.start$()
     ).subscribe(
         (evt) => {
             // console.log(evt)

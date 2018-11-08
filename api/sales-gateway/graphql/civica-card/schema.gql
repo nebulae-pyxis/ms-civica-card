@@ -1,64 +1,125 @@
-type ReaderKey {
-  readerKey: String;
-}
 
-type ReadCardSecondAuthToken {
-  authToken: String;
-}
+type CivicaCardReloadConversation {
+  id: String ,
+  timestamp: Int,
 
-type ReadCardApduCommands {
-  apduCommands: [String]
-}
+  userJwt: String,
+  userName: String,
 
-type CardData {
-  id: String
-}
+  posId: String,
+  posUser: String,
+  posTerminal: String,
+  posLocation: [Float],
 
-type CardReloadInfo {
-  cardReloadSaleToken: CardReloadSaleToken
-  writeApduCommands: [String],
-  readApduCommands: [String],
-  receipt: String
-}
-
-type CardReloadSaleToken {
-  state: String,
-  token: String
-}
-
-type ReadWriteCardData {
-  readCardData: [String],
-  writeCardData: [String]
-}
-
-type AbortCardReloadResp {
-  isAborted: Boolean
-}
-
-type Conversation {
-  id: String,
   operationState: String,
-  initCardData: CardData,
-  initCardState: String,
-  reloadValue: Integer,
-  receipt: String,
-  business: String,
-  terminal: String,
-  endCardData: CardData,
-  endCardState: String,
+  readerType: String,
+  cardType: String
+
+  
+
+  # initCardData: CardData,
+  # initCardState: String,
+  # reloadValue: Int,
+  # receipt: String,
+  # business: String,
+  # terminal: String,
+  # endCardData: CardData,
+  # endCardState: String,
 }
 
-type Query {
-  getReadCardSeconduthToken(conversationId: String, cardUid: String, challengeKey: String): ReadCardSecondAuthToken @requireAuth
-  getReaderKey: ReaderKey @requireAuth
-  getReadCardApduCommands(conversationId: String, cardAuthConfirmationToken: String): ReadCardApduCommands @requireAuth
-  extractReadCardData(conversationId: String, apduResponses: [String]): CardData @requireAuth
-  getCardReloadInfo(conversationId: String, cardAuthConfirmationToken: String, reloadValue: Integer): CardReloadInfo @requireAuth
-  extractReadWriteCardData(conversationId: String, readApduResp: [String], writeApduResp: [String]): ReadWriteCardData @requireAuth
-  getConversation(conversationId: String): Conversation @requireAuth
+type CivicaCardReloadSecondAuthToken {
+  conversationId: String,
+  token: String,  
+}
 
+type Query{
+  CivicaCardReloadConversation(id: ID!): CivicaCardReloadConversation @requireAuth
 }
 
 type Mutation {
-  abortCardReload(conversationId: String): AbortCardReloadResp,
+  # abortCardReload(conversationId: String): AbortCardReloadResp,
+  startCivicaCardReloadConversation(
+    id: ID!,
+    userJwt: String,
+    userName: String,
+    posId: String,
+    posUser: String,
+    posTerminal: String,
+    posLocation: [Float],
+    readerType: String,
+    cardType: String): CivicaCardReloadConversation @requireAuth
+
+  generateCivicaCardReloadSecondAuthToken(
+    conversationId: String,
+    cardUid: String,
+    cardChallenge: String,
+    cardRole: String
+  ): CivicaCardReloadSecondAuthToken @requireAuth
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# type ReaderKey {
+#   readerKey: String
+# }
+
+# type ReadCardSecondAuthToken {
+#   authToken: String
+# }
+
+# type ReadCardApduCommands {
+#   apduCommands: [String]
+# }
+
+# type CardData {
+#   id: String
+# }
+
+# type CardReloadInfo {
+#   cardReloadSaleToken: CardReloadSaleToken
+#   writeApduCommands: [String],
+#   readApduCommands: [String],
+#   receipt: String
+# }
+
+# type CardReloadSaleToken {
+#   state: String,
+#   token: String
+# }
+
+# type ReadWriteCardData {
+#   readCardData: [String],
+#   writeCardData: [String]
+# }
+
+# type AbortCardReloadResp {
+#   isAborted: Boolean
+# }
+
+
+
+# type Query {
+#   #getReadCardSeconduthToken(conversationId: String, cardUid: String, challengeKey: String): ReadCardSecondAuthToken @requireAuth
+#   # getReaderKey: ReaderKey @requireAuth
+#   # getReadCardApduCommands(conversationId: String, cardAuthConfirmationToken: String): ReadCardApduCommands @requireAuth
+#   # extractReadCardData(conversationId: String, apduResponses: [String]): CardData @requireAuth
+#   # getCardReloadInfo(conversationId: String, cardAuthConfirmationToken: String, reloadValue: Int): CardReloadInfo @requireAuth
+#   # extractReadWriteCardData(conversationId: String, readApduResp: [String], writeApduResp: [String]): ReadWriteCardData @requireAuth
+#   # getConversation(conversationId: String): Conversation @requireAuth
+
+# }

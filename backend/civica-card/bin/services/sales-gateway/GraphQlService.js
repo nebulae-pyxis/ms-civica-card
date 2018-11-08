@@ -1,6 +1,6 @@
 "use strict";
 
-const civicaCard = require("../../domain/CivicaCard")();
+const {civicaCardCQRS} = require("../../domain/civica-card/");
 const broker = require("../../tools/broker/BrokerFactory")();
 const Rx = require("rxjs");
 const jsonwebtoken = require("jsonwebtoken");
@@ -22,19 +22,19 @@ class GraphQlService {
    * Starts GraphQL actions listener
    */
   start$() {
-      //default on error handler
-      const onErrorHandler = (error) => {
-        console.error("Error handling  GraphQl incoming event", error);
-        process.exit(1);
-      };
-  
-      //default onComplete handler
-      const onCompleteHandler = () => {
-        () => console.log("GraphQlService incoming event subscription completed");
-      };
+    //default on error handler
+    const onErrorHandler = (error) => {
+      console.error("Error handling  GraphQl incoming event", error);
+      process.exit(1);
+    };
+
+    //default onComplete handler
+    const onCompleteHandler = () => {
+      () => console.log("GraphQlService incoming event subscription completed");
+    };
     return Rx.from(this.getSubscriptionDescriptors()).pipe(
       map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler }))
-      ,map(params => this.subscribeEventHandler(params))
+      , map(params => this.subscribeEventHandler(params))
     )
   }
 
@@ -52,19 +52,20 @@ class GraphQlService {
     const subscription = broker
       .getMessageListener$([aggregateType], [messageType]).pipe(
         mergeMap(message => this.verifyRequest$(message))
-        ,mergeMap(request => ( request.failedValidations.length > 0)
+        , mergeMap(request => (request.failedValidations.length > 0)
           ? Rx.of(request.errorResponse)
           : Rx.of(request).pipe(
-              //ROUTE MESSAGE TO RESOLVER
-              mergeMap(({ authToken, message }) =>
+            //tap(  ({ authToken, message }) => console.log(`############ ${JSON.stringify({ authToken, message })}`) ),
+            //ROUTE MESSAGE TO RESOLVER
+            mergeMap(({ authToken, message }) =>
               handler.fn
                 .call(handler.obj, message.data, authToken).pipe(
                   map(response => ({ response, correlationId: message.id, replyTo: message.attributes.replyTo }))
                 )
             )
           )
-        )    
-        ,mergeMap(msg => this.sendResponseBack$(msg))
+        )
+        , mergeMap(msg => this.sendResponseBack$(msg))
       )
       .subscribe(
         msg => { /* console.log(`GraphQlService: ${messageType} process: ${msg}`); */ },
@@ -84,18 +85,18 @@ class GraphQlService {
     };
   }
 
-    /**
-   * Verify the message if the request is valid.
-   * @param {any} request request message
-   * @returns { Rx.Observable< []{request: any, failedValidations: [] }>}  Observable object that containg the original request and the failed validations
-   */
+  /**
+ * Verify the message if the request is valid.
+ * @param {any} request request message
+ * @returns { Rx.Observable< []{request: any, failedValidations: [] }>}  Observable object that containg the original request and the failed validations
+ */
   verifyRequest$(request) {
     return Rx.of(request).pipe(
       //decode and verify the jwt token
       mergeMap(message =>
         Rx.of(message).pipe(
           map(message => ({ authToken: jsonwebtoken.verify(message.data.jwt, jwtPublicKey), message, failedValidations: [] }))
-          ,catchError(err =>
+          , catchError(err =>
             helloWorld.errorHandler$(err).pipe(
               map(response => ({
                 errorResponse: { response, correlationId: message.id, replyTo: message.attributes.replyTo },
@@ -109,20 +110,20 @@ class GraphQlService {
     )
   }
 
- /**
-  * 
-  * @param {any} msg Object with data necessary  to send response
-  */
- sendResponseBack$(msg) {
-   return Rx.of(msg).pipe(mergeMap(
-    ({ response, correlationId, replyTo }) =>
-      replyTo
-        ? broker.send$(replyTo, "sales-gateway.graphql.Query.response", response, {
+  /**
+   * 
+   * @param {any} msg Object with data necessary  to send response
+   */
+  sendResponseBack$(msg) {
+    return Rx.of(msg).pipe(mergeMap(
+      ({ response, correlationId, replyTo }) =>
+        replyTo
+          ? broker.send$(replyTo, "sales-gateway.graphql.Query.response", response, {
             correlationId
           })
-        : Rx.of(undefined)
-  ));
-}
+          : Rx.of(undefined)
+    ));
+  }
 
   stop$() {
     Rx.from(this.subscriptions).pipe(
@@ -144,31 +145,44 @@ class GraphQlService {
   getSubscriptionDescriptors() {
     console.log("GraphQl Service starting ...");
     return [
-      //Sample incoming request, please remove
+
       {
         aggregateType: "CivicaCard",
-        messageType: "salesgateway.graphql.query.getReadCardSecondAuthToken"
+        messageType: "salesgateway.graphql.query.CivicaCardReloadConversation"
       },
       {
         aggregateType: "CivicaCard",
-        messageType: "salesgateway.graphql.query.getReadCardApduCommands"
+        messageType: "salesgateway.graphql.mutation.startCivicaCardReloadConversation"
       },
       {
         aggregateType: "CivicaCard",
-        messageType: "salesgateway.graphql.query.extractReadCardData"
+        messageType: "salesgateway.graphql.mutation.generateCivicaCardReloadSecondAuthToken"
       },
-      {
-        aggregateType: "CivicaCard",
-        messageType: "salesgateway.graphql.query.getCardReloadInfo"
-      },
-      {
-        aggregateType: "CivicaCard",
-        messageType: "salesgateway.graphql.query.extractReadWriteCardData"
-      },
-      {
-        aggregateType: "CivicaCard",
-        messageType: "salesgateway.graphql.query.getConversation"
-      }
+
+      // {
+      //   aggregateType: "CivicaCard",
+      //   messageType: "salesgateway.graphql.query.getReadCardSecondAuthToken"
+      // },
+      // {
+      //   aggregateType: "CivicaCard",
+      //   messageType: "salesgateway.graphql.query.getReadCardApduCommands"
+      // },
+      // {
+      //   aggregateType: "CivicaCard",
+      //   messageType: "salesgateway.graphql.query.extractReadCardData"
+      // },
+      // {
+      //   aggregateType: "CivicaCard",
+      //   messageType: "salesgateway.graphql.query.getCardReloadInfo"
+      // },
+      // {
+      //   aggregateType: "CivicaCard",
+      //   messageType: "salesgateway.graphql.query.extractReadWriteCardData"
+      // },
+      // {
+      //   aggregateType: "CivicaCard",
+      //   messageType: "salesgateway.graphql.query.getConversation"
+      // }
     ];
   }
 
@@ -176,37 +190,51 @@ class GraphQlService {
   /**
    * returns a map that assocs GraphQL request with its processor
    */
-  generateFunctionMap() {    
+  generateFunctionMap() {
     return {
-      //Sample incoming request, please remove
-      "salesgateway.graphql.query.getReadCardSecondAuthToken": {
-        fn: civicaCard.getReadCardSecondAuthToken$,
-        obj: civicaCard
+
+      "salesgateway.graphql.query.CivicaCardReloadConversation": {
+        fn: civicaCardCQRS.getCivicaCardReloadConversation$,
+        obj: civicaCardCQRS
       },
-      "salesgateway.graphql.query.getReaderKey": {
-        fn: civicaCard.getReaderKey$,
-        obj: civicaCard
+      "salesgateway.graphql.mutation.startCivicaCardReloadConversation": {
+        fn: civicaCardCQRS.startCivicaCardReloadConversation$,
+        obj: civicaCardCQRS
       },
-      "salesgateway.graphql.query.getReadCardApduCommands": {
-        fn: civicaCard.getReadCardApduCommands$,
-        obj: civicaCard
+      "salesgateway.graphql.mutation.generateCivicaCardReloadSecondAuthToken": {
+        fn: civicaCardCQRS.generateCivicaCardReloadSecondAuthToken$,
+        obj: civicaCardCQRS
       },
-      "salesgateway.graphql.query.extractReadCardData": {
-        fn: civicaCard.extractReadCardData$,
-        obj: civicaCard
-      },
-      "salesgateway.graphql.query.getCardReloadInfo": {
-        fn: civicaCard.getCardReloadInfo$,
-        obj: civicaCard
-      },
-      "salesgateway.graphql.query.extractReadWriteCardData": {
-        fn: civicaCard.extractReadWriteCardData$,
-        obj: civicaCard
-      },
-      "salesgateway.graphql.query.getConversation": {
-        fn: civicaCard.getConversation$,
-        obj: civicaCard
-      },
+
+
+      // "salesgateway.graphql.query.getReadCardSecondAuthToken": {
+      //   fn: civicaCard.getReadCardSecondAuthToken$,
+      //   obj: civicaCard
+      // },
+      // "salesgateway.graphql.query.getReaderKey": {
+      //   fn: civicaCard.getReaderKey$,
+      //   obj: civicaCard
+      // },
+      // "salesgateway.graphql.query.getReadCardApduCommands": {
+      //   fn: civicaCard.getReadCardApduCommands$,
+      //   obj: civicaCard
+      // },
+      // "salesgateway.graphql.query.extractReadCardData": {
+      //   fn: civicaCard.extractReadCardData$,
+      //   obj: civicaCard
+      // },
+      // "salesgateway.graphql.query.getCardReloadInfo": {
+      //   fn: civicaCard.getCardReloadInfo$,
+      //   obj: civicaCard
+      // },
+      // "salesgateway.graphql.query.extractReadWriteCardData": {
+      //   fn: civicaCard.extractReadWriteCardData$,
+      //   obj: civicaCard
+      // },
+      // "salesgateway.graphql.query.getConversation": {
+      //   fn: civicaCard.getConversation$,
+      //   obj: civicaCard
+      // },
     };
   }
 }

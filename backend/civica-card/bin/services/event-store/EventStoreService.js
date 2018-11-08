@@ -1,7 +1,6 @@
 "use strict";
 const Rx = require("rxjs");
 const eventSourcing = require("../../tools/EventSourcing")();
-const helloWorld = require("../../domain/HelloWorld")();
 const { map, switchMap, filter, mergeMap, concatMap } = require('rxjs/operators');
 /**
  * Singleton instance
@@ -123,10 +122,10 @@ class EventStoreService {
     return {
 
       //Sample for handling event-sourcing events, please remove
-      HelloWorldEvent: {
-        fn: helloWorld.handleHelloWorld$,
-        obj: helloWorld
-      },
+      // HelloWorldEvent: {
+      //   fn: helloWorld.handleHelloWorld$,
+      //   obj: helloWorld
+      // },
 
     };
   }
@@ -138,10 +137,10 @@ class EventStoreService {
     return [
 
       //Sample for assoc events and aggregates, please remove
-      {
-        aggregateType: "HelloWorld",
-        eventType: "HelloWorldEvent"
-      },
+      // {
+      //   aggregateType: "HelloWorld",
+      //   eventType: "HelloWorldEvent"
+      // },
 
     ]
   }

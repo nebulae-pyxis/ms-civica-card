@@ -4,7 +4,7 @@ const Rx = require('rxjs');
 const { map, mergeMap, catchError, tap, mapTo } = require('rxjs/operators');
 const { SamClusterClient } = require('../tools/mifare');
 const uuidv4 = require('uuid/v4');
-const { CustomError, DefaultError } = require('../tools/customError');
+
 
 let instance;
 
@@ -20,55 +20,6 @@ class CivicaCard {
     });
   }
 
-  //#region  mappers for API responses
-  errorHandler$(err) {
-    return Rx.of(err).pipe(
-      map(err => {
-        const exception = { data: null, result: {} };
-        const isCustomError = err instanceof CustomError;
-        if (!isCustomError) {
-          err = new DefaultError(err);
-        }
-        exception.result = {
-          code: err.code,
-          error: { ...err.getContent() }
-        };
-        return exception;
-      })
-    );
-  }
-
-  buildSuccessResponse$(rawRespponse) {
-    return Rx.of(rawRespponse).pipe(
-      map(resp => {
-        return {
-          data: resp,
-          result: {
-            code: 200
-          }
-        };
-      })
-    );
-  }
-
-  handleError$(err) {
-    return Rx.of(err).pipe(
-      map(err => {
-        const exception = { data: null, result: {} };
-        const isCustomError = err instanceof CustomError;
-        if (!isCustomError) {
-          err = new DefaultError(err);
-        }
-        exception.result = {
-          code: err.code,
-          error: { ...err.getContent() }
-        };
-        return exception;
-      })
-    );
-  }
-
-  //#endregion
 
   //#region  mappers for API responses
   getReadCardSecondAuthToken$({ root, args, jwt }, authToken) {

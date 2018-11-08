@@ -4,7 +4,14 @@ const expect = require('chai').expect
 const Rx = require('rxjs');
 const uuidv4 = require('uuid/v4');
 
-const {SamClusterClient} = require('../../bin/tools/mifare');
+const { connectReader$,
+    sendApduCommandToCard$,
+    readCard$,
+    requestUid$,
+    requestCardFirstStepAuth$,
+    requestCardSecondStepAuth$ } = require('./full_sale_cycle_helper');
+
+const { SamClusterClient } = require('../../bin/tools/mifare');
 let samClusterClient = undefined;
 
 const {
@@ -74,12 +81,9 @@ describe('READ Card', function () {
                 filter(s => s.state == 34),
                 //filter(s => s.state & pcscReader.SCARD_STATE_PRESENT),
                 tap(s => { atr = s.atr; console.log(`ATR = ${JSON.stringify(s.atr)}`) }),
-
                 mergeMap(s => connectReader$(pcscReader)),
                 tap(result => console.log(`  connectReader: ${JSON.stringify(result)} `)),
-
                 mergeMap(({ reader, protocol }) => readCard$({ reader, protocol })),
-
                 first(),
             ).subscribe(
                 (evt) => console.log(evt),
@@ -143,11 +147,11 @@ const readCard$ = ({ reader, protocol }) => {
             delay(500),
             mergeMap((uid) => requestCardFirstStepAuth$({ reader, protocol })
                 .pipe(
-                    mergeMap(cardFirstSteptAuthChallenge => samClusterClient.requestSamFirstStepAuth$({ uid, cardFirstSteptAuthChallenge },transaction,samClusterClient.KEY_DEBIT)),
+                    mergeMap(cardFirstSteptAuthChallenge => samClusterClient.requestSamFirstStepAuth$({ uid, cardFirstSteptAuthChallenge }, transaction, samClusterClient.KEY_DEBIT)),
                     tap(samFirstStepAuthResponse => console.log(`  samFirstStepAuthResponso: SamId:${samFirstStepAuthResponse.samId}, secondStepSamToken: ${samFirstStepAuthResponse.secondStepSamToken.toString('hex')}`)),
                     tap(samFirstStepAuthResponse => transaction.samId = samFirstStepAuthResponse.samId),
-                    mergeMap(samFirstStepAuthResponse => requestCardSecondStepAuth$({secondStepSamToken: samFirstStepAuthResponse.secondStepSamToken, reader, protocol })),
-                    mergeMap(cardSecondStepAuthConfirmation =>  samClusterClient.requestSamSecondStepAuth$(cardSecondStepAuthConfirmation,transaction))
+                    mergeMap(samFirstStepAuthResponse => requestCardSecondStepAuth$({ secondStepSamToken: samFirstStepAuthResponse.secondStepSamToken, reader, protocol })),
+                    mergeMap(cardSecondStepAuthConfirmation => samClusterClient.requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, transaction))
                 )
             ),
             //tap(result => console.log(`  requestFirstStepAuth: ${result.toString('hex')} `))
@@ -178,13 +182,13 @@ const requestCardFirstStepAuth$ = ({ reader, protocol }) => {
 
 const requestCardSecondStepAuth$ = ({ secondStepSamToken, reader, protocol }) => {
     // 0x72 + 32 bytes del requestCardSecondStepAuth
-    const apduBuffer = Buffer.concat( [Buffer.from([0x72]), secondStepSamToken.slice(0,-2)] );    
+    const apduBuffer = Buffer.concat([Buffer.from([0x72]), secondStepSamToken.slice(0, -2)]);
     //const apduBuffer = Buffer.concat( [Buffer.from([0x72]), Buffer.from([0x00,0x00,0x00,0x00])] );    
     const apduByteArray = Array.from(apduBuffer);
-    
+
     return sendApduCommandToCard$({ reader, protocol, apdu: apduByteArray, resLen: 40 })
-        .pipe( 
-            map(respBuffer => respBuffer.slice(1, respBuffer.length)),          
+        .pipe(
+            map(respBuffer => respBuffer.slice(1, respBuffer.length)),
             map(respBuffer => respBuffer.toString('hex')),
             tap(cardSecondStepAuthConfirmation => console.log(`cardSecondStepAuthConfirmation: ${cardSecondStepAuthConfirmation}`))
         );

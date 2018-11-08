@@ -3,6 +3,10 @@ const PubSub = require("graphql-subscriptions").PubSub;
 const pubsub = new PubSub();
 const Rx = require("rxjs");
 const broker = require("../../broker/BrokerFactory")();
+const RoleValidator = require('../../tools/RoleValidator');
+
+const INTERNAL_SERVER_ERROR_CODE = 18001;
+const USERS_PERMISSION_DENIED_ERROR_CODE = 18002;
 
 function getResponseFromBackEnd$(response) {
     return Rx.Observable.of(response)
@@ -24,99 +28,35 @@ module.exports = {
     //// QUERY ///////
 
     Query: {
-        getReadCardSeconduthToken(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.getReadCardSeconduthToken",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        getReaderKey(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.getReaderKey",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        getReadCardApduCommands(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.getReadCardApduCommands",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        extractReadCardData(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.extractReadCardData",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        getCardReloadInfo(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.getCardReloadInfo",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        extractReadWriteCardData(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.extractReadWriteCardData",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        },
-        getConversation(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.query.getConversation",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
+        CivicaCardReloadConversation(root, args, context) {
+            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'CivicaCardReloadConversation', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])                
+                .switchMapTo(
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.query.CivicaCardReloadConversation", { root, args, jwt: context.encodedToken }, 500)
+                        .mergeMap(response => getResponseFromBackEnd$(response))
+                ).toPromise();
         },
 
     },
 
     //// MUTATIONS ///////
     Mutation: {
-        abortCardReload(root, args, context) {
-            return broker
-                .forwardAndGetReply$(
-                    "CivicaCard",
-                    "sales-gateway.graphql.mutation.abortCardReload",
-                    { root, args, jwt: context.encodedToken },
-                    2000
-                )
-                .mergeMap(response => getResponseFromBackEnd$(response))
-                .toPromise();
-        }
+        startCivicaCardReloadConversation(root, args, context) {
+            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'startCivicaCardReloadConversation', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
+                .mergeMap(() =>
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.startCivicaCardReloadConversation", { root, args, jwt: context.encodedToken }, 500)
+                        .mergeMap(response => getResponseFromBackEnd$(response))
+                ).toPromise();
+        },
+
+        generateCivicaCardReloadSecondAuthToken(root, args, context) {
+            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'generateCivicaCardReloadSecondAuthToken', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
+                .mergeMap(() =>
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadSecondAuthToken", { root, args, jwt: context.encodedToken }, 1000)
+                        .mergeMap(response => getResponseFromBackEnd$(response))
+                ).toPromise();
+        },
+
+
     },
 };
 
@@ -168,4 +108,89 @@ eventDescriptors.forEach(descriptor => {
         );
 });
 
+
+
+
+
+
+// Query: {
+//     getReadCardSeconduthToken(root, args, context) {
+//         return broker
+//             .forwardAndGetReply$(
+//                 "CivicaCard",
+//                 "sales-gateway.graphql.query.getReadCardSeconduthToken",
+//                 { root, args, jwt: context.encodedToken },
+//                 2000
+//             )
+//             .mergeMap(response => getResponseFromBackEnd$(response))
+//             .toPromise();
+//     },
+//     getReaderKey(root, args, context) {
+//         return broker
+//             .forwardAndGetReply$(
+//                 "CivicaCard",
+//                 "sales-gateway.graphql.query.getReaderKey",
+//                 { root, args, jwt: context.encodedToken },
+//                 2000
+//             )
+//             .mergeMap(response => getResponseFromBackEnd$(response))
+//             .toPromise();
+//     },
+//     getReadCardApduCommands(root, args, context) {
+//         return broker
+//             .forwardAndGetReply$(
+//                 "CivicaCard",
+//                 "sales-gateway.graphql.query.getReadCardApduCommands",
+//                 { root, args, jwt: context.encodedToken },
+//                 2000
+//             )
+//             .mergeMap(response => getResponseFromBackEnd$(response))
+//             .toPromise();
+//     },
+//     extractReadCardData(root, args, context) {
+//         return broker
+//             .forwardAndGetReply$(
+//                 "CivicaCard",
+//                 "sales-gateway.graphql.query.extractReadCardData",
+//                 { root, args, jwt: context.encodedToken },
+//                 2000
+//             )
+//             .mergeMap(response => getResponseFromBackEnd$(response))
+//             .toPromise();
+//     },
+//     getCardReloadInfo(root, args, context) {
+//         return broker
+//             .forwardAndGetReply$(
+//                 "CivicaCard",
+//                 "sales-gateway.graphql.query.getCardReloadInfo",
+//                 { root, args, jwt: context.encodedToken },
+//                 2000
+//             )
+//             .mergeMap(response => getResponseFromBackEnd$(response))
+//             .toPromise();
+//     },
+//     extractReadWriteCardData(root, args, context) {
+//         return broker
+//             .forwardAndGetReply$(
+//                 "CivicaCard",
+//                 "sales-gateway.graphql.query.extractReadWriteCardData",
+//                 { root, args, jwt: context.encodedToken },
+//                 2000
+//             )
+//             .mergeMap(response => getResponseFromBackEnd$(response))
+//             .toPromise();
+//     },
+//     getConversation(root, args, context) {
+//         return broker
+//             .forwardAndGetReply$(
+//                 "CivicaCard",
+//                 "sales-gateway.graphql.query.getConversation",
+//                 { root, args, jwt: context.encodedToken },
+//                 2000
+//             )
+//             .mergeMap(response => getResponseFromBackEnd$(response))
+//             .toPromise();
+//     },
+
+// },
 
