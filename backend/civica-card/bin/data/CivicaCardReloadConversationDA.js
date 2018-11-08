@@ -35,7 +35,7 @@ class CivicaCardReloadConversationDA {
    * Finds a CivicaCardReloadConversation by its id
    * @param string id 
    */
-  static create$({ id, userJwt, userName, posId, posUser, posTerminal, posLocation, readerType, cardType }) {
+  static create$({ id, userJwt, userName, posId, posUser, posTerminal, posLocation, readerType, cardType, cardUid }) {
     const collection = mongoDB.db.collection(CollectionName);
 
     const conversation = {
@@ -53,6 +53,7 @@ class CivicaCardReloadConversationDA {
       },
       readerType,
       cardType,
+      cardUid,
       initialCard: {
 
       },

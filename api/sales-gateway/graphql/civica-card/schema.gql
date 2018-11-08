@@ -13,7 +13,8 @@ type CivicaCardReloadConversation {
 
   operationState: String,
   readerType: String,
-  cardType: String
+  cardType: String,
+  cardUid: String,
   # initCardData: CardData,
   # initCardState: String,
   # reloadValue: Int,
@@ -58,11 +59,11 @@ type Mutation {
     posTerminal: String,
     posLocation: [Float],
     readerType: String,
-    cardType: String): CivicaCardReloadConversation @requireAuth
+    cardType: String,
+    cardUid: String): CivicaCardReloadConversation @requireAuth
 
   generateCivicaCardReloadSecondAuthToken(
     conversationId: String,
-    cardUid: String,
     cardChallenge: String,
     cardRole: String
   ): CivicaCardReloadSecondAuthToken @requireAuth

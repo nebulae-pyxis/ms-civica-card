@@ -46,6 +46,11 @@ let jwt;
 let civicaCardReloadConversationId = uuidv4();
 let civicaCardReloadConversation;
 
+let atr;
+let uid;
+let reader;
+let protocol;
+
 /**
  * HARDCODED ENTITIES
  */
@@ -79,7 +84,41 @@ describe('Prepare', function () {
                 () => done()
             );
         });
+
+        it('wait for card', function (done) {
+            this.timeout(10000);
+            Rx.fromEvent(pcscReader, 'status').pipe(
+                //tap(s => console.log(`JSON=${JSON.stringify(s)} === KEYS=${Object.keys(pcscReader)}`)),
+                filter(s => s.state == 34),
+                //filter(s => s.state & pcscReader.SCARD_STATE_PRESENT),
+                tap(s => { atr = s.atr; console.log(`ATR = ${JSON.stringify(s.atr)}`) }),
+                mergeMap(s => connectReader$(pcscReader)),
+                first(),
+            ).subscribe(
+                (evt) => {
+                    reader = evt.reader; protocol = evt.protocol;
+                    console.log(`  connectReader: ${JSON.stringify(evt)} `);
+                },
+                (error) => done(error),
+                () => done()
+            );
+        });
+
+        it('read card uid', function (done) {
+            this.timeout(1000);
+            requestUid$({ reader, protocol })
+                .subscribe(
+                    (evt) => {
+                        console.log(`  card uid: ${evt} `);
+                        uid = evt;
+                    },
+                    (error) => done(error),
+                    () => done()
+                );
+        });
     });
+
+
 
 
     describe('JWT', function () {
@@ -170,6 +209,7 @@ describe('CivicaCardReloadConversation', function () {
             );
         });
 
+
         // startCivicaCardReloadConversation(id: "${civicaCardReloadConversation_start_args.id}", userJwt: "${civicaCardReloadConversation_start_args.jwt}", userName: "${civicaCardReloadConversation_start_args.userName}", posId: "${civicaCardReloadConversation_start_args.posId}", posUser: "${civicaCardReloadConversation_start_args.posUser}", posTerminal: "${civicaCardReloadConversation_start_args.posTerminal}", posLocation: ${civicaCardReloadConversation_start_args.posLocation}", readerType: "${civicaCardReloadConversation_start_args.readerType}", cardType: "${civicaCardReloadConversation_start_args.cardType}"){
         it('Start conversation', function (done) {
             const mutation = `
@@ -182,6 +222,7 @@ describe('CivicaCardReloadConversation', function () {
                     posLocation: [${civicaCardReloadConversation_start_args.posLocation}], 
                     readerType: "${civicaCardReloadConversation_start_args.readerType}", 
                     cardType: "${civicaCardReloadConversation_start_args.cardType}"
+                    cardUid: "${uid}"
                     ){
                   id
                 }
@@ -233,46 +274,13 @@ describe('CivicaCardReloadConversation', function () {
 
 
 describe('READ Card', function () {
-    let atr;
-    let uid;
-    let reader;
-    let protocol;
+
     let cardSecondStepAuthConfirmation;
 
     let readApduCommands;
 
     describe('Auth Card', function () {
-        it('wait for card', function (done) {
-            this.timeout(10000);
-            Rx.fromEvent(pcscReader, 'status').pipe(
-                //tap(s => console.log(`JSON=${JSON.stringify(s)} === KEYS=${Object.keys(pcscReader)}`)),
-                filter(s => s.state == 34),
-                //filter(s => s.state & pcscReader.SCARD_STATE_PRESENT),
-                tap(s => { atr = s.atr; console.log(`ATR = ${JSON.stringify(s.atr)}`) }),
-                mergeMap(s => connectReader$(pcscReader)),
-                first(),
-            ).subscribe(
-                (evt) => {
-                    reader = evt.reader; protocol = evt.protocol;
-                    console.log(`  connectReader: ${JSON.stringify(evt)} `);
-                },
-                (error) => done(error),
-                () => done()
-            );
-        });
 
-        it('read card uid', function (done) {
-            this.timeout(1000);
-            requestUid$({ reader, protocol })
-                .subscribe(
-                    (evt) => {
-                        console.log(`  card uid: ${evt} `);
-                        uid = evt;
-                    },
-                    (error) => done(error),
-                    () => done()
-                );
-        });
 
         it('auth card', function (done) {
             this.timeout(10000);
@@ -301,7 +309,7 @@ describe('READ Card', function () {
     describe('Read Card', function () {
         it('generateCivicaCardReloadReadApduCommands', function (done) {
             this.timeout(1000);
-            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation,'PUBLIC')
+            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, 'PUBLIC')
                 .subscribe(
                     (evt) => {
                         console.log(`  readApduCommands: ${evt} `);
@@ -319,10 +327,11 @@ const generateCivicaCardReloadSecondAuthToken$ = (cardUid, cardChallenge, cardRo
     return Rx.from(
         gqlClient.query(`
         mutation {
-            generateCivicaCardReloadSecondAuthToken(conversationId: "${civicaCardReloadConversationId}",cardUid: "${cardUid}",cardChallenge: "${cardChallenge}",cardRole: "${cardRole}",){token}
+            generateCivicaCardReloadSecondAuthToken(conversationId: "${civicaCardReloadConversationId}",cardChallenge: "${cardChallenge}",cardRole: "${cardRole}",){token}
           }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
     ).pipe(
         first(),
+        tap((body) => console.log(`generateCivicaCardReloadSecondAuthToken: ${JSON.stringify(body)}`)),
         tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken).not.to.be.null),
         tap((body) => expect(body.errors).to.be.undefined),
         tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
@@ -339,7 +348,7 @@ const generateCivicaCardReloadReadApduCommands$ = (cardSecondStepAuthConfirmatio
     ).pipe(
         first(),
         tap((body) => console.log(`generateCivicaCardReloadReadApduCommands: ${JSON.stringify(body)}`)),
-        tap((body) => expect(body.data.generateCivicaCardReloadReadApduCommands).not.to.be.null),        
+        tap((body) => expect(body.data.generateCivicaCardReloadReadApduCommands).not.to.be.null),
         //tap((body) => expect(body.errors).to.be.undefined),
         //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
         //map((body) => body.data.generateCivicaCardReloadSecondAuthToken.token)        

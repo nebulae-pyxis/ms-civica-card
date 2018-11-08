@@ -69,7 +69,8 @@ class CivicaCardCQRS {
             posTerminal: conversation.pos.terminal,
             posLocation: conversation.pos.location,
             readerType: conversation.readerType,
-            cardType: conversation.cardType
+            cardType: conversation.cardType,
+            cardUid: conversation.cardUid
         };
     }
 
@@ -78,13 +79,12 @@ class CivicaCardCQRS {
     /**
     * generates CivicaCard SecondAuthToken using the SAM cluster
     */
-    generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {
-        console.log(`¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢ ${JSON.stringify(args)}`);
+    generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {        
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
             mergeMap(conversation => {
                 return this.samClusterClient.requestSamFirstStepAuth$(
-                    { uid: args.cardUid, cardFirstSteptAuthChallenge: args.cardChallenge },
+                    { uid: conversation.cardUid, cardFirstSteptAuthChallenge: args.cardChallenge },
                     { appId: `civica-card_be_civicacardcqrs_${this.id}`, transactionId: conversation._id },
                     args.cardRole == 'DEBIT' ? this.samClusterClient.KEY_DEBIT : args.cardRole == 'CREDIT' ? this.samClusterClient.KEY_CREDIT : args.cardRole == 'PUBLIC' ? this.samClusterClient.KEY_PUBLIC : 0)
                     .pipe(map(samFirstStepAuthResponse => ({ samFirstStepAuthResponse, conversation })));
