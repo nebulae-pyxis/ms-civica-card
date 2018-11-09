@@ -100,8 +100,8 @@ class SamClusterClient {
                 keyEnc : response.data.slice(0,16),
                 keyMac : response.data.slice(16,32),
                 ti : response.data.slice(32,36),
-                readCount : response.data.readInt16BE(36),
-                writeCount : response.data.readInt16BE(38)
+                readCount : 0,//response.data.readUInt16BE(36),
+                writeCount : 0// response.data.readUInt16BE(38)
              }))
         );
     }

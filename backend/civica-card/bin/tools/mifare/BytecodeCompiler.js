@@ -1,7 +1,7 @@
 'use strict'
 
 const Rx = require("rxjs");
-const { tap, filter, toArray, concatMap } = require('rxjs/operators');
+const { tap, filter, toArray, concatMap, mergeMap, map } = require('rxjs/operators');
 const { SamClusterClient } = require('../../tools/mifare/');
 const {
     CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
@@ -33,9 +33,13 @@ class BytecodeCompiler {
 
     compileSl3BleHighLevel$(bytecode, { conversation, cardSecondStepAuthConfirmation }) {
         const aesCypher = new AesCypher();
-        return Rx.combineLatest(
-            this.samClusterClient.requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, { transactionId: conversation._id, samId: conversation.currentCardAuth.samId }),
-            Rx.from(bytecode.split('\n')).pipe(filter(ln => ln.trim()!==''))
+
+        return this.samClusterClient.requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, { transactionId: conversation._id, samId: conversation.currentCardAuth.samId }).pipe(
+            mergeMap(samAuthObj => {
+                return Rx.from(bytecode.split('\n')).pipe(filter(ln => ln.trim() !== '')).pipe(
+                    map(bytecodeLine => ([samAuthObj, bytecodeLine]))
+                );
+            })
         ).pipe(
             concatMap(([samAuthObj, bytecodeLine]) => this.compileLineSl3BleHighLevel$(bytecodeLine, samAuthObj, aesCypher)),
             toArray()
@@ -60,10 +64,11 @@ class BytecodeCompiler {
     compileCRDBSl3BleHighLevel$(order, [blockNumber, blockCount], samAuthObj, aesCypher) {
         return Rx.Observable.create(observer => {
             const readCmd_buff = Buffer.alloc(1, 0x33);
-            //const readCounter_buff = Buffer.alloc(1, samAuthObj.readCount);
-            const readCounter_buff = Buffer.alloc(1, 0);
+            const readCounter_buff = Buffer.alloc(2, 0);
+            readCounter_buff.writeUInt16LE(samAuthObj.readCount, 0);
             const ti_buff = Buffer.from(samAuthObj.ti);
-            const blockNumber_buff = Buffer.alloc(1, parseInt(blockNumber));
+            const blockNumber_buff = Buffer.alloc(2);//Buffer.alloc(1, parseInt(blockNumber));
+            blockNumber_buff.writeUInt16LE(parseInt(blockNumber), 0);
             const blockCount_buff = Buffer.alloc(1, parseInt(blockCount));
 
             const cmacInput_buff = Buffer.concat([readCmd_buff, readCounter_buff, ti_buff, blockNumber_buff, blockCount_buff]);
@@ -77,7 +82,8 @@ class BytecodeCompiler {
                 }
             }
 
-            samAuthObj.readCount = samAuthObj.readCoun + 1;
+            samAuthObj.readCount += 1;
+            console.log(`[[[[[[[[[[[[[[${samAuthObj.readCount}]]]]]]]]]]]]]]`);
             const binaryCommand = {
                 cmd: Buffer.concat([readCmd_buff, blockNumber_buff, blockCount_buff, Buffer.from(oddDataCmac)]).toString('hex'),
                 order,

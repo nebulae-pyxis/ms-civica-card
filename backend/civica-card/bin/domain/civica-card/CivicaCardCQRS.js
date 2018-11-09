@@ -124,14 +124,7 @@ class CivicaCardCQRS {
             );
     }
 
-
-
-
-
-
-
-
-
+    
     /**
      * process and translate binary commands respone sequence to infer civica card data
      */

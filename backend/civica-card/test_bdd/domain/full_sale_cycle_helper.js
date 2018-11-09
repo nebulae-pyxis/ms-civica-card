@@ -1,5 +1,6 @@
 const Rx = require('rxjs');
 const uuidv4 = require('uuid/v4');
+const expect = require('chai').expect
 
 let samClusterClient = undefined;
 
@@ -39,9 +40,18 @@ const requestUid$ = ({ reader, protocol }) => {
         )
 };
 
-const requestCardFirstStepAuth$ = ({ reader, protocol }) => {
-    const authRol = [0x04, 0x40];//  [40 00] en litle endian
-    return sendApduCommandToCard$({ reader, protocol, apdu: [0x70, ...authRol, 0x00], resLen: 40 })
+const readBlockData$ = ({ reader, protocol, apdu }) => {
+    return sendApduCommandToCard$({ reader, protocol, apdu, resLen: 1024 })
+        .pipe(
+            //tap(resp => console.log(`  readBlockData_raw: ${resp.toString('hex')}`)),
+            //tap(respBuffer => expect(respBuffer[0]).to.be.equals(0x90)),
+            //map(respBuffer => respBuffer.slice(1, respBuffer.length)),
+            map(respBuffer => respBuffer.toString('hex')),
+        )
+};
+
+const requestCardFirstStepAuth$ = ({ reader, protocol, authRol }) => {    
+    return sendApduCommandToCard$({ reader, protocol, apdu: [0x70, ...authRol, 0x00], resLen: 256 })
         .pipe(
             filter(respBuffer => respBuffer[0] == 0x90),
             map(respBuffer => respBuffer.slice(1, respBuffer.length)),
@@ -70,7 +80,8 @@ module.exports = {
     sendApduCommandToCard$,
     requestUid$,
     requestCardFirstStepAuth$,
-    requestCardSecondStepAuth$
+    requestCardSecondStepAuth$,
+    readBlockData$
 }
 
 

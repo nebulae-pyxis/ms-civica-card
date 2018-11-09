@@ -12,7 +12,8 @@ const { connectReader$,
     sendApduCommandToCard$,
     requestUid$,
     requestCardFirstStepAuth$,
-    requestCardSecondStepAuth$ } = require('./full_sale_cycle_helper');
+    requestCardSecondStepAuth$,
+    readBlockData$ } = require('./full_sale_cycle_helper');
 
 const {
     tap,
@@ -23,7 +24,7 @@ const {
     first,
     mapTo,
     mergeMap,
-    reduce
+    concatMap
 } = require('rxjs/operators');
 
 
@@ -287,7 +288,7 @@ describe('READ Card', function () {
 
             Rx.of('').pipe(
                 delay(500),
-                mergeMap(() => requestCardFirstStepAuth$({ reader, protocol })),
+                mergeMap(() => requestCardFirstStepAuth$({ reader, protocol, authRol: [0x04, 0x40] })),
                 mergeMap(cardFirstSteptAuthChallenge => generateCivicaCardReloadSecondAuthToken$(uid, cardFirstSteptAuthChallenge, 'DEBIT')),
                 mergeMap((samFirstStepAuthResponse) => {
                     const secondStepSamToken = Buffer.alloc(samFirstStepAuthResponse.length / 2);
@@ -307,18 +308,43 @@ describe('READ Card', function () {
     });
 
     describe('Read Card', function () {
+        let binaryCommands = [];
         it('generateCivicaCardReloadReadApduCommands', function (done) {
             this.timeout(1000);
-            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, 'PUBLIC')
+            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, 'CIVICA').pipe(
+                mergeMap(binaryCommands => Rx.from(binaryCommands)),
+                concatMap(binaryCommand => {
+                    const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
+                    return readBlockData$({ reader, protocol, apdu: apduByteArray }).pipe(
+                        tap(readerResponse => binaryCommand.resp = readerResponse),
+                        mapTo(binaryCommand)
+
+                    );
+                })
+            ).subscribe(
+                (binaryCommand) => {
+                    console.log(`  binaryCommand: ${JSON.stringify(binaryCommand)} `);
+                    binaryCommands.push(binaryCommand);
+                },
+                (error) => done(error),
+                () => done()
+            );
+        });
+
+
+        it('processCivicaCardReloadReadApduCommandRespones', function (done) {
+            this.timeout(1000);
+            processCivicaCardReloadReadApduCommandRespones$(binaryCommands)
                 .subscribe(
-                    (evt) => {
-                        console.log(`  readApduCommands: ${evt} `);
-                        readApduCommands = evt;
+                    (binaryCommand) => {
+                        console.log(`  binaryCommand: ${JSON.stringify(binaryCommand)} `);
+                        binaryCommands.push(binaryCommand);
                     },
                     (error) => done(error),
                     () => done()
                 );
         });
+
     });
 
 
@@ -345,7 +371,7 @@ const generateCivicaCardReloadReadApduCommands$ = (cardSecondStepAuthConfirmatio
     return Rx.from(
         gqlClient.query(`
         mutation {
-            generateCivicaCardReloadReadApduCommands(conversationId: "${civicaCardReloadConversationId}",cardAuthConfirmationToken: "${cardSecondStepAuthConfirmation}",dataType: "${dataType}"){ order, cmd, resp }
+            generateCivicaCardReloadReadApduCommands(conversationId: "${civicaCardReloadConversationId}",cardAuthConfirmationToken: "${cardSecondStepAuthConfirmation}",dataType: "${dataType}"){ order, cmd, resp, cbc, rbc }
           }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
     ).pipe(
         first(),
@@ -353,10 +379,31 @@ const generateCivicaCardReloadReadApduCommands$ = (cardSecondStepAuthConfirmatio
         tap((body) => expect(body.data.generateCivicaCardReloadReadApduCommands).not.to.be.null),
         //tap((body) => expect(body.errors).to.be.undefined),
         //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
-        //map((body) => body.data.generateCivicaCardReloadSecondAuthToken.token)        
+        map((body) => body.data.generateCivicaCardReloadReadApduCommands)
     )
 }
 
+
+const processCivicaCardReloadReadApduCommandRespones$ = (binaryCommands) => {
+    const mutation = `
+    mutation {
+        processCivicaCardReloadReadApduCommandRespones(conversationId: "${civicaCardReloadConversationId}",
+        commands: [${ binaryCommands.map(
+            bc => "{"+(Object.keys(bc).map(key => `${key}: ${  (typeof bc[key] === 'string' || bc[key] instanceof String) ? `"${bc[key]}"`:`${bc[key]}`}`))+"}"
+            ).join(', ')   }]
+        ){ cardNumber, balance }
+    }`;
+    return Rx.from(
+        gqlClient.query(mutation, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
+    ).pipe(
+        first(),
+        tap((body) => console.log(`processCivicaCardReloadReadApduCommandRespones: ${JSON.stringify(body)}`)),
+        tap((body) => expect(body.data.processCivicaCardReloadReadApduCommandRespones).not.to.be.null),
+        //tap((body) => expect(body.errors).to.be.undefined),
+        //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
+        map((body) => body.data.processCivicaCardReloadReadApduCommandRespones)
+    )
+}
 
 
 /*
