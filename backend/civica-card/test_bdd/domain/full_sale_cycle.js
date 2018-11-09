@@ -276,9 +276,14 @@ describe('CivicaCardReloadConversation', function () {
 
 describe('READ Card', function () {
 
-    let cardSecondStepAuthConfirmation;
+    //const cardRole = 'DEBIT'; const authRol = [0x04, 0x40]; const dataType = 'CIVICA';
+    const cardRole = 'PUBLIC'; const authRol = [0x02, 0x40]; const dataType = 'PUBLIC';
 
+
+    let cardSecondStepAuthConfirmation;
     let readApduCommands;
+
+
 
     describe('Auth Card', function () {
 
@@ -288,8 +293,8 @@ describe('READ Card', function () {
 
             Rx.of('').pipe(
                 delay(500),
-                mergeMap(() => requestCardFirstStepAuth$({ reader, protocol, authRol: [0x04, 0x40] })),
-                mergeMap(cardFirstSteptAuthChallenge => generateCivicaCardReloadSecondAuthToken$(uid, cardFirstSteptAuthChallenge, 'DEBIT')),
+                mergeMap(() => requestCardFirstStepAuth$({ reader, protocol, authRol })),
+                mergeMap(cardFirstSteptAuthChallenge => generateCivicaCardReloadSecondAuthToken$(uid, cardFirstSteptAuthChallenge, cardRole)),
                 mergeMap((samFirstStepAuthResponse) => {
                     const secondStepSamToken = Buffer.alloc(samFirstStepAuthResponse.length / 2);
                     secondStepSamToken.write(samFirstStepAuthResponse, 0, samFirstStepAuthResponse.length, 'hex');
@@ -311,7 +316,8 @@ describe('READ Card', function () {
         let binaryCommands = [];
         it('generateCivicaCardReloadReadApduCommands', function (done) {
             this.timeout(1000);
-            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, 'CIVICA').pipe(
+            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(
+                
                 mergeMap(binaryCommands => Rx.from(binaryCommands)),
                 concatMap(binaryCommand => {
                     const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
@@ -389,8 +395,8 @@ const processCivicaCardReloadReadApduCommandRespones$ = (binaryCommands) => {
     mutation {
         processCivicaCardReloadReadApduCommandRespones(conversationId: "${civicaCardReloadConversationId}",
         commands: [${ binaryCommands.map(
-            bc => "{"+(Object.keys(bc).map(key => `${key}: ${  (typeof bc[key] === 'string' || bc[key] instanceof String) ? `"${bc[key]}"`:`${bc[key]}`}`))+"}"
-            ).join(', ')   }]
+            bc => "{" + (Object.keys(bc).map(key => `${key}: ${(typeof bc[key] === 'string' || bc[key] instanceof String) ? `"${bc[key]}"` : `${bc[key]}`}`)) + "}"
+        ).join(', ')}]
         ){ cardNumber, balance }
     }`;
     return Rx.from(

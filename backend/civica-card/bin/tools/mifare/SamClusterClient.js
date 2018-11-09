@@ -24,23 +24,20 @@ class SamClusterClient {
 
     /**
      * request a SAM to execute the first step auth
-     * @param {string} card.uid Card uid hexa;  hexa string
-     * @param {string} card.cardFirstSteptAuthChallenge Card First Stept Auth Challenge; hexa string
-     * @param {string} transaction.transactionId trasaction  ID
-     * @param {number} key SAM key to use. SamClusterClient.KEY_*
+     * @param {{ dataDiv, key, cardFirstSteptAuthChallenge }} card.dataDiv Diversified card key, SAM key to use. SamClusterClient.KEY_*, Card First Stept Auth Challenge; hexa string     
+     * @param {string} transaction.transactionId trasaction  ID     
      * @returns 
      */
-    requestSamFirstStepAuth$({ uid, cardFirstSteptAuthChallenge }, { transactionId }, key) {
-        const apduBuffer = Buffer.alloc(32);
+    requestSamFirstStepAuth$({ dataDiv = undefined, cardSecurityLevel = 3, key, cardFirstSteptAuthChallenge }, { transactionId }) {
+        const apduLen = 18 + (dataDiv === undefined ? 0 : dataDiv.length / 2);
 
-        const sl = 3; //SL level
+        const apduBuffer = Buffer.alloc( 5 + apduLen + 1 );
         const keyNo = key;
         const keyVer = 0x00;
         const data = cardFirstSteptAuthChallenge;
-        const dataDiv = uid.length === 8 ? `00000000${uid}` : uid;
 
-        let p1 = 0x01;
-        switch (sl) {
+        let p1 = dataDiv === undefined ? 0x00 : 0x01;
+        switch (cardSecurityLevel) {
             case 0:
                 p1 = p1 + 0x00;
                 break;
@@ -60,17 +57,21 @@ class SamClusterClient {
         apduBuffer[apduBufferIndex++] = 0xA3;
         apduBuffer[apduBufferIndex++] = p1;
         apduBuffer[apduBufferIndex++] = 0x00;
-        apduBuffer[apduBufferIndex++] = 0x1A;//len
+        apduBuffer[apduBufferIndex++] = apduLen;
         apduBuffer[apduBufferIndex++] = keyNo;
-        apduBuffer[apduBufferIndex++] = keyVer;
+        apduBuffer[apduBufferIndex++] = keyVer;  // 1 + 1 + 16 //  1
         apduBuffer.write(data, apduBufferIndex, data.length, 'hex');
         apduBufferIndex += 16;
-        apduBuffer.write(dataDiv, apduBufferIndex, dataDiv.length, 'hex');
-        apduBufferIndex += 8;
+        if (dataDiv !== undefined) {
+            apduBuffer.write(dataDiv, apduBufferIndex, dataDiv.length, 'hex');
+            apduBufferIndex += 8;
+        }
+
         apduBuffer[apduBufferIndex++] = 0x00;
 
         return this.broker.sendAndGetReply$(this.appId, transactionId, undefined, apduBuffer).pipe(
-            map(response => ({ secondStepSamToken: response.data, samId: response.samId }))
+            map(response => ({ secondStepSamToken: response.data, samId: response.samId })),
+            tap(response => console.log(JSON.stringify(response)))
         );
     };
 
@@ -80,7 +81,7 @@ class SamClusterClient {
      * @param {string} transaction.transactionId trasaction  ID
      * @param {string} transaction.samId Sam id to use
      */
-    requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, {  transactionId, samId }) {
+    requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, { transactionId, samId }) {
         const dataLen = (cardSecondStepAuthConfirmation.length / 2);
         const apduBuffer = Buffer.alloc(6 + dataLen);
         let bufferIndex = 0;
@@ -92,17 +93,17 @@ class SamClusterClient {
         apduBuffer.write(cardSecondStepAuthConfirmation, bufferIndex, cardSecondStepAuthConfirmation.length, 'hex');
         bufferIndex += dataLen;
         apduBuffer[bufferIndex++] = 0x00;
-        
+
 
         return this.broker.sendAndGetReply$(this.appId, transactionId, samId, apduBuffer).pipe(
-            map(response => ({ 
-                raw : response.data.toString('hex'),
-                keyEnc : response.data.slice(0,16),
-                keyMac : response.data.slice(16,32),
-                ti : response.data.slice(32,36),
-                readCount : 0,//response.data.readUInt16BE(36),
-                writeCount : 0// response.data.readUInt16BE(38)
-             }))
+            map(response => ({
+                raw: response.data.toString('hex'),
+                keyEnc: response.data.slice(0, 16),
+                keyMac: response.data.slice(16, 32),
+                ti: response.data.slice(32, 36),
+                readCount: 0,//response.data.readUInt16BE(36),
+                writeCount: 0// response.data.readUInt16BE(38)
+            }))
         );
     }
 

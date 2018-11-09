@@ -23,7 +23,7 @@ class BytecodeCompiler {
         switch (cardType) {
             case 'SL3':
                 switch (readerType) {
-                    case 'BLE_HIGH_LEVEL': return this.compileSl3BleHighLevel$(bytecode, ops);
+                    case 'BLE_HIGH_LEVEL': return this.compileSl3HighLevel$(bytecode, ops);
                     default: throw new Error(`invalid readerType${readerType}`);
                 }
             default: throw new Error(`invalid cardType${cardType}`);
@@ -31,7 +31,7 @@ class BytecodeCompiler {
     }
 
 
-    compileSl3BleHighLevel$(bytecode, { conversation, cardSecondStepAuthConfirmation }) {
+    compileSl3HighLevel$(bytecode, { conversation, cardSecondStepAuthConfirmation }) {
         const aesCypher = new AesCypher();
 
         return this.samClusterClient.requestSamSecondStepAuth$(cardSecondStepAuthConfirmation, { transactionId: conversation._id, samId: conversation.currentCardAuth.samId }).pipe(
@@ -41,17 +41,17 @@ class BytecodeCompiler {
                 );
             })
         ).pipe(
-            concatMap(([samAuthObj, bytecodeLine]) => this.compileLineSl3BleHighLevel$(bytecodeLine, samAuthObj, aesCypher)),
+            concatMap(([samAuthObj, bytecodeLine]) => this.compileLineSl3HighLevel$(bytecodeLine, samAuthObj, aesCypher)),
             toArray()
         );
     }
 
-    compileLineSl3BleHighLevel$(bytecodeLine, samAuthObj, aesCypher) {
+    compileLineSl3HighLevel$(bytecodeLine, samAuthObj, aesCypher) {
         const [order, codeArgs] = bytecodeLine.split(':');
         const [code, ...args] = codeArgs.trim().split(' ');
         switch (code) {
-            case CRDB: return this.compileCRDBSl3BleHighLevel$(order, args, samAuthObj, aesCypher);
-            default: throw new Error(`invalid bytecode line code(${code}) compileLineSl3BleHighLevel`);
+            case CRDB: return this.compileCRDBSl3HighLevel$(order, args, samAuthObj, aesCypher);
+            default: throw new Error(`invalid bytecode line code(${code}) compileLineSl3HighLevel`);
         }
     }
 
@@ -61,7 +61,7 @@ class BytecodeCompiler {
      * @param {*} samAuthObj 
      * @param {AesCypher} aesCypher 
      */
-    compileCRDBSl3BleHighLevel$(order, [blockNumber, blockCount], samAuthObj, aesCypher) {
+    compileCRDBSl3HighLevel$(order, [blockNumber, blockCount], samAuthObj, aesCypher) {
         return Rx.Observable.create(observer => {
             const readCmd_buff = Buffer.alloc(1, 0x33);
             const readCounter_buff = Buffer.alloc(2, 0);
@@ -83,7 +83,6 @@ class BytecodeCompiler {
             }
 
             samAuthObj.readCount += 1;
-            console.log(`[[[[[[[[[[[[[[${samAuthObj.readCount}]]]]]]]]]]]]]]`);
             const binaryCommand = {
                 cmd: Buffer.concat([readCmd_buff, blockNumber_buff, blockCount_buff, Buffer.from(oddDataCmac)]).toString('hex'),
                 order,

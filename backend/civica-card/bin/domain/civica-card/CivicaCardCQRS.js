@@ -4,7 +4,8 @@ const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
 const { CustomError, ENTITY_NOT_FOUND_ERROR_CODE } = require('../../tools/customError');
-const {SamClusterClient,BytecodeCompiler,CivicaCardReadWriteFlow} = require('../../tools/mifare/');
+const { SamClusterClient, BytecodeCompiler, CivicaCardReadWriteFlow } = require('../../tools/mifare/');
+const {getSamAuthKeyAndDiversifiedKey} = require('./CivicaCardTools');
 
 /**
  * Singleton instance
@@ -36,7 +37,10 @@ class CivicaCardCQRS {
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-                catchError(error => GraphqlResponseTools.handleError$(error))
+                catchError(error => {
+                    console.error(error.stack || error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
             );
     }
 
@@ -50,7 +54,10 @@ class CivicaCardCQRS {
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-                catchError(error => GraphqlResponseTools.handleError$(error))
+                catchError(error => {
+                    console.error(error.stack || error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
             );
     }
 
@@ -83,10 +90,9 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
             mergeMap(conversation => {
+                const {key,dataDiv} = getSamAuthKeyAndDiversifiedKey(args.cardRole,conversation.cardUid,this.samClusterClient);
                 return this.samClusterClient.requestSamFirstStepAuth$(
-                    { uid: conversation.cardUid, cardFirstSteptAuthChallenge: args.cardChallenge },
-                    { transactionId: conversation._id },
-                    args.cardRole == 'DEBIT' ? this.samClusterClient.KEY_DEBIT : args.cardRole == 'CREDIT' ? this.samClusterClient.KEY_CREDIT : args.cardRole == 'PUBLIC' ? this.samClusterClient.KEY_PUBLIC : 0)
+                    { dataDiv, key, cardFirstSteptAuthChallenge: args.cardChallenge }, { transactionId: conversation._id })
                     .pipe(map(samFirstStepAuthResponse => ({ samFirstStepAuthResponse, conversation })));
             }
             ),
@@ -96,7 +102,10 @@ class CivicaCardCQRS {
             }),
             map(samFirstStepAuthResponse => ({ token: samFirstStepAuthResponse.secondStepSamToken.toString('hex') })),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-            catchError(error => GraphqlResponseTools.handleError$(error))
+            catchError(error => {
+                console.error(error.stack || error);
+                return GraphqlResponseTools.handleError$(error);
+            })
         );
     }
 
@@ -115,7 +124,7 @@ class CivicaCardCQRS {
                         bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType)
                     }
                 )),
-                mergeMap( ({conversation,bytecode}) => this.bytecodeCompiler.compile$(bytecode,conversation.cardType,conversation.readerType , { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken } )),
+                mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => {
                     console.error(error.stack || error);
@@ -124,7 +133,7 @@ class CivicaCardCQRS {
             );
     }
 
-    
+
     /**
      * process and translate binary commands respone sequence to infer civica card data
      */
