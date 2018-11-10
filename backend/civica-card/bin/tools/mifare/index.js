@@ -1,11 +1,13 @@
 'use strict'
 
 const SamClusterClient = require('./SamClusterClient');
-const BytecodeCompiler = require('./BytecodeCompiler');
+const Compiler = require('./ByteCode/Compiler');
 const CivicaCardReadWriteFlow = require('./CivicaCardReadWriteFlow');
+const BytecodeMifareBindTools = require('./ByteCode/BytecodeMifareBindTools');
 
 module.exports = {
     SamClusterClient,
-    BytecodeCompiler,
-    CivicaCardReadWriteFlow
+    Compiler,
+    CivicaCardReadWriteFlow,
+    BytecodeMifareBindTools,
 }

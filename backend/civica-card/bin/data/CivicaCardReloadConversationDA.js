@@ -55,10 +55,10 @@ class CivicaCardReloadConversationDA {
       cardType,
       cardUid,
       initialCard: {
-
+        data:{}
       },
       finalCard: {
-
+        data:{}
       },
       currentCardAuth: {
 
@@ -76,10 +76,49 @@ class CivicaCardReloadConversationDA {
       { '_id': id },
       { '$set': { 'currentCardAuth.samId': samId } },
       { 'multi': false }
-    )).pipe(      
-      tap(x => {if(x.result.nModified < 1) throw(new Error(`CivicaCardReloadConversation(id:${id}) not found`)); })
+    )).pipe(
+      tap(x => { if (x.result.nModified < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); })
     );
   }
+
+  static setSamAuthObj$(id, samAuthObj) {
+    const collection = mongoDB.db.collection(CollectionName);
+    return Rx.defer(() => collection.update(
+      { '_id': id },
+      {
+        '$set': {
+          'currentCardAuth.samAuthObj': {
+            raw: samAuthObj.raw,
+            keyEnc: samAuthObj.keyEnc.toString('hex'),
+            keyMac: samAuthObj.keyMac.toString('hex'),
+            ti: samAuthObj.ti.toString('hex'),
+            readCount: samAuthObj.readCount,
+            writeCount: samAuthObj.readCount
+          }
+        }
+      },
+      { 'multi': false }
+    )).pipe(
+      tap(x => { if (x.result.nModified < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      mapTo(samAuthObj)
+    );
+  }
+
+  static setInitialCardData$(id, data) {
+    const collection = mongoDB.db.collection(CollectionName);
+    return Rx.defer(() => collection.update(
+      { '_id': id },
+      {
+        '$set': {
+          'initialCard.data': data
+        }
+      },
+      { 'multi': false }
+    )).pipe(
+      tap(x => { if (x.result.nModified < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      mapTo(data)
+    );
+  } 
 
 
 }

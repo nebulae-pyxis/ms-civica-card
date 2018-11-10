@@ -316,15 +316,13 @@ describe('READ Card', function () {
         let binaryCommands = [];
         it('generateCivicaCardReloadReadApduCommands', function (done) {
             this.timeout(1000);
-            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(
-                
+            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(                
                 mergeMap(binaryCommands => Rx.from(binaryCommands)),
                 concatMap(binaryCommand => {
                     const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
                     return readBlockData$({ reader, protocol, apdu: apduByteArray }).pipe(
                         tap(readerResponse => binaryCommand.resp = readerResponse),
                         mapTo(binaryCommand)
-
                     );
                 })
             ).subscribe(

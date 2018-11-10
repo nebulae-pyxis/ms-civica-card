@@ -4,8 +4,8 @@ const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
 const { CustomError, ENTITY_NOT_FOUND_ERROR_CODE } = require('../../tools/customError');
-const { SamClusterClient, BytecodeCompiler, CivicaCardReadWriteFlow } = require('../../tools/mifare/');
-const {getSamAuthKeyAndDiversifiedKey} = require('./CivicaCardTools');
+const { SamClusterClient, Compiler, CivicaCardReadWriteFlow, BytecodeMifareBindTools } = require('../../tools/mifare/');
+const { getSamAuthKeyAndDiversifiedKey } = require('./CivicaCardTools');
 
 /**
  * Singleton instance
@@ -22,7 +22,8 @@ class CivicaCardCQRS {
             const mqttServerUrl = process.env.SAM_CLUSTER_MQTT_CONN_STR;
             const appId = `civica-card_be_civicacardcqrs_${(Math.floor(Math.random() * Math.floor(100)))}`
             this.samClusterClient = new SamClusterClient({ mqttServerUrl, replyTimeout: 2000, appId });
-            this.bytecodeCompiler = new BytecodeCompiler(this.samClusterClient);
+            this.bytecodeCompiler = new Compiler(this.samClusterClient);
+            this.bytecodeMifareBindTools = new BytecodeMifareBindTools();
             observer.next(`samClusterClient connected to ${mqttServerUrl}`);
             observer.complete();
         });
@@ -55,7 +56,7 @@ class CivicaCardCQRS {
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => {
-                    console.error(error.stack || error);
+                    //console.error(error.stack || error);
                     return GraphqlResponseTools.handleError$(error);
                 })
             );
@@ -90,7 +91,7 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
             mergeMap(conversation => {
-                const {key,dataDiv} = getSamAuthKeyAndDiversifiedKey(args.cardRole,conversation.cardUid,this.samClusterClient);
+                const { key, dataDiv } = getSamAuthKeyAndDiversifiedKey(args.cardRole, conversation.cardUid, this.samClusterClient);
                 return this.samClusterClient.requestSamFirstStepAuth$(
                     { dataDiv, key, cardFirstSteptAuthChallenge: args.cardChallenge }, { transactionId: conversation._id })
                     .pipe(map(samFirstStepAuthResponse => ({ samFirstStepAuthResponse, conversation })));
@@ -142,7 +143,15 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                map(c => ({})),
+                mergeMap(conversation =>
+                    this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
+                ),
+                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.initialCard.data)),
+                mergeMap(mifareCard => Rx.forkJoin(
+                    CivicaCardReloadConversationDA.setInitialCardData$(mifareCard),
+                    //CivicaCardReloadConversationDA.setInitialCard
+                )),
+                tap(rawResponse => console.log(`===========================${rawResponse}========================`)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => GraphqlResponseTools.handleError$(error))
             );

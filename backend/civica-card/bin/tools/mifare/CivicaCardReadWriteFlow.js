@@ -2,7 +2,7 @@ const {
     generateByteCode, codeArgs,
     CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
     RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RASE
-} = require('./ByteCode');
+} = require('./ByteCode/ByteCode');
 
 
 class CivicaCardReadWriteFlow {
