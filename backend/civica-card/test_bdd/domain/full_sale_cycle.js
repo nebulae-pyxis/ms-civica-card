@@ -483,7 +483,7 @@ const processCivicaCardReloadReadApduCommandRespones$ = (binaryCommands) => {
         commands: [${ binaryCommands.map(
             bc => "{" + (Object.keys(bc).map(key => `${key}: ${(typeof bc[key] === 'string' || bc[key] instanceof String) ? `"${bc[key]}"` : `${bc[key]}`}`)) + "}"
         ).join(', ')}]
-        ){ cardNumber, balance }
+        ){ identificacionEmpresa,identificacionEmpleado,tipoNumeroDocumento,saldoTarjeta,saldoTarjetaBk,numeroTerminal,formaPagoUsoTransporte,fechaHoraTransaccion,rutaUtilizada,perfilUsuario,rutaAnterior,valorPagoUsoTransporte,secuenciaUsoTrayecto,_saldoTarjeta }
     }`;
     return Rx.from(
         gqlClient.query(mutation, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })

@@ -47,8 +47,21 @@ type BinaryCommand {
 }
 
 type CivicaCardData {
-  cardNumber: Int,
-  balance: Int
+  numeroTarjetaPublico: Int,
+    identificacionEmpresa: Int,
+    identificacionEmpleado: String,
+    tipoNumeroDocumento: String,
+    saldoTarjeta: Int,
+    saldoTarjetaBk: Int,
+    numeroTerminal: Int,
+    formaPagoUsoTransporte: Int,
+    fechaHoraTransaccion: Int,
+    rutaUtilizada: Int,
+    perfilUsuario: Int,
+    rutaAnterior: Int,
+    valorPagoUsoTransporte: Int,
+    secuenciaUsoTrayecto: Int,
+    _saldoTarjeta: Int
 }
 
 type Query{
