@@ -46,6 +46,17 @@ type BinaryCommand {
   rbc: String
 }
 
+input WriteAndReadBinaryCommandsInput {
+  writeBinaryCommands: [BinaryCommandInput],
+  readBinaryCommands:  [BinaryCommandInput],
+}
+
+type WriteAndReadBinaryCommands {
+  writeBinaryCommands: [BinaryCommand],
+  readBinaryCommands: [BinaryCommand],
+}
+
+
 type CivicaCardData {
   numeroTarjetaPublico: Int,
     identificacionEmpresa: Int,
@@ -63,6 +74,28 @@ type CivicaCardData {
     secuenciaUsoTrayecto: Int,
     _saldoTarjeta: Int
 }
+
+type CivicaCardReloadPurchase {
+  granted: Boolean,
+  errorMsg: String,
+  receipt: CivicaCardReloadPurchaseReceipt
+}
+
+type CivicaCardReloadPurchaseReceipt{
+  id: String,
+  timestamp: BigInt,
+
+  reloadValue: Int,
+  cardInitialValue: Int,
+  cardFinalValue: Int,
+  
+  businesId: String,
+  businessName: String,
+  posId: String,
+  posUser: String,
+  posTerminal: String  
+}
+
 
 type Query{
   CivicaCardReloadConversation(id: ID!): CivicaCardReloadConversation @requireAuth
@@ -97,7 +130,22 @@ type Mutation {
     commands: [BinaryCommandInput]  
   ): CivicaCardData  @requireAuth
 
+  purchaseCivicaCardReload(
+    conversationId: String,
+    value: Int
+  ): CivicaCardReloadPurchase  @requireAuth
 
+  generateCivicaCardReloadWriteAndReadApduCommands(
+    conversationId: String,
+    cardAuthConfirmationToken: String,
+    dataType: String
+  ): WriteAndReadBinaryCommands  @requireAuth
+
+
+  processCivicaCardReloadWriteAndReadApduCommandResponses(
+    conversationId: String,
+    commands: WriteAndReadBinaryCommandsInput
+  ): CivicaCardData  @requireAuth
 
 }
 

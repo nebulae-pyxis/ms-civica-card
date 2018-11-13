@@ -168,30 +168,19 @@ class GraphQlService {
         messageType: "salesgateway.graphql.mutation.processCivicaCardReloadReadApduCommandRespones"
       },
 
-      // {
-      //   aggregateType: "CivicaCard",
-      //   messageType: "salesgateway.graphql.query.getReadCardSecondAuthToken"
-      // },
-      // {
-      //   aggregateType: "CivicaCard",
-      //   messageType: "salesgateway.graphql.query.getReadCardApduCommands"
-      // },
-      // {
-      //   aggregateType: "CivicaCard",
-      //   messageType: "salesgateway.graphql.query.extractReadCardData"
-      // },
-      // {
-      //   aggregateType: "CivicaCard",
-      //   messageType: "salesgateway.graphql.query.getCardReloadInfo"
-      // },
-      // {
-      //   aggregateType: "CivicaCard",
-      //   messageType: "salesgateway.graphql.query.extractReadWriteCardData"
-      // },
-      // {
-      //   aggregateType: "CivicaCard",
-      //   messageType: "salesgateway.graphql.query.getConversation"
-      // }
+      {
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.mutation.purchaseCivicaCardReload"
+      },
+      {
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.mutation.generateCivicaCardReloadWriteAndReadApduCommands"
+      },
+      {
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.mutation.processCivicaCardReloadWriteAndReadApduCommandResponses"
+      },
+
     ];
   }
 
@@ -220,6 +209,19 @@ class GraphQlService {
       },
       "salesgateway.graphql.mutation.processCivicaCardReloadReadApduCommandRespones": {
         fn: civicaCardCQRS.processCivicaCardReloadReadApduCommandRespones$,
+        obj: civicaCardCQRS
+      },
+
+      "salesgateway.graphql.mutation.purchaseCivicaCardReload": {
+        fn: civicaCardCQRS.purchaseCivicaCardReload$,
+        obj: civicaCardCQRS
+      },
+      "salesgateway.graphql.mutation.generateCivicaCardReloadWriteAndReadApduCommands": {
+        fn: civicaCardCQRS.generateCivicaCardReloadWriteAndReadApduCommands$,
+        obj: civicaCardCQRS
+      },
+      "salesgateway.graphql.mutation.processCivicaCardReloadWriteAndReadApduCommandResponses": {
+        fn: civicaCardCQRS.processCivicaCardReloadWriteAndReadApduCommandResponses$,
         obj: civicaCardCQRS
       },
     };

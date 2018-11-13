@@ -7,7 +7,7 @@ const { CustomError, ENTITY_NOT_FOUND_ERROR_CODE } = require('../../tools/custom
 const { SamClusterClient, Compiler, BytecodeMifareBindTools } = require('../../tools/mifare/');
 const CivicaCardReadWriteFlow = require('./CivicaCardReadWriteFlow');
 const { getSamAuthKeyAndDiversifiedKey } = require('./CivicaCardTools');
-const CivicaCardDataExtractor= require('./CivicaCardDataExtractor');
+const CivicaCardDataExtractor = require('./CivicaCardDataExtractor');
 
 /**
  * Singleton instance
@@ -154,7 +154,6 @@ class CivicaCardCQRS {
                         mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
                         mergeMap(civicaData => CivicaCardReloadConversationDA.setInitialCardCivicaData$(conversation._id, civicaData))
                     )),
-                tap(rawResponse => console.log(`===========================${JSON.stringify(rawResponse)}========================`)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
             ).pipe(
                 catchError(error => {
@@ -163,6 +162,27 @@ class CivicaCardCQRS {
                 })
             );
     }
+
+
+
+
+
+
+    // purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
+    //     return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+    //         tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+    //         mergeMap(({ samFirstStepAuthResponse, conversation }) => {
+    //             return CivicaCardReloadConversationDA.setSamId$(conversation._id, samFirstStepAuthResponse.samId)
+    //                 .pipe(mapTo(samFirstStepAuthResponse))
+    //         }),
+    //         map(samFirstStepAuthResponse => ({ token: samFirstStepAuthResponse.secondStepSamToken.toString('hex') })),
+    //         mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+    //         catchError(error => {
+    //             console.error(error.stack || error);
+    //             return GraphqlResponseTools.handleError$(error);
+    //         })
+    //     );
+    // }
 
 
 
