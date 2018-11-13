@@ -37,7 +37,29 @@ const mapping = {
         'secuenciaUsoTrayecto': ['NUMBER', 10, 15, 1],
 
         //SECTOR 03: BL 12,13,14
-        
+        'numeroTarjetaDebito': ['NUMBER', 12, 0, 4],
+        'fechaUltimoDesbloqueoTarjeta': ['NUMBER', 12, 4, 4],
+        'fechaValidez': ['NUMBER', 12, 8, 4],
+        'fechaValidezVajeBeneficio': ['NUMBER', 12, 12, 4],
+        'perfilUsuario': ['NUMBER', 13, 0, 1],
+        'grupoPerfil': ['NUMBER', 13, 1, 1],
+        'numeroAcompannantes': ['NUMBER', 13, 2, 1],
+        'valorPagoSaldoCredito': ['NUMBER', 13, 3, 4],
+        'limiteUsoDiario': ['NUMBER', 13, 7, 4],
+        'codigoUltimaRecarga': ['NUMBER', 13, 11, 4],
+        'VersionMapping': ['NUMBER', 13, 15, 1],
+        'indicadorTarjetaBloqueada': ['NUMBER', 14, 0, 1],
+        'fechaHoraRecarga': ['NUMBER', 14, 1, 4],
+        'numeroSequenciaTransaccion': ['NUMBER', 14, 5, 4],
+        'pinStatus': ['NUMBER', 14, 9, 1],
+        'pinUsuario': ['NUMBER', 14, 10, 4],
+        'cantidadIntentosErroneos': ['NUMBER', 14, 14, 1],
+
+        //SECTOR 04: BL 16,17,18
+        'saldoCreditoBackup': ['NUMBER', 16, 0, 16],
+        'saldoCredito': ['NUMBER', 17, 0, 16],
+        'saldoBeneficio': ['NUMBER', 18, 0, 16]
+
     },
     '1': {},
     '2': {},

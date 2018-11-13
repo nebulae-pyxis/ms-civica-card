@@ -61,7 +61,27 @@ type CivicaCardData {
     rutaAnterior: Int,
     valorPagoUsoTransporte: Int,
     secuenciaUsoTrayecto: Int,
-    _saldoTarjeta: Int
+    _saldoTarjeta: Int,
+    numeroTarjetaDebito: Int,
+    fechaUltimoDesbloqueoTarjeta: Int,
+    fechaValidez: Int,
+    fechaValidezVajeBeneficio: Int,
+    perfilUsuario: Int,
+    grupoPerfil: Int,
+    numeroAcompannantes: Int,
+    valorPagoSaldoCredito: Int,
+    limiteUsoDiario: Int,
+    codigoUltimaRecarga: Int,
+    VersionMapping: Int,
+    indicadorTarjetaBloqueada: Int,
+    fechaHoraRecarga: Int,
+    numeroSequenciaTransaccion: Int,
+    pinStatus: Int,
+    pinUsuario: Int,
+    cantidadIntentosErroneos: Int,
+    saldoCreditoBackup: Int,
+    saldoCredito: Int,
+    saldoBeneficio: Int
 }
 
 type Query{

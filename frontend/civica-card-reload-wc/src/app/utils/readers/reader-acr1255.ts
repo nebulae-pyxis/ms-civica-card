@@ -34,6 +34,7 @@ export class ReaderAcr1255 {
             // get the current battery lever of the connected device
             this.getBatteryLevel$(bluetoothService).pipe(
               tap(batteryLevel => {
+                console.log('Nivel de bateria: ', batteryLevel);
                 batteryLevel$.next(batteryLevel);
               })
             ),

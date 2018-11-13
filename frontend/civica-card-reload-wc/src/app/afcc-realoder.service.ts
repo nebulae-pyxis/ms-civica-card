@@ -6,7 +6,7 @@ import { ConnectionStatus } from './utils/connection-status';
 import { CypherAes } from './utils/cypher-aes';
 import { ReaderAcr1255 } from './utils/readers/reader-acr1255';
 import * as Rx from 'rxjs';
-import { switchMap, mergeMap, takeUntil, filter, map } from 'rxjs/operators';
+import { switchMap, mergeMap, takeUntil, filter, map, tap } from 'rxjs/operators';
 import { GatewayService } from './api/gateway.service';
 import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 
@@ -30,6 +30,8 @@ export class AfccRealoderService {
   saleAuthorization$ = new Rx.Subject<String>();
   operation$ = new Rx.Subject<String>();
   receipt$ = new Rx.Subject<String>();
+  readerType;
+  currentCardReaded$ = new Rx.BehaviorSubject<any>({});
 
 
   // #region VARIABLES ACR1255
@@ -106,10 +108,12 @@ export class AfccRealoderService {
   }
 
 
+
    /**
    * change the reader key to the session key and change the state to connected
    */
   onConnectionSuccessful$(sessionKey) {
+    this.readerType = 'BLE_HIGH_LEVEL';
     return Rx.defer(() => {
       this.changeCypherMasterKey(Array.from(sessionKey));
       this.deviceConnectionStatus$.next(ConnectionStatus.CONNECTED);
@@ -174,10 +178,8 @@ export class AfccRealoderService {
   readCard$() {
     this.readCardAttempts++;
     if (this.readCardAttempts >= 10) {
-      console.log('TIMEOUT!!!!!!!');
       return Rx.of({ status: 'TIMEOUT' });
     } else if (!this.readingCard) {
-      console.log('LEE TARJETA con la sesion: ', this.sessionKey);
       this.readingCard = true;
       return this.myfarePlusSl3.readCurrentCard$(
         this.bluetoothService,
@@ -185,10 +187,29 @@ export class AfccRealoderService {
         this.sessionKey,
         this.cypherAesService,
         this.conversation,
-        this.gateway
+        this.gateway,
+        'PUBLIC'
+      ).pipe(
+        mergeMap(cardNumberResult => {
+        console.log('PUBLIC: ', cardNumberResult);
+        return this.myfarePlusSl3.readCurrentCard$(
+          this.bluetoothService,
+          this.readerAcr1255,
+          this.sessionKey,
+          this.cypherAesService,
+          this.conversation,
+          this.gateway,
+          'CIVICA'
+        ).pipe(
+          map(result => {
+            console.log('CIVICA: ', result);
+          (result as any).cardNumber = (cardNumberResult as any).result.cardNumber;
+          return result;
+          })
+        );
+        })
       );
     }
-    console.log(`Retorna READING: readCardAttempts= ${this.readCardAttempts}  readingCard= ${this.readingCard}`);
     return Rx.of({status: 'READING'});
   }
 
