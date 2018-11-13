@@ -1,4 +1,12 @@
-import { Component, OnInit, ViewEncapsulation, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewEncapsulation,
+  Input,
+  Output,
+  EventEmitter,
+  OnDestroy
+} from '@angular/core';
 import { AfccRealoderService } from '../afcc-realoder.service';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -13,8 +21,9 @@ import { ConnectionStatus } from '../utils/connection-status';
   styleUrls: ['./afcc-reloader.component.scss']
 })
 export class AfccReloaderComponent implements OnInit, OnDestroy {
-
-  operabilityState$ = new BehaviorSubject<OperabilityState>(OperabilityState.DISCONNECTED);
+  operabilityState$ = new BehaviorSubject<OperabilityState>(
+    OperabilityState.DISCONNECTED
+  );
 
   _width = '500';
   _height = '500';
@@ -34,48 +43,83 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     return `${this._height}px`;
   }
   // #region EventListener (Data output)
-  @Output() error = new Subject<any>();
-  @Output() cardReloadAborted = new Subject<any>();
-  @Output() cardReloadDone = new Subject<any>();
-  @Output() reloaderConnected = new Subject<any>();
-  @Output() reloaderStandByMode = new Subject<String>();
-  @Output() reloaderWorkingMode = new Subject<String>();
-  @Output() cardRead = new Subject<String>();
-  @Output() saleAuthorization = new Subject<String>();
-  @Output() operation = new Subject<String>();
-  @Output() receipt = new Subject<String>();
+  @Output()
+  error = new Subject<any>();
+  @Output()
+  cardReloadAborted = new Subject<any>();
+  @Output()
+  cardReloadDone = new Subject<any>();
+  @Output()
+  reloaderConnected = new Subject<any>();
+  @Output()
+  reloaderStandByMode = new Subject<String>();
+  @Output()
+  reloaderWorkingMode = new Subject<String>();
+  @Output()
+  cardRead = new Subject<String>();
+  @Output()
+  saleAuthorization = new Subject<String>();
+  @Output()
+  operation = new Subject<String>();
+  @Output()
+  receipt = new Subject<String>();
   // #endregion
 
   // #region Data input
-  @Input() jwt: String;
-  @Input() rechargeValue: Number;
-  @Input() enableReloadValueKeys = true;
-  @Input() posId: String;
-  @Input() position: any;
+  @Input()
+  pos_id: String;
+  @Input()
+  jwt: String;
+  @Input()
+  recharge_value: Number;
+  @Input()
+  enable_reload_value_keys = true;
+  @Input()
+  position: any;
+  @Input()
+  pos_user: String;
+  @Input()
+  pos_terminal: String;
   // #endregion
 
   connectionSub;
 
-  constructor(private afccRealoderService: AfccRealoderService,
+  constructor(
+    private afccRealoderService: AfccRealoderService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
-  ) {
-   }
+    private snackBar: MatSnackBar
+  ) {}
   ngOnInit() {
-     this.afccRealoderService.gateway.token = this.jwt;
-     this.afccRealoderService.gateway.initService();
+    this.afccRealoderService.gateway.token = this.jwt;
+    this.afccRealoderService.gateway.initService();
     if (this.position) {
-      this.afccRealoderService.conversation.position = this.position;
-      this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
+      const arrPosition = this.position.split(',');
+      this.afccRealoderService.conversation.position = {
+        latitude: parseInt(arrPosition[0], 0),
+        longitude: parseInt(arrPosition[1], 0)
+      };
+      this.afccRealoderService.operabilityState$.next(
+        OperabilityState.DISCONNECTED
+      );
     } else if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        this.afccRealoderService.conversation.position = { latitude, longitude };
-        this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
-      }, error => {
-        this.afccRealoderService.operabilityState$.next(OperabilityState.UNKNOWN_POSITION);
-      });
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          this.afccRealoderService.conversation.position = {
+            latitude,
+            longitude
+          };
+          this.afccRealoderService.operabilityState$.next(
+            OperabilityState.DISCONNECTED
+          );
+        },
+        error => {
+          this.afccRealoderService.operabilityState$.next(
+            OperabilityState.UNKNOWN_POSITION
+          );
+        }
+      );
     }
     console.log('pasa de localizacion');
     this.afccRealoderService.error$.subscribe(val => {
@@ -95,12 +139,13 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     });
     this.afccRealoderService.operabilityState$.subscribe(state => {
       if (state === OperabilityState.CONNECTING) {
-       this.stablishNewConnection();
+        this.stablishNewConnection();
       }
       if (state === OperabilityState.DISCONNECTED) {
         this.afccRealoderService.initBluetoothValues();
+        this.initConversationValues();
       }
-       this.operabilityState$.next(state);
+      this.operabilityState$.next(state);
     });
   }
 
@@ -108,44 +153,69 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     this.connectionSub.unsubscribe();
   }
 
+  initConversationValues() {
+    this.afccRealoderService.conversation = {
+      posId: this.pos_id,
+      posTerminal: this.pos_terminal,
+      posUser: this.pos_user,
+      position: this.afccRealoderService.conversation.position
+    };
+  }
+
   stablishNewConnection() {
-    this.connectionSub = this.afccRealoderService.stablishNewConnection$()
+    this.connectionSub = this.afccRealoderService
+      .stablishNewConnection$()
       .subscribe(
-      status => {
-        if (status === ConnectionStatus.IDLE) {
-          this.afccRealoderService.reloaderStandByMode$.next('reloader enter on standByMode');
-        } else if (status === ConnectionStatus.CONNECTED) {
-          this.afccRealoderService.reloaderWorkingMode$.next('reloader end the standByMode');
+        status => {
+          if (status === ConnectionStatus.IDLE) {
+            this.afccRealoderService.reloaderStandByMode$.next(
+              'reloader enter on standByMode'
+            );
+          } else if (status === ConnectionStatus.CONNECTED) {
+            this.afccRealoderService.reloaderWorkingMode$.next(
+              'reloader end the standByMode'
+            );
+          }
+          const operabilityState: keyof typeof OperabilityState = status;
+          this.operabilityState$.next(operabilityState as OperabilityState);
+          this.afccRealoderService.deviceConnectionStatus$.next(
+            status as String
+          );
+        },
+        error => {
+          console.log(error);
+          this.openSnackBar('Fallo al comunicarse con la lectora');
+          this.afccRealoderService.operabilityState$.next(
+            OperabilityState.DISCONNECTED
+          );
+          this.afccRealoderService.deviceConnectionStatus$.next(
+            ConnectionStatus.DISCONNECTED
+          );
+        },
+        () => {
+          console.log('Se completa OBS');
+          this.afccRealoderService.operabilityState$.next(
+            OperabilityState.DISCONNECTED
+          );
+          this.afccRealoderService.deviceConnectionStatus$.next(
+            ConnectionStatus.DISCONNECTED
+          );
         }
-        const operabilityState: keyof typeof OperabilityState = status;
-        this.operabilityState$.next((operabilityState as OperabilityState));
-        this.afccRealoderService.deviceConnectionStatus$.next(status as String);
-      },
-      error => {
-        console.log(error);
-        this.openSnackBar('Fallo al comunicarse con la lectora');
-        this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
-        this.afccRealoderService.deviceConnectionStatus$.next(
-          ConnectionStatus.DISCONNECTED
-        );
-      },
-      () => {
-        console.log('Se completa OBS');
-        this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
-        this.afccRealoderService.deviceConnectionStatus$.next(
-          ConnectionStatus.DISCONNECTED
-        );
-      }
-    );
+      );
   }
 
   showBackButton() {
     return this.operabilityState$.pipe(
       map(state => {
         this.afccRealoderService.operation$.next(state);
-        return state === OperabilityState.READING_CARD || state === OperabilityState.CARD_READED
-          || state === OperabilityState.READING_CARD_ERROR || state === OperabilityState.INTERNAL_ERROR
-          || state === OperabilityState.RELOAD_CARD_SUCCESS || state === OperabilityState.RELOAD_CARD_ABORTED;
+        return (
+          state === OperabilityState.READING_CARD ||
+          state === OperabilityState.CARD_READED ||
+          state === OperabilityState.READING_CARD_ERROR ||
+          state === OperabilityState.INTERNAL_ERROR ||
+          state === OperabilityState.RELOAD_CARD_SUCCESS ||
+          state === OperabilityState.RELOAD_CARD_ABORTED
+        );
       })
     );
   }
@@ -153,20 +223,26 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   showDisconnectDevice() {
     return this.operabilityState$.pipe(
       map(state => {
-        return state === OperabilityState.CONNECTED || state === OperabilityState.IDLE;
+        return (
+          state === OperabilityState.CONNECTED ||
+          state === OperabilityState.IDLE
+        );
       })
     );
   }
 
   disconnectDevice() {
     this.afccRealoderService.disconnectDevice();
-    this.afccRealoderService.operabilityState$.next(OperabilityState.DISCONNECTED);
+    this.afccRealoderService.operabilityState$.next(
+      OperabilityState.DISCONNECTED
+    );
   }
 
   backToHome() {
-    this.dialog.open(BackButtonDialogComponent, {
-      data: {}
-    })
+    this.dialog
+      .open(BackButtonDialogComponent, {
+        data: {}
+      })
       .afterClosed()
       .subscribe(result => {
         if (result) {
@@ -178,5 +254,4 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   openSnackBar(text) {
     this.snackBar.open(text, 'Cerrar', { duration: 2000 });
   }
-
 }

@@ -24,7 +24,7 @@
                 <app-afcc-info *ngIf="(operabilityState$ | async).valueOf() === 'CONNECTED'"></app-afcc-info>
                 <app-read-card *ngIf="(operabilityState$ | async).valueOf() === 'READING_CARD' || (operabilityState$ | async).valueOf() === 'CARD_READED'"></app-read-card>
                 <app-internal-error *ngIf="(operabilityState$ | async).valueOf() === 'INTERNAL_ERROR'"></app-internal-error>
-                <app-read-card-error *ngIf="(operabilityState$ | async).valueOf() === 'READING_CARD_ERROR'"></app-read-card-error>
+                <app-read-card-error *ngIf="(operabilityState$ | async).valueOf() === 'READING_CARD_ERROR' || (operabilityState$ | async).valueOf() === 'CARD_READED_NOT_SUPPORTED'"></app-read-card-error>
                 <app-reload-card *ngIf="(operabilityState$ | async).valueOf() === 'RELOADING_CARD'"></app-reload-card>
                 <app-reload-card-aborted *ngIf="(operabilityState$ | async).valueOf() === 'RELOAD_CARD_ABORTED'"></app-reload-card-aborted>
                 <app-reload-card-error *ngIf="(operabilityState$ | async).valueOf() === 'RELOADING_CARD_ERROR'"></app-reload-card-error>
