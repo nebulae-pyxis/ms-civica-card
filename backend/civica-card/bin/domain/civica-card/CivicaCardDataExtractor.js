@@ -27,14 +27,14 @@ const mapping = {
         //SECTOR 02: BL 8,9,10
         'saldoTarjeta': ['VALUE_BLOCK', 8, 0, 16],
         'saldoTarjetaBk': ['VALUE_BLOCK', 9, 0, 16],
-        'numeroTerminal': ['NUMBER', 10, 0, 2],
-        'formaPagoUsoTransporte': ['NUMBER', 10, 2, 1],
-        'fechaHoraTransaccion': ['NUMBER', 10, 3, 4],
-        'rutaUtilizada': ['NUMBER', 10, 7, 2],
-        'perfilUsuario': ['NUMBER', 10, 9, 1],
-        'rutaAnterior': ['NUMBER', 10, 10, 1],
-        'valorPagoUsoTransporte': ['NUMBER', 10, 11, 4],
-        'secuenciaUsoTrayecto': ['NUMBER', 10, 15, 1],
+        // 'numeroTerminal': ['NUMBER', 10, 0, 2],
+        // 'formaPagoUsoTransporte': ['NUMBER', 10, 2, 1],
+        // 'fechaHoraTransaccion': ['NUMBER', 10, 3, 4],
+        // 'rutaUtilizada': ['NUMBER', 10, 7, 2],
+        // 'perfilUsuario': ['NUMBER', 10, 9, 1],
+        // 'rutaAnterior': ['NUMBER', 10, 10, 1],
+        // 'valorPagoUsoTransporte': ['NUMBER', 10, 11, 4],
+        // 'secuenciaUsoTrayecto': ['NUMBER', 10, 15, 1],
 
         //SECTOR 03: BL 12,13,14
         'numeroTarjetaDebito': ['NUMBER', 12, 0, 4],
