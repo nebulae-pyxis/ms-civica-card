@@ -168,21 +168,35 @@ class CivicaCardCQRS {
 
 
 
-    // purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
-    //     return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
-    //         tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-    //         mergeMap(({ samFirstStepAuthResponse, conversation }) => {
-    //             return CivicaCardReloadConversationDA.setSamId$(conversation._id, samFirstStepAuthResponse.samId)
-    //                 .pipe(mapTo(samFirstStepAuthResponse))
-    //         }),
-    //         map(samFirstStepAuthResponse => ({ token: samFirstStepAuthResponse.secondStepSamToken.toString('hex') })),
-    //         mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-    //         catchError(error => {
-    //             console.error(error.stack || error);
-    //             return GraphqlResponseTools.handleError$(error);
-    //         })
-    //     );
-    // }
+    purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+            tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),            
+            catchError(error => {
+                console.error(error.stack || error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
+    }
+
+    generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+            tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),            
+            catchError(error => {
+                console.error(error.stack || error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
+    }
+
+    processCivicaCardReloadWriteAndReadApduCommandResponses$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+            tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),            
+            catchError(error => {
+                console.error(error.stack || error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
+    }
 
 
 

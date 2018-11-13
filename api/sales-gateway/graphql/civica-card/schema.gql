@@ -68,7 +68,7 @@ type CivicaCardData {
     formaPagoUsoTransporte: Int,
     fechaHoraTransaccion: Int,
     rutaUtilizada: Int,
-    perfilUsuario: Int,
+    
     rutaAnterior: Int,
     valorPagoUsoTransporte: Int,
     secuenciaUsoTrayecto: Int,
@@ -90,7 +90,7 @@ type CivicaCardData {
     pinStatus: Int,
     pinUsuario: Int,
     cantidadIntentosErroneos: Int,
-    saldoCreditoBackup: Int,
+    saldoCreditoBk: Int,
     saldoCredito: Int,
     saldoBeneficio: Int
 }

@@ -56,9 +56,9 @@ const mapping = {
         'cantidadIntentosErroneos': ['NUMBER', 14, 14, 1],
 
         //SECTOR 04: BL 16,17,18
-        'saldoCreditoBackup': ['NUMBER', 16, 0, 16],
-        'saldoCredito': ['NUMBER', 17, 0, 16],
-        'saldoBeneficio': ['NUMBER', 18, 0, 16]
+        'saldoCreditoBk': ['VALUE_BLOCK', 16, 0, 16],
+        'saldoCredito': ['VALUE_BLOCK', 17, 0, 16],
+        'saldoBeneficio': ['VALUE_BLOCK', 18, 0, 16]
 
     },
     '1': {},
@@ -115,7 +115,7 @@ class CivicaCardDataExtractor {
                     case 1: civicaCard[fieldName] = blockData.readUInt8(offset); break;
                     case 2: civicaCard[fieldName] = blockData.readUInt16BE(offset); break;
                     case 4: civicaCard[fieldName] = blockData.readUInt32BE(offset); break;
-                    default: throw new Error(`NUMBER len=${fieldType} not allowed at CivicaCardDataExtractor.extractFiled`);
+                    default: throw new Error(`NUMBER len=${len} not allowed at CivicaCardDataExtractor.extractFiled`);
                 }
                 break;
             case 'VALUE_BLOCK':
