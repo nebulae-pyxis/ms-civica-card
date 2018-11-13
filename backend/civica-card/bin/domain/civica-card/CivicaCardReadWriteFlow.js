@@ -2,7 +2,7 @@ const {
     generateByteCode, codeArgs,
     CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
     RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RASE
-} = require('./ByteCode/ByteCode');
+} = require('../../tools/mifare/ByteCode/ByteCode');
 
 
 class CivicaCardReadWriteFlow {
@@ -39,7 +39,7 @@ class CivicaCardReadWriteFlow {
     static getSl3CivicaReadBytecode() {
         return generateByteCode([
             codeArgs(CRDB, ['8', '9']),
-            codeArgs(CRDB, ['24', '12']),
+            codeArgs(CRDB, ['24', '9']),
         ]);
     }
 }

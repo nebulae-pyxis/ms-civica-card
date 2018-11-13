@@ -4,8 +4,10 @@ const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
 const { CustomError, ENTITY_NOT_FOUND_ERROR_CODE } = require('../../tools/customError');
-const { SamClusterClient, Compiler, CivicaCardReadWriteFlow, BytecodeMifareBindTools } = require('../../tools/mifare/');
+const { SamClusterClient, Compiler, BytecodeMifareBindTools } = require('../../tools/mifare/');
+const CivicaCardReadWriteFlow = require('./CivicaCardReadWriteFlow');
 const { getSamAuthKeyAndDiversifiedKey } = require('./CivicaCardTools');
+const CivicaCardDataExtractor= require('./CivicaCardDataExtractor');
 
 /**
  * Singleton instance
@@ -146,14 +148,19 @@ class CivicaCardCQRS {
                 mergeMap(conversation =>
                     this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
                 ),
-                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.initialCard.data)),
-                mergeMap(mifareCard => Rx.forkJoin(
-                    CivicaCardReloadConversationDA.setInitialCardData$(mifareCard),
-                    //CivicaCardReloadConversationDA.setInitialCard
-                )),
-                tap(rawResponse => console.log(`===========================${rawResponse}========================`)),
-                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-                catchError(error => GraphqlResponseTools.handleError$(error))
+                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.initialCard.rawData).pipe(map(mifareCard => ({ conversation, mifareCard })))),
+                mergeMap(({ conversation, mifareCard }) =>
+                    CivicaCardReloadConversationDA.setInitialCardRawData$(conversation._id, mifareCard).pipe(
+                        mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
+                        mergeMap(civicaData => CivicaCardReloadConversationDA.setInitialCardCivicaData$(conversation._id, civicaData))
+                    )),
+                tap(rawResponse => console.log(`===========================${JSON.stringify(rawResponse)}========================`)),
+                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
+            ).pipe(
+                catchError(error => {
+                    console.error(error.stack || error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
             );
     }
 

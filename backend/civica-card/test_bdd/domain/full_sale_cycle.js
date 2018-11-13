@@ -271,7 +271,7 @@ describe('CivicaCardReloadConversation', function () {
 
 
 
-/*================== AUTH + READ CARD ========================*/
+/*================== PUBLIC: AUTH + READ CARD ========================*/
 
 
 describe('READ Card', function () {
@@ -352,7 +352,95 @@ describe('READ Card', function () {
     });
 
 
-})
+});
+
+
+
+
+
+/*================== CIVICA: AUTH + READ CARD ========================*/
+
+
+describe('READ Card', function () {
+
+    const cardRole = 'DEBIT'; const authRol = [0x04, 0x40]; const dataType = 'CIVICA';
+    //const cardRole = 'PUBLIC'; const authRol = [0x02, 0x40]; const dataType = 'PUBLIC';
+
+
+    let cardSecondStepAuthConfirmation;
+    let readApduCommands;
+
+
+
+    describe('Auth Card', function () {
+
+
+        it('auth card', function (done) {
+            this.timeout(10000);
+
+            Rx.of('').pipe(
+                delay(500),
+                mergeMap(() => requestCardFirstStepAuth$({ reader, protocol, authRol })),
+                mergeMap(cardFirstSteptAuthChallenge => generateCivicaCardReloadSecondAuthToken$(uid, cardFirstSteptAuthChallenge, cardRole)),
+                mergeMap((samFirstStepAuthResponse) => {
+                    const secondStepSamToken = Buffer.alloc(samFirstStepAuthResponse.length / 2);
+                    secondStepSamToken.write(samFirstStepAuthResponse, 0, samFirstStepAuthResponse.length, 'hex');
+                    return requestCardSecondStepAuth$({ secondStepSamToken, reader, protocol });
+                }),
+                first(),
+            ).subscribe(
+                (evt) => {
+                    cardSecondStepAuthConfirmation = evt;
+                    console.log(`  card cardSecondStepAuthConfirmation: ${cardSecondStepAuthConfirmation}`);
+                },
+                (error) => done(error),
+                () => done()
+            );
+        });
+    });
+
+    describe('Read Card', function () {
+        let binaryCommands = [];
+        it('generateCivicaCardReloadReadApduCommands', function (done) {
+            this.timeout(1000);
+            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(                
+                mergeMap(binaryCommands => Rx.from(binaryCommands)),
+                concatMap(binaryCommand => {
+                    const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
+                    return readBlockData$({ reader, protocol, apdu: apduByteArray }).pipe(
+                        tap(readerResponse => binaryCommand.resp = readerResponse),
+                        mapTo(binaryCommand)
+                    );
+                })
+            ).subscribe(
+                (binaryCommand) => {
+                    console.log(`  binaryCommand: ${JSON.stringify(binaryCommand)} `);
+                    binaryCommands.push(binaryCommand);
+                },
+                (error) => done(error),
+                () => done()
+            );
+        });
+
+
+        it('processCivicaCardReloadReadApduCommandRespones', function (done) {
+            this.timeout(1000);
+            processCivicaCardReloadReadApduCommandRespones$(binaryCommands)
+                .subscribe(
+                    (binaryCommand) => {
+                        console.log(`  binaryCommand: ${JSON.stringify(binaryCommand)} `);
+                        binaryCommands.push(binaryCommand);
+                    },
+                    (error) => done(error),
+                    () => done()
+                );
+        });
+
+    });
+
+
+});
+
 
 
 const generateCivicaCardReloadSecondAuthToken$ = (cardUid, cardChallenge, cardRole) => {

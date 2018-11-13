@@ -2,7 +2,7 @@
 
 
 const Rx = require("rxjs");
-const { tap, filter, toArray, concatMap, mapTo, map, last } = require('rxjs/operators');
+const { tap, filter, toArray, concatMap, mapTo, map, reduce } = require('rxjs/operators');
 const {
     codeArgs, generateByteCode,
     CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
@@ -14,25 +14,39 @@ class BytecodeMifareBindTools {
     applyBytecodeToMifareCard$(bytecode, mifareCard) {
         return Rx.from(bytecode.split('\n')).pipe(
             filter(ln => ln.trim() !== ''),
-            concatMap(bytecodeLine => this.applyBytecodeLine$(bytecodeLine, mifareCard)),
-            last()
+            reduce((modifiedMifareCard, bytecodeLine) => {
+                return this.applyBytecodeLine(bytecodeLine, modifiedMifareCard);
+            }, mifareCard)
         );
     }
 
-    applyBytecodeLine$(bytecodeLine, mifareCard) {
+    applyBytecodeLine(bytecodeLine, mifareCard) {
         const [order, codeArgs] = bytecodeLine.split(':');
         const [code, ...args] = codeArgs.trim().split(' ');
         switch (code) {
-            case RRDB: return this.applyRRDB$(order, args, mifareCard);
+            case RRDB: return this.applyRRDB(order, args, mifareCard);
             default: throw new Error(`invalid bytecode line code(${code}) BytecodeMifareBindTools.applyBytecodeLine`);
         }
     }
 
-    applyRRDB$(order, [resultCode, resultDesc, block, blockCount, ...blockDataList], mifareCard) {
-        return resultCode !== '00' ? Rx.empty() : Rx.range(block, blockCount).pipe(
-            tap(index => mifareCard[`${index}`] = { type: 'byteArray', value: blockDataList[index-block] }),
-            mapTo(mifareCard)
-        );
+    applyRRDB(order, [resultCode, resultDesc, block, blockCount, ...blockDataList], mifareCard) {
+        if (resultCode !== '00') {
+            return mifareCard;
+        }
+
+        const aclBlocks = [0,3,7,11,15,19,23,27,31,35,39];
+
+        let initBlock = parseInt(block);
+        let len = parseInt(blockCount);
+        let index = initBlock;
+        for (let i = 0; i < len; i++) {
+            if(aclBlocks.includes(index)){
+                index++;
+            }
+            mifareCard[`${index}`] = blockDataList[i];
+            index++;
+        }
+        return mifareCard;
     }
 }
 
