@@ -79,7 +79,7 @@ class CivicaCardCQRS {
             posId: conversation.pos.id,
             posUser: conversation.pos.user,
             posTerminal: conversation.pos.terminal,
-            posLocation: conversation.pos.location,
+            posLocation: conversation.pos.location.geometry.coordinates,
             readerType: conversation.readerType,
             cardType: conversation.cardType,
             cardUid: conversation.cardUid

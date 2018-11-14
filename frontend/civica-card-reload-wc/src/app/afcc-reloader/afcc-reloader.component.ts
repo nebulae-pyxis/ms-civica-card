@@ -77,9 +77,11 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   @Input()
   position: any;
   @Input()
-  pos_user: String;
+  pos_user_name: String;
   @Input()
   pos_terminal: String;
+  @Input()
+  pos_user_id: String;
   // #endregion
 
   connectionSub;
@@ -157,7 +159,8 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     this.afccRealoderService.conversation = {
       posId: this.pos_id,
       posTerminal: this.pos_terminal,
-      posUser: this.pos_user,
+      posUserName: this.pos_user_name,
+      posUserId: this.pos_user_id,
       position: this.afccRealoderService.conversation.position
     };
   }

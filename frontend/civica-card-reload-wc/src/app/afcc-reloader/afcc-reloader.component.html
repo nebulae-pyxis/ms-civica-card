@@ -30,6 +30,7 @@
                 <app-reload-card-error *ngIf="(operabilityState$ | async).valueOf() === 'RELOADING_CARD_ERROR'"></app-reload-card-error>
                 <app-reload-card-successfully *ngIf="(operabilityState$ | async).valueOf() === 'RELOAD_CARD_SUCCESS'"></app-reload-card-successfully>
                 <app-afcc-idle *ngIf="(operabilityState$ | async).valueOf() === 'IDLE'"></app-afcc-idle>
+                <app-reload-card-refused *ngIf="(operabilityState$ | async).valueOf() === 'RELOAD_CARD_REFUSED'"></app-reload-card-refused>
             </div>
         </div>
     </mat-card-content>

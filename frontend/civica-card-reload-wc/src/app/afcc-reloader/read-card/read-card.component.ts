@@ -27,7 +27,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
     const newConversation = {
       posId: this.afccReloadService.conversation.posId,
       posTerminal: this.afccReloadService.conversation.posTerminal,
-      posUser: this.afccReloadService.conversation.posUser,
+      posUserId: this.afccReloadService.conversation.posUserId,
+      posUserName: this.afccReloadService.conversation.posUserName,
       readerType: this.afccReloadService.readerType,
       position: this.afccReloadService.conversation.position
     };
@@ -54,8 +55,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
             this.ngUnsubscribe.next();
             console.log('llega result: ', data);
             if ((data as any).result.cardNumber) {
-               this.balance = (data.result.balance);
-               this.state = (data.result.state);
+               this.balance = (data.result._saldoTarjeta);
+               this.state = (data.result.numeroTarjetaPublico);
               this.afccReloadService.currentCardReaded$.next(data.result);
             }
             this.afccReloadService.operabilityState$.next(OperabilityState.CARD_READED);

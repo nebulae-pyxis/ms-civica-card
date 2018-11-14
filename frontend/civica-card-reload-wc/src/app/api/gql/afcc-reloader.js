@@ -3,18 +3,20 @@ import gql from 'graphql-tag';
 export const startCivicaCardReloadConversation = gql`
   mutation startCivicaCardReloadConversation(
     $id: ID!
-    $posId: String
-    $cardUid: String
-    $posUser: String
+    $posId: String!
+    $cardUid: String!
+    $posUserId: String!
+    $posUserName: String!
     $posTerminal: String
-    $posLocation: [Float]
-    $readerType: String
-    $cardType: String
+    $posLocation: [Float]!
+    $readerType: String!
+    $cardType: String!
   ) {
     startCivicaCardReloadConversation(
       id: $id
       posId: $posId
-      posUser: $posUser
+      posUserName: $posUserName
+      posUserId: $posUserId
       cardUid: $cardUid
       posTerminal: $posTerminal
       posLocation: $posLocation
@@ -55,7 +57,7 @@ export const generateCivicaCardReloadSecondAuthToken = gql`
 
 export const generateCivicaCardReloadReadApduCommands = gql`
   mutation generateCivicaCardReloadReadApduCommands(
-    $conversationId: String
+    $conversationId: String!
     $cardAuthConfirmationToken: String
     $dataType: String
   ) {
@@ -74,27 +76,15 @@ export const generateCivicaCardReloadReadApduCommands = gql`
 `;
 
 export const processCivicaCardReloadReadApduCommandRespones = gql`
-  mutation processCivicaCardReloadReadApduCommandRespones(
-    $conversationId: String
-    $commands: [BinaryCommandInput]
+   mutation processCivicaCardReloadReadApduCommandRespones(
+    $conversationId: String!
+    $commands: [BinaryCommandInput]!
   ) {
     processCivicaCardReloadReadApduCommandRespones(
       conversationId: $conversationId
       commands: $commands
     ) {
-      identificacionEmpresa
-      identificacionEmpleado
-      tipoNumeroDocumento
-      saldoTarjeta
-      saldoTarjetaBk
-      numeroTerminal
-      formaPagoUsoTransporte
-      fechaHoraTransaccion
-      rutaUtilizada
-      perfilUsuario
-      rutaAnterior
-      valorPagoUsoTransporte
-      secuenciaUsoTrayecto
+      numeroTarjetaPublico
       _saldoTarjeta
     }
   }

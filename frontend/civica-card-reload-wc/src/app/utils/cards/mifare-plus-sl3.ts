@@ -468,6 +468,11 @@ export class MyfarePlusSl3 {
    * @param uid Card uid
    */
   startReloadConversation(gateway: GatewayService, conversation, uid) {
+    const posLocation = [
+      conversation.position.latitude,
+      conversation.position.longitude
+    ];
+    console.log('PosLocation: ', posLocation);
     conversation.id = uuid();
     return gateway.apollo
       .mutate<any>({
@@ -476,12 +481,10 @@ export class MyfarePlusSl3 {
           id: conversation.id,
           cardUid: uid,
           posId: conversation.posId,
-          posUser: conversation.posUser,
+          posUserName: conversation.posUserName,
+          posUserId: conversation.posUserId,
           posTerminal: conversation.posTerminal,
-          posLocation: [
-            conversation.position.latitude,
-            conversation.position.longitude
-          ],
+          posLocation: posLocation,
           readerType: conversation.readerType,
           cardType: conversation.cardType
         },

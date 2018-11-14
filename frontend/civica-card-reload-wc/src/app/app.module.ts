@@ -19,12 +19,13 @@ import { ReloadCardSuccessfullyComponent } from './afcc-reloader/reload-card-suc
 import { BackButtonDialogComponent } from './afcc-reloader/back-button-dialog/back-button-dialog.component';
 import { AngularBleModule } from '@nebulae/angular-ble';
 import { AfccIdleComponent } from './afcc-reloader/afcc-idle/afcc-idle.component';
-import { ReloadConfirmationDialogComponent } from './afcc-reloader/read-card/reload-confirmation-dialog/reload-confirmation-dialog.component';
 import { CurrencyMaskModule } from "ng2-currency-mask";
 import { FormsModule } from '@angular/forms';
 import { UnknownPositionComponent } from './afcc-reloader/unknown-position/unknown-position.component';
 import { ApolloModule } from 'apollo-angular';
 import { HttpLinkModule } from 'apollo-angular-link-http';
+import { ReloadConfirmationDialogComponent } from './afcc-reloader/read-card/reload-confirmation-dialog/reload-confirmation-dialog.component';
+import { ReloadCardRefusedComponent } from './afcc-reloader/reload-card-refused/reload-card-refused.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { HttpLinkModule } from 'apollo-angular-link-http';
     ReloadCardSuccessfullyComponent,
     BackButtonDialogComponent,
     ReloadConfirmationDialogComponent,
+    ReloadCardRefusedComponent,
     AfccIdleComponent,
     UnknownPositionComponent
   ],

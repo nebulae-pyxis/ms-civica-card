@@ -203,7 +203,7 @@ export class AfccRealoderService {
         ).pipe(
           map(result => {
             console.log('CIVICA: ', result);
-          (result as any).cardNumber = (cardNumberResult as any).result.cardNumber;
+          (result as any).result.numeroTarjetaPublico = (cardNumberResult as any).result.numeroTarjetaPublico;
           return result;
           })
         );
