@@ -8,6 +8,8 @@ const { SamClusterClient, Compiler, BytecodeMifareBindTools } = require('../../t
 const CivicaCardReadWriteFlow = require('./CivicaCardReadWriteFlow');
 const { getSamAuthKeyAndDiversifiedKey } = require('./CivicaCardTools');
 const CivicaCardDataExtractor = require('./CivicaCardDataExtractor');
+const CivicaCardReload = require('./CivicaCardReload');
+
 
 /**
  * Singleton instance
@@ -35,7 +37,7 @@ class CivicaCardCQRS {
      * Creates and returns a CivicaCardReloadConversation
      */
     startCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name })
+        return CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name, businessId: authToken.businessId })
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
@@ -117,7 +119,6 @@ class CivicaCardCQRS {
      * Generates binary commands sequence to read a civica card
      */
     generateCivicaCardReloadReadApduCommands$({ root, args, jwt }, authToken) {
-        console.log(`generateCivicaCardReloadReadApduCommands: ${JSON.stringify(args)}`);
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
@@ -140,8 +141,7 @@ class CivicaCardCQRS {
     /**
      * process and translate binary commands respone sequence to infer civica card data
      */
-    processCivicaCardReloadReadApduCommandRespones$({ root, args, jwt }, authToken) {
-        console.log(`processCivicaCardReloadReadApduCommandRespones: ${JSON.stringify(args)}`);
+    processCivicaCardReloadReadApduCommandRespones$({ root, args, jwt }, authToken) {    
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
@@ -168,9 +168,16 @@ class CivicaCardCQRS {
 
 
 
+    /**
+     * Tries to generate the purchase itself
+     * @param {*} param0 
+     * @param {*} authToken 
+     */
     purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),            
+            mergeMap(conversation => CivicaCardReload.purchaseCivicaCardReload$(conversation,args.value)),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
                 console.error(error.stack || error);
                 return GraphqlResponseTools.handleError$(error);
@@ -178,9 +185,12 @@ class CivicaCardCQRS {
         );
     }
 
+
     generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),            
+
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
                 console.error(error.stack || error);
                 return GraphqlResponseTools.handleError$(error);
@@ -191,6 +201,8 @@ class CivicaCardCQRS {
     processCivicaCardReloadWriteAndReadApduCommandResponses$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),            
+
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
                 console.error(error.stack || error);
                 return GraphqlResponseTools.handleError$(error);

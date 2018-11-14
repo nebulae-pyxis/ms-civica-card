@@ -59,40 +59,40 @@ type WriteAndReadBinaryCommands {
 
 type CivicaCardData {
   numeroTarjetaPublico: Int,
-    identificacionEmpresa: Int,
-    identificacionEmpleado: String,
-    tipoNumeroDocumento: String,
-    saldoTarjeta: Int,
-    saldoTarjetaBk: Int,
-    numeroTerminal: Int,
-    formaPagoUsoTransporte: Int,
-    fechaHoraTransaccion: Int,
-    rutaUtilizada: Int,
-    
-    rutaAnterior: Int,
-    valorPagoUsoTransporte: Int,
-    secuenciaUsoTrayecto: Int,
-    _saldoTarjeta: Int,
-    numeroTarjetaDebito: Int,
-    fechaUltimoDesbloqueoTarjeta: Int,
-    fechaValidez: Int,
-    fechaValidezVajeBeneficio: Int,
-    perfilUsuario: Int,
-    grupoPerfil: Int,
-    numeroAcompannantes: Int,
-    valorPagoSaldoCredito: Int,
-    limiteUsoDiario: Int,
-    codigoUltimaRecarga: Int,
-    VersionMapping: Int,
-    indicadorTarjetaBloqueada: Int,
-    fechaHoraRecarga: Int,
-    numeroSequenciaTransaccion: Int,
-    pinStatus: Int,
-    pinUsuario: Int,
-    cantidadIntentosErroneos: Int,
-    saldoCreditoBk: Int,
-    saldoCredito: Int,
-    saldoBeneficio: Int
+  identificacionEmpresa: Int,
+  identificacionEmpleado: String,
+  tipoNumeroDocumento: String,
+  saldoTarjeta: Int,
+  saldoTarjetaBk: Int,
+  numeroTerminal: Int,
+  formaPagoUsoTransporte: Int,
+  fechaHoraTransaccion: Int,
+  rutaUtilizada: Int,
+  
+  rutaAnterior: Int,
+  valorPagoUsoTransporte: Int,
+  secuenciaUsoTrayecto: Int,
+  _saldoTarjeta: Int,
+  numeroTarjetaDebito: Int,
+  fechaUltimoDesbloqueoTarjeta: Int,
+  fechaValidez: Int,
+  fechaValidezVajeBeneficio: Int,
+  perfilUsuario: Int,
+  grupoPerfil: Int,
+  numeroAcompannantes: Int,
+  valorPagoSaldoCredito: Int,
+  limiteUsoDiario: Int,
+  codigoUltimaRecarga: Int,
+  VersionMapping: Int,
+  indicadorTarjetaBloqueada: Int,
+  fechaHoraRecarga: Int,
+  numeroSequenciaTransaccion: Int,
+  pinStatus: Int,
+  pinUsuario: Int,
+  cantidadIntentosErroneos: Int,
+  saldoCreditoBk: Int,
+  saldoCredito: Int,
+  saldoBeneficio: Int
 }
 
 type CivicaCardReloadPurchase {
@@ -110,7 +110,6 @@ type CivicaCardReloadPurchaseReceipt{
   cardFinalValue: Int,
   
   businesId: String,
-  businessName: String,
   posId: String,
   posUser: String,
   posTerminal: String  
@@ -125,13 +124,14 @@ type Mutation {
   # abortCardReload(conversationId: String): AbortCardReloadResp,
   startCivicaCardReloadConversation(
     id: ID!,
-    posId: String,
-    posUser: String,
+    posId: String!,
+    posUserName: String!,
+    posUserId: String!,
     posTerminal: String,
-    posLocation: [Float],
-    readerType: String,
-    cardType: String,
-    cardUid: String): CivicaCardReloadConversation @requireAuth
+    posLocation: [Float]!,
+    readerType: String!,
+    cardType: String!,
+    cardUid: String!): CivicaCardReloadConversation @requireAuth
 
   generateCivicaCardReloadSecondAuthToken(
     conversationId: String,
@@ -140,25 +140,25 @@ type Mutation {
   ): CivicaCardReloadSecondAuthToken @requireAuth
 
   generateCivicaCardReloadReadApduCommands(
-    conversationId: String,
+    conversationId: String!,
     cardAuthConfirmationToken: String,
     dataType: String
   ): [BinaryCommand]  @requireAuth
 
   processCivicaCardReloadReadApduCommandRespones(
-    conversationId: String,
-    commands: [BinaryCommandInput]  
+    conversationId: String!,
+    commands: [BinaryCommandInput]!
   ): CivicaCardData  @requireAuth
 
   purchaseCivicaCardReload(
-    conversationId: String,
-    value: Int
+    conversationId: String!,
+    value: Int!
   ): CivicaCardReloadPurchase  @requireAuth
 
   generateCivicaCardReloadWriteAndReadApduCommands(
-    conversationId: String,
+    conversationId: String!,
     cardAuthConfirmationToken: String,
-    dataType: String
+    dataType: String!
   ): WriteAndReadBinaryCommands  @requireAuth
 
 

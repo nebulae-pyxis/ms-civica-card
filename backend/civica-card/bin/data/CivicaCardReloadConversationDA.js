@@ -35,35 +35,42 @@ class CivicaCardReloadConversationDA {
    * Finds a CivicaCardReloadConversation by its id
    * @param string id 
    */
-  static create$({ id, userJwt, userName, posId, posUser, posTerminal, posLocation, readerType, cardType, cardUid }) {
+  static create$({ id, userJwt, userName, businessId, posId, posUserName, posUserId, posTerminal, posLocation, readerType, cardType, cardUid }) {
     const collection = mongoDB.db.collection(CollectionName);
 
     const conversation = {
       _id: id,
       timestamp: Date.now(),
+      businessId,
       user: {
         jwt: userJwt,
-        name: userName
+        name: userName,
       },
       pos: {
         id: posId,
-        user: posUser,
+        userName: posUserName,
+        userId: posUserId,
         terminal: posTerminal,
-        location: posLocation
+        location: {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": posLocation
+          }          
+        }
       },
       readerType,
       cardType,
       cardUid,
       initialCard: {
-        rawData:{},
-        civicaData:{}
+        rawData: {},
+        civicaData: {}
       },
       finalCard: {
-        rawData:{},
-        civicaData:{}
+        rawData: {},
+        civicaData: {}
       },
       currentCardAuth: {
-
       }
 
     };
@@ -108,7 +115,7 @@ class CivicaCardReloadConversationDA {
 
   static setInitialCardRawData$(id, rawData) {
     const collection = mongoDB.db.collection(CollectionName);
-    const updateQuery =  [
+    const updateQuery = [
       { '_id': id },
       {
         '$set': {
@@ -126,7 +133,7 @@ class CivicaCardReloadConversationDA {
 
   static setInitialCardCivicaData$(id, civicaData) {
     const collection = mongoDB.db.collection(CollectionName);
-    const updateQuery =  [
+    const updateQuery = [
       { '_id': id },
       {
         '$set': {
@@ -140,7 +147,29 @@ class CivicaCardReloadConversationDA {
       tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
       mapTo(civicaData)
     );
-  } 
+  }
+
+  static setPurchaseData$(id, granted, errorMsg, receipt) {
+    const purchase = {
+      granted,
+      errorMsg,
+      receipt
+    };
+    const updateQuery = [
+      { '_id': id },
+      {
+        '$set': {
+          'purchase': purchase
+        }
+      },
+      { 'multi': false }
+    ];
+    const collection = mongoDB.db.collection(CollectionName);
+    return Rx.defer(() => collection.update(...updateQuery)).pipe(
+      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      mapTo(purchase)
+    );
+  }
 
 
 }

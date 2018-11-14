@@ -60,9 +60,10 @@ const civicaCardReloadConversation_start_args = {
     userJwt: jwt,
     userName: 'Mocha-Chai',
     posId: 'posId',
-    posUser: 'posUser',
+    posUserName: 'posUserName',
+    posUserId: 'posUserId',
     posTerminal: 'posTerminal',
-    posLocation: [0, 0],
+    posLocation: [-75.612855,6.161791],
     readerType: 'BLE_HIGH_LEVEL',
     cardType: 'SL3'
 };
@@ -218,7 +219,8 @@ describe('CivicaCardReloadConversation', function () {
                 startCivicaCardReloadConversation(
                     id: "${civicaCardReloadConversation_start_args.id}",                    
                     posId: "${civicaCardReloadConversation_start_args.posId}", 
-                    posUser: "${civicaCardReloadConversation_start_args.posUser}", 
+                    posUserName: "${civicaCardReloadConversation_start_args.posUserName}", 
+                    posUserId: "${civicaCardReloadConversation_start_args.posUserId}", 
                     posTerminal: "${civicaCardReloadConversation_start_args.posTerminal}", 
                     posLocation: [${civicaCardReloadConversation_start_args.posLocation}], 
                     readerType: "${civicaCardReloadConversation_start_args.readerType}", 
@@ -316,7 +318,7 @@ describe('READ Card', function () {
         let binaryCommands = [];
         it('generateCivicaCardReloadReadApduCommands', function (done) {
             this.timeout(1000);
-            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(                
+            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(
                 mergeMap(binaryCommands => Rx.from(binaryCommands)),
                 concatMap(binaryCommand => {
                     const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
@@ -403,7 +405,7 @@ describe('READ Card', function () {
         let binaryCommands = [];
         it('generateCivicaCardReloadReadApduCommands', function (done) {
             this.timeout(1000);
-            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(                
+            generateCivicaCardReloadReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(
                 mergeMap(binaryCommands => Rx.from(binaryCommands)),
                 concatMap(binaryCommand => {
                     const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
@@ -440,6 +442,36 @@ describe('READ Card', function () {
 
 
 });
+
+
+
+/*================== PURCHASE CARD RELOAD ========================*/
+
+
+
+describe('PURCHASE CARD RELOAD', function () {
+    it('purchase itself', function (done) {
+        this.timeout(1000);
+        purchaseCivicaCardReload$(5000)
+            .subscribe(
+                (purchase) => {
+                    console.log(`  purchase: ${JSON.stringify(purchase)} `);
+                },
+                (error) => done(error),
+                () => done()
+            );
+    });
+})
+
+
+
+
+
+
+
+/*======================================================================*/
+/*============================   API CALLS   ===========================*/
+/*======================================================================*/
 
 
 
@@ -494,6 +526,24 @@ const processCivicaCardReloadReadApduCommandRespones$ = (binaryCommands) => {
         //tap((body) => expect(body.errors).to.be.undefined),
         //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
         map((body) => body.data.processCivicaCardReloadReadApduCommandRespones)
+    )
+}
+
+const purchaseCivicaCardReload$ = (value) => {
+    const mutation = `
+    mutation {
+        purchaseCivicaCardReload(conversationId: "${civicaCardReloadConversationId}", value: ${value}
+        ){granted,errorMsg,receipt{id,timestamp,reloadValue,cardInitialValue,cardFinalValue,businesId,posId,posUser,posTerminal}   }
+    }`;
+    return Rx.from(
+        gqlClient.query(mutation, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
+    ).pipe(
+        first(),
+        tap((body) => console.log(`purchaseCivicaCardReload: ${JSON.stringify(body)}`)),
+        tap((body) => expect(body.data.purchaseCivicaCardReload).not.to.be.null),
+        //tap((body) => expect(body.errors).to.be.undefined),
+        //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
+        map((body) => body.data.purchaseCivicaCardReload)
     )
 }
 
