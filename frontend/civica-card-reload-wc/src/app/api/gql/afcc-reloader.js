@@ -103,7 +103,8 @@ export const purchaseCivicaCardReload = gql`
         cardFinalValue
         businesId
         posId
-        posUser
+        posUserName,
+        posUserId,
         posTerminal
       }
     }

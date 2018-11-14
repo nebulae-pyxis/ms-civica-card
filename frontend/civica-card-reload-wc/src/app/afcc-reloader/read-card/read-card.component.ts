@@ -115,14 +115,14 @@ export class ReadCardComponent implements OnInit, OnDestroy {
         .afterClosed()
         .pipe(
           mergeMap(granted => {
-            if (granted) {
+          if (granted) {
               this.afccReloadService.operabilityState$.next(
                 OperabilityState.REQUESTING_RELOAD_PERMISSION
               );
               this.afccReloadService.conversation.reloadValue = this.value;
-              return this.afccReloadService.purchaseCivicaCardReload$(
-                this.value
-              );
+            return this.afccReloadService.purchaseCivicaCardReload$(
+              this.value
+            );
             } else {
               return of('Operation cancelled');
             }

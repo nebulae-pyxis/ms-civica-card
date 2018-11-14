@@ -148,6 +148,19 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         this.afccRealoderService.initBluetoothValues();
         this.initConversationValues();
       }
+      if (state === OperabilityState.READING_CARD ||
+        state === OperabilityState.REQUESTING_RELOAD_PERMISSION ||
+        state === OperabilityState.READING_CARD_ERROR ||
+        state === OperabilityState.CARD_READED_NOT_SUPPORTED ||
+        state === OperabilityState.CARD_READED ||
+        state === OperabilityState.RELOADING_CARD ||
+        state === OperabilityState.RELOADING_CARD_ERROR ||
+        state === OperabilityState.RELOAD_CARD_ABORTED ||
+        state === OperabilityState.RELOAD_CARD_SUCCESS ||
+        state === OperabilityState.RELOAD_CARD_REFUSED
+      ) {
+       this.afccRealoderService.changeOperationState$(state).subscribe();
+      }
       this.operabilityState$.next(state);
     });
   }
