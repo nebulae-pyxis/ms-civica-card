@@ -76,7 +76,7 @@ export const generateCivicaCardReloadReadApduCommands = gql`
 `;
 
 export const processCivicaCardReloadReadApduCommandRespones = gql`
-   mutation processCivicaCardReloadReadApduCommandRespones(
+  mutation processCivicaCardReloadReadApduCommandRespones(
     $conversationId: String!
     $commands: [BinaryCommandInput]!
   ) {
@@ -86,6 +86,26 @@ export const processCivicaCardReloadReadApduCommandRespones = gql`
     ) {
       numeroTarjetaPublico
       _saldoTarjeta
+    }
+  }
+`;
+
+export const purchaseCivicaCardReload = gql`
+  mutation purchaseCivicaCardReload($conversationId: String!, $value: Int!) {
+    purchaseCivicaCardReload(conversationId: $conversationId, value: $value) {
+      granted
+      errorMsg
+      receipt {
+        id
+        timestamp
+        reloadValue
+        cardInitialValue
+        cardFinalValue
+        businesId
+        posId
+        posUser
+        posTerminal
+      }
     }
   }
 `;
