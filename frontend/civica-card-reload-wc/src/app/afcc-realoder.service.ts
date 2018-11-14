@@ -245,6 +245,7 @@ export class AfccRealoderService {
   }
 
   changeOperationState$(uiState) {
+    console.log('Conversation id: ', this.conversation);
     return this.gateway.apollo
     .mutate<any>({
       mutation: setCivicaCardReloadConversationUiState,
