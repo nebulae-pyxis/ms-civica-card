@@ -6,12 +6,14 @@ import { ConnectionStatus } from './utils/connection-status';
 import { CypherAes } from './utils/cypher-aes';
 import { ReaderAcr1255 } from './utils/readers/reader-acr1255';
 import * as Rx from 'rxjs';
-import { switchMap, mergeMap, takeUntil, filter, map, tap, delay } from 'rxjs/operators';
+import { switchMap, mergeMap, takeUntil, filter, map, tap, delay, mapTo } from 'rxjs/operators';
 import { GatewayService } from './api/gateway.service';
 import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 import {
-  purchaseCivicaCardReload
+  purchaseCivicaCardReload,
+  setCivicaCardReloadConversationUiState
 } from './api/gql/afcc-reloader.js';
+import { v4 as uuid } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -184,6 +186,8 @@ export class AfccRealoderService {
       return Rx.of({ status: 'TIMEOUT' });
     } else if (!this.readingCard) {
       this.readingCard = true;
+      this.conversation.id = uuid();
+      localStorage.conversationId = this.conversation.id;
       return this.myfarePlusSl3.readCurrentCard$(
         this.bluetoothService,
         this.readerAcr1255,
@@ -193,6 +197,9 @@ export class AfccRealoderService {
         this.gateway,
         'PUBLIC'
       ).pipe(
+        mergeMap(result => this.changeOperationState$('READING_CARD').pipe(
+          mapTo(result)
+          )),
         delay(500),
         mergeMap(cardNumberResult => {
         console.log('PUBLIC: ', cardNumberResult);
@@ -238,6 +245,21 @@ export class AfccRealoderService {
           )
         )
       );
+  }
+
+  changeOperationState$(uiState) {
+    return this.gateway.apollo
+    .mutate<any>({
+      mutation: setCivicaCardReloadConversationUiState,
+      variables: {
+        conversationId: this.conversation.id,
+        uiState: uiState
+      },
+      errorPolicy: 'all'
+    })
+    .pipe(
+      map(rawData => rawData.data.setCivicaCardReloadConversationUiState)
+    );
   }
 
 }

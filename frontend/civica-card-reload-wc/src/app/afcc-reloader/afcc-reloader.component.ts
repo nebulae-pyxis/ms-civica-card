@@ -92,6 +92,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {}
   ngOnInit() {
+    console.log('Id almacenado: ', localStorage.conversationId);
     this.afccRealoderService.gateway.token = this.jwt;
     this.afccRealoderService.gateway.initService();
     if (this.position) {
