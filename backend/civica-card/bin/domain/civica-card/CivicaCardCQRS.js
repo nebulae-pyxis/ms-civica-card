@@ -98,7 +98,9 @@ class CivicaCardCQRS {
             posLocation: conversation.pos.location.geometry.coordinates,
             readerType: conversation.readerType,
             cardType: conversation.cardType,
-            cardUid: conversation.cardUid
+            cardUid: conversation.cardUid,
+            uiState: conversation.uiState,
+            uiStateHistory: conversation.uiStateHistory.map(h => h.uiState)
         };
     }
 

@@ -15,6 +15,9 @@ type CivicaCardReloadConversation {
   readerType: String,
   cardType: String,
   cardUid: String,
+
+  uiState: String,
+  uiStateHistory: [String],
   # initCardData: CardData,
   # initCardState: String,
   # reloadValue: Int,
