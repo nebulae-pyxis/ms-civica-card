@@ -60,7 +60,7 @@ class CivicaCardCQRS {
                 map(oldConversation => oldConversation.uiState),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => {
-                    //console.error(error.stack || error);
+                    console.error(error.stack || error);
                     return GraphqlResponseTools.handleError$(error);
                 })
             );
