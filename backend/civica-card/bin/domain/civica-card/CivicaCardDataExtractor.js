@@ -119,7 +119,15 @@ class CivicaCardDataExtractor {
                 }
                 break;
             case 'VALUE_BLOCK':
-                civicaCard[fieldName] = blockData.readUInt32LE(4); break;
+                //const bufferValue = Buffer.from([blockDatap[3] &);
+                civicaCard[fieldName] = blockData.readUInt32LE(0); break; //TODO: verificar el resto de campos
+
+                /*
+                boolean cumpleIntegridad = ((byteLectura[3] & 0x80) == 0x80) && (byteLectura[12] == byteLectura[14]) && (byteLectura[13] == byteLectura[15])
+                            && (~byteLectura[12] == byteLectura[13]) && (~byteLectura[14] == byteLectura[15]);
+                byte[] lectInv = {(byte) (byteLectura[3] & (byte) 0x7f), byteLectura[2], byteLectura[1], byteLectura[0]};
+                */
+
                 break;
             default: throw new Error(`FieldType=${fieldType} not allowed at CivicaCardDataExtractor.extractFiled`);
         }

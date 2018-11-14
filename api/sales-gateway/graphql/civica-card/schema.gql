@@ -65,8 +65,8 @@ type CivicaCardData {
   identificacionEmpresa: Int,
   identificacionEmpleado: String,
   tipoNumeroDocumento: String,
-  saldoTarjeta: Int,
-  saldoTarjetaBk: Int,
+  saldoTarjeta: BigInt,
+  saldoTarjetaBk: BigInt,
   numeroTerminal: Int,
   formaPagoUsoTransporte: Int,
   fechaHoraTransaccion: Int,
@@ -75,7 +75,7 @@ type CivicaCardData {
   rutaAnterior: Int,
   valorPagoUsoTransporte: Int,
   secuenciaUsoTrayecto: Int,
-  _saldoTarjeta: Int,
+  _saldoTarjeta: BigInt,
   numeroTarjetaDebito: Int,
   fechaUltimoDesbloqueoTarjeta: Int,
   fechaValidez: Int,
@@ -83,7 +83,7 @@ type CivicaCardData {
   perfilUsuario: Int,
   grupoPerfil: Int,
   numeroAcompannantes: Int,
-  valorPagoSaldoCredito: Int,
+  valorPagoSaldoCredito: BigInt,
   limiteUsoDiario: Int,
   codigoUltimaRecarga: Int,
   VersionMapping: Int,
@@ -93,9 +93,9 @@ type CivicaCardData {
   pinStatus: Int,
   pinUsuario: Int,
   cantidadIntentosErroneos: Int,
-  saldoCreditoBk: Int,
-  saldoCredito: Int,
-  saldoBeneficio: Int
+  saldoCreditoBk: BigInt,
+  saldoCredito: BigInt,
+  saldoBeneficio: BigInt
 }
 
 type CivicaCardReloadPurchase {
