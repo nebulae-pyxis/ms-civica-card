@@ -180,6 +180,10 @@ class GraphQlService {
         aggregateType: "CivicaCard",
         messageType: "salesgateway.graphql.mutation.processCivicaCardReloadWriteAndReadApduCommandResponses"
       },
+      {
+        aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.mutation.setCivicaCardReloadConversationUiState"
+      },
 
     ];
   }
@@ -222,6 +226,10 @@ class GraphQlService {
       },
       "salesgateway.graphql.mutation.processCivicaCardReloadWriteAndReadApduCommandResponses": {
         fn: civicaCardCQRS.processCivicaCardReloadWriteAndReadApduCommandResponses$,
+        obj: civicaCardCQRS
+      },
+      "salesgateway.graphql.mutation.setCivicaCardReloadConversationUiState": {
+        fn: civicaCardCQRS.setCivicaCardReloadConversationUiState$,
         obj: civicaCardCQRS
       },
     };

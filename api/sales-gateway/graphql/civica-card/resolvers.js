@@ -48,6 +48,14 @@ module.exports = {
                 ).toPromise();
         },
 
+        setCivicaCardReloadConversationUiState(root, args, context) {
+            return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'setCivicaCardReloadConversationUiState', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
+                .mergeMap(() =>
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.setCivicaCardReloadConversationUiState", { root, args, jwt: context.encodedToken }, 500)
+                        .mergeMap(response => getResponseFromBackEnd$(response))
+                ).toPromise();
+        },
+
         generateCivicaCardReloadSecondAuthToken(root, args, context) {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'generateCivicaCardReloadSecondAuthToken', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
                 .mergeMap(() =>

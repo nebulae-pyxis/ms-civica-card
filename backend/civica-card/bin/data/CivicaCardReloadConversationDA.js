@@ -41,6 +41,8 @@ class CivicaCardReloadConversationDA {
     const conversation = {
       _id: id,
       timestamp: Date.now(),
+      uiStateHistory:[],
+      uiState : '',
       businessId,
       user: {
         jwt: userJwt,
@@ -56,7 +58,7 @@ class CivicaCardReloadConversationDA {
           "geometry": {
             "type": "Point",
             "coordinates": posLocation
-          }          
+          }
         }
       },
       readerType,
@@ -76,6 +78,18 @@ class CivicaCardReloadConversationDA {
     };
     return Rx.defer(() => collection.insertOne(conversation)).pipe(
       mapTo(conversation)
+    );
+  }
+
+  static setUiState$(id, uiState) {
+    const collection = mongoDB.db.collection(CollectionName);
+    return Rx.defer(() => collection.findOneAndUpdate(
+      { '_id': id },
+      { '$set': { 'uiState': uiState }, '$push': { 'uiStateHistory': { uiState, ts: Date.now() } } },
+      { 'returnOriginal': true }
+    )).pipe(
+      tap(result => { if (!result || !result.value) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      map(result => result && result.value ? result.value : undefined) 
     );
   }
 
