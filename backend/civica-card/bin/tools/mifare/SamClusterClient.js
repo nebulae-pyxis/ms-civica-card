@@ -70,7 +70,7 @@ class SamClusterClient {
         apduBuffer[apduBufferIndex++] = 0x00;
 
         return this.broker.sendAndGetReply$(this.appId, transactionId, undefined, apduBuffer).pipe(
-            map(response => ({ secondStepSamToken: response.data, samId: response.samId })),
+            map(response => ({ secondStepSamToken: response.data, samId: response.samId, samKey: key })),
             tap(response => console.log(JSON.stringify(response)))
         );
     };

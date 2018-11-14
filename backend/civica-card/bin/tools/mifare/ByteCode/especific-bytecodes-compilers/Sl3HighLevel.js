@@ -101,7 +101,7 @@ class Sl3HighLevel {
                     cmd: Buffer.concat([writeCmd_buff, blockNumber_buff, blockData_buff, oddDataCmac]).toString('hex'),
                     order: order + index,
                     resp: '',
-                    cbc: CRDB,
+                    cbc: CWDB,
                     rbc: RWDB
                 };
                 observer.next(binaryCommand);

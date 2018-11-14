@@ -505,39 +505,19 @@ describe('WRITE AND READ CARD', function () {
         });
     });
 
-    describe('Write & Read Card', function () {
+    describe('Write + Read Card', function () {
         let binaryCommands = [];
         it('generateCivicaCardReloadWriteAndReadApduCommands', function (done) {
             this.timeout(1000);
             generateCivicaCardReloadWriteAndReadApduCommands$(cardSecondStepAuthConfirmation, dataType).pipe(
-                tap(({ writeBinaryCommands, readBinaryCommands }) => {
-                    writeApduCommands = writeBinaryCommands;
-                    readBinaryCommands = readBinaryCommands;
-                }),
-
-                mergeMap(({ writeBinaryCommands, readBinaryCommands }) => Rx.concat(
-                    Rx.from(writeBinaryCommands).pipe(
-                        concatMap(binaryCommand => {
-                            const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
-                            return writeBlockData$({ reader, protocol, apdu: apduByteArray }).pipe(
-                                tap(readerResponse => binaryCommand.resp = readerResponse),
-                                mapTo(binaryCommand)
-                            );
-                        })
-                    ),
-                    Rx.from(readBinaryCommands).pipe(
-                        concatMap(binaryCommand => {
-                            const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
-                            return readBlockData$({ reader, protocol, apdu: apduByteArray }).pipe(
-                                tap(readerResponse => binaryCommand.resp = readerResponse),
-                                mapTo(binaryCommand)
-                            );
-                        })
-                    )
-                )),
-
-
-
+                mergeMap(binaryCommands => Rx.from(binaryCommands)),
+                concatMap(binaryCommand => {
+                    const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
+                    return readBlockData$({ reader, protocol, apdu: apduByteArray }).pipe(
+                        tap(readerResponse => binaryCommand.resp = readerResponse),
+                        mapTo(binaryCommand)
+                    );
+                })
             ).subscribe(
                 (binaryCommand) => {
                     console.log(`  binaryCommand: ${JSON.stringify(binaryCommand)} `);
@@ -551,7 +531,7 @@ describe('WRITE AND READ CARD', function () {
 
         it('processCivicaCardReloadWriteAndReadApduCommandResponses', function (done) {
             this.timeout(1000);
-            processCivicaCardReloadWriteAndReadApduCommandResponses$({ writeBinaryCommands: writeApduCommands, readBinaryCommands: readApduCommands})
+            processCivicaCardReloadWriteAndReadApduCommandResponses$(binaryCommands)
                 .subscribe(
                     (binaryCommand) => {
                         console.log(`  binaryCommand: ${JSON.stringify(binaryCommand)} `);
@@ -627,27 +607,7 @@ const processCivicaCardReloadReadApduCommandRespones$ = (binaryCommands) => {
         map((body) => body.data.processCivicaCardReloadReadApduCommandRespones)
     )
 }
-const processCivicaCardReloadWriteAndReadApduCommandResponses$ = ({ writeBinaryCommands, readBinaryCommands }) => {
-    const mutation = `
-    mutation {
-        processCivicaCardReloadWriteAndReadApduCommandResponses(conversationId: "${civicaCardReloadConversationId}",
-        commands: {
-            writeBinaryCommands: [${ writeBinaryCommands.map(bc => "{" + (Object.keys(bc).map(key => `${key}: ${(typeof bc[key] === 'string' || bc[key] instanceof String) ? `"${bc[key]}"` : `${bc[key]}`}`)) + "}").join(', ')}],
-            readBinaryCommands: [${ readBinaryCommands.map(bc => "{" + (Object.keys(bc).map(key => `${key}: ${(typeof bc[key] === 'string' || bc[key] instanceof String) ? `"${bc[key]}"` : `${bc[key]}`}`)) + "}").join(', ')}]
-        }
-        ){ identificacionEmpresa,identificacionEmpleado,tipoNumeroDocumento,saldoTarjeta,saldoTarjetaBk,numeroTerminal,formaPagoUsoTransporte,fechaHoraTransaccion,rutaUtilizada,perfilUsuario,rutaAnterior,valorPagoUsoTransporte,secuenciaUsoTrayecto,_saldoTarjeta }
-    }`;
-    return Rx.from(
-        gqlClient.query(mutation, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
-    ).pipe(
-        first(),
-        tap((body) => console.log(`processCivicaCardReloadWriteAndReadApduCommandResponses: ${JSON.stringify(body)}`)),
-        tap((body) => expect(body.data.processCivicaCardReloadWriteAndReadApduCommandResponses).not.to.be.null),
-        //tap((body) => expect(body.errors).to.be.undefined),
-        //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
-        map((body) => body.data.processCivicaCardReloadWriteAndReadApduCommandResponses)
-    )
-}
+
 
 const purchaseCivicaCardReload$ = (value) => {
     const mutation = `
@@ -672,7 +632,7 @@ const generateCivicaCardReloadWriteAndReadApduCommands$ = (cardSecondStepAuthCon
     return Rx.from(
         gqlClient.query(`
         mutation {
-            generateCivicaCardReloadWriteAndReadApduCommands(conversationId: "${civicaCardReloadConversationId}",cardAuthConfirmationToken: "${cardSecondStepAuthConfirmation}",dataType: "${dataType}"){ writeBinaryCommands{order, cmd, resp, cbc, rbc}, readBinaryCommands{order, cmd, resp, cbc, rbc} }
+            generateCivicaCardReloadWriteAndReadApduCommands(conversationId: "${civicaCardReloadConversationId}",cardAuthConfirmationToken: "${cardSecondStepAuthConfirmation}",dataType: "${dataType}"){ order, cmd, resp, cbc, rbc }
           }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
     ).pipe(
         first(),
@@ -683,6 +643,31 @@ const generateCivicaCardReloadWriteAndReadApduCommands$ = (cardSecondStepAuthCon
         map((body) => body.data.generateCivicaCardReloadWriteAndReadApduCommands)
     )
 }
+
+
+const processCivicaCardReloadWriteAndReadApduCommandResponses$ = (binaryCommands) => {
+    const mutation = `
+    mutation {
+        processCivicaCardReloadWriteAndReadApduCommandResponses(conversationId: "${civicaCardReloadConversationId}",
+        commands: [${ binaryCommands.map(
+            bc => "{" + (Object.keys(bc).map(key => `${key}: ${(typeof bc[key] === 'string' || bc[key] instanceof String) ? `"${bc[key]}"` : `${bc[key]}`}`)) + "}"
+        ).join(', ')}]
+        ){ identificacionEmpresa,identificacionEmpleado,tipoNumeroDocumento,saldoTarjeta,saldoTarjetaBk,numeroTerminal,formaPagoUsoTransporte,fechaHoraTransaccion,rutaUtilizada,perfilUsuario,rutaAnterior,valorPagoUsoTransporte,secuenciaUsoTrayecto,_saldoTarjeta }
+    }`;
+    return Rx.from(
+        gqlClient.query(mutation, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
+    ).pipe(
+        first(),
+        tap((body) => console.log(`processCivicaCardReloadWriteAndReadApduCommandResponses: ${JSON.stringify(body)}`)),
+        tap((body) => expect(body.data.processCivicaCardReloadWriteAndReadApduCommandResponses).not.to.be.null),
+        //tap((body) => expect(body.errors).to.be.undefined),
+        //tap((body) => expect(body.data.generateCivicaCardReloadSecondAuthToken.token).not.to.be.null),
+        map((body) => body.data.processCivicaCardReloadWriteAndReadApduCommandResponses)
+    )
+}
+
+
+
 
 
 /*

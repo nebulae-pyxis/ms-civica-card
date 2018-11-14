@@ -14,13 +14,19 @@ class CivicaCardReadWriteFlow {
      * @param {string} cardType Mifare SL level. eg: SL3 | SL2
      * @param {string} dataType type of data to read. PUBLIC | CIVICA
      */
-    static generateReadBytecode(cardType, dataType, bytecode = '') {
+    static generateReadBytecode(cardType, dataType, cardRole, bytecode = '') {
         switch (cardType) {
             case 'SL3':
                 switch (dataType) {
                     case 'PUBLIC': return this.getSl3PublicReadBytecode(bytecode);
-                    case 'CIVICA': return this.getSl3CivicaReadBytecode(bytecode);
-                    default: throw new Error(`invalid dataType${dataType}`);
+                    case 'CIVICA':
+                        switch (cardRole) {
+                            case 'DEBIT' : return this.getSl3CivicaDebitReadBytecode(bytecode);
+                            case 'CREDIT' : return this.getSl3CivicaCreditReadBytecode(bytecode);
+                            default: throw new Error(`invalid cardRole ${dataType}`);        
+                        }
+                        break;
+                    default: throw new Error(`invalid dataType ${dataType}`);
                 }
             default: throw new Error(`invalid cardType${cardType}`);
         }
@@ -37,10 +43,20 @@ class CivicaCardReadWriteFlow {
     /**
      * predefined bytecode to read the civica data on Civica card
      */
-    static getSl3CivicaReadBytecode(bytecode = '') {
+    static getSl3CivicaDebitReadBytecode(bytecode = '') {
         return generateByteCode([
             codeArgs(CRDB, ['8', '9']),
             codeArgs(CRDB, ['24', '9']),
+        ], bytecode);
+    }
+
+    /**
+     * predefined bytecode to read the civica data on Civica card
+     */
+    static getSl3CivicaCreditReadBytecode(bytecode = '') {
+        return generateByteCode([
+            codeArgs(CRDB, ['8', '3']),
+            codeArgs(CRDB, ['16', '3']),
         ], bytecode);
     }
 

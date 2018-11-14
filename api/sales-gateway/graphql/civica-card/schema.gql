@@ -49,17 +49,6 @@ type BinaryCommand {
   rbc: String
 }
 
-input WriteAndReadBinaryCommandsInput {
-  writeBinaryCommands: [BinaryCommandInput],
-  readBinaryCommands:  [BinaryCommandInput],
-}
-
-type WriteAndReadBinaryCommands {
-  writeBinaryCommands: [BinaryCommand],
-  readBinaryCommands: [BinaryCommand],
-}
-
-
 type CivicaCardData {
   numeroTarjetaPublico: Int,
   identificacionEmpresa: Int,
@@ -170,12 +159,12 @@ type Mutation {
     conversationId: String!,
     cardAuthConfirmationToken: String,
     dataType: String!
-  ): WriteAndReadBinaryCommands  @requireAuth
+  ): [BinaryCommand]  @requireAuth
 
 
   processCivicaCardReloadWriteAndReadApduCommandResponses(
     conversationId: String,
-    commands: WriteAndReadBinaryCommandsInput
+    commands: [BinaryCommandInput]!
   ): CivicaCardData  @requireAuth
 
 }

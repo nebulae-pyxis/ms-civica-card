@@ -54,11 +54,8 @@ class CivicaCardReloadConversationDA {
         userId: posUserId,
         terminal: posTerminal,
         location: {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": posLocation
-          }
+          "type": "Point",
+          "coordinates": posLocation
         }
       },
       readerType,
@@ -93,11 +90,17 @@ class CivicaCardReloadConversationDA {
     );
   }
 
-  static setSamId$(id, samId) {
+  static setSamIdSamKeyAndCardRole$(id, samId, samKey, cardRole) {
     const collection = mongoDB.db.collection(CollectionName);
     return Rx.defer(() => collection.update(
       { '_id': id },
-      { '$set': { 'currentCardAuth.samId': samId } },
+      {
+        '$set': {
+          'currentCardAuth.samId': samId,
+          'currentCardAuth.samKey': samKey,
+          'currentCardAuth.cardRole': cardRole
+        }
+      },
       { 'multi': false }
     )).pipe(
       tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); })
@@ -183,6 +186,44 @@ class CivicaCardReloadConversationDA {
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
       tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
       mapTo(purchase)
+    );
+  }
+
+
+
+  static setFinalCardRawData$(id, rawData) {
+    const collection = mongoDB.db.collection(CollectionName);
+    const updateQuery = [
+      { '_id': id },
+      {
+        '$set': {
+          'finalCard.rawData': rawData
+        }
+      },
+      { 'multi': false }
+    ];
+
+    return Rx.defer(() => collection.update(...updateQuery)).pipe(
+      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      mapTo(rawData)
+    );
+  }
+
+  static setFinalCardCivicaData$(id, civicaData) {
+    const collection = mongoDB.db.collection(CollectionName);
+    const updateQuery = [
+      { '_id': id },
+      {
+        '$set': {
+          'finalCard.civicaData': civicaData
+        }
+      },
+      { 'multi': false }
+    ];
+
+    return Rx.defer(() => collection.update(...updateQuery)).pipe(
+      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      mapTo(civicaData)
     );
   }
 

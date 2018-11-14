@@ -95,7 +95,7 @@ class CivicaCardCQRS {
             posId: conversation.pos.id,
             posUser: conversation.pos.user,
             posTerminal: conversation.pos.terminal,
-            posLocation: conversation.pos.location.geometry.coordinates,
+            posLocation: conversation.pos.location.coordinates,
             readerType: conversation.readerType,
             cardType: conversation.cardType,
             cardUid: conversation.cardUid,
@@ -120,7 +120,7 @@ class CivicaCardCQRS {
             }
             ),
             mergeMap(({ samFirstStepAuthResponse, conversation }) => {
-                return CivicaCardReloadConversationDA.setSamId$(conversation._id, samFirstStepAuthResponse.samId)
+                return CivicaCardReloadConversationDA.setSamIdSamKeyAndCardRole$(conversation._id, samFirstStepAuthResponse.samId,samFirstStepAuthResponse.samKey, args.cardRole )
                     .pipe(mapTo(samFirstStepAuthResponse))
             }),
             map(samFirstStepAuthResponse => ({ token: samFirstStepAuthResponse.secondStepSamToken.toString('hex') })),
@@ -143,7 +143,7 @@ class CivicaCardCQRS {
                 map(conversation => (
                     {
                         conversation,
-                        bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType)
+                        bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole)
                     }
                 )),
                 mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
@@ -216,11 +216,11 @@ class CivicaCardCQRS {
             map(({ conversation, bytecode }) => (
                 {
                     conversation,
-                    bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, bytecode)
+                    bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole, bytecode)
                 }
             )),
             mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
-            tap(x => console.log(`====================${JSON.stringify(x.bytecode)}=======================`)),
+            tap(x => console.log(`====================${JSON.stringify(x)}=======================`)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
                 console.error(error.stack || error);
@@ -229,16 +229,31 @@ class CivicaCardCQRS {
         );
     }
 
-    processCivicaCardReloadWriteAndReadApduCommandResponses$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
-            tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
 
-            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-            catchError(error => {
-                console.error(error.stack || error);
-                return GraphqlResponseTools.handleError$(error);
-            })
-        );
+    /**
+     * process and translate binary commands respone sequence to infer civica card data
+     */
+    processCivicaCardReloadWriteAndReadApduCommandResponses$({ root, args, jwt }, authToken) {
+        console.log(`++++++++${JSON.stringify(args)}++++++++`);
+        return CivicaCardReloadConversationDA.find$(args.conversationId)
+            .pipe(
+                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+                mergeMap(conversation =>
+                    this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
+                ),
+                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.finalCard.rawData).pipe(map(mifareCard => ({ conversation, mifareCard })))),
+                mergeMap(({ conversation, mifareCard }) =>
+                    CivicaCardReloadConversationDA.setFinalCardRawData$(conversation._id, mifareCard).pipe(
+                        mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
+                        mergeMap(civicaData => CivicaCardReloadConversationDA.setFinalCardCivicaData$(conversation._id, civicaData))
+                    )),
+                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
+            ).pipe(
+                catchError(error => {
+                    console.error(error.stack || error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
+            );
     }
 
 
