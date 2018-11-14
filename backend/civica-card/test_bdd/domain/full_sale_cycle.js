@@ -533,7 +533,7 @@ const purchaseCivicaCardReload$ = (value) => {
     const mutation = `
     mutation {
         purchaseCivicaCardReload(conversationId: "${civicaCardReloadConversationId}", value: ${value}
-        ){granted,errorMsg,receipt{id,timestamp,reloadValue,cardInitialValue,cardFinalValue,businesId,posId,posUser,posTerminal}   }
+        ){granted,errorMsg,receipt{id,timestamp,reloadValue,cardInitialValue,cardFinalValue,businesId,posId,posUserName,posUserId,posTerminal}   }
     }`;
     return Rx.from(
         gqlClient.query(mutation, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })

@@ -76,6 +76,8 @@ type CivicaCardData {
   valorPagoUsoTransporte: Int,
   secuenciaUsoTrayecto: Int,
   _saldoTarjeta: BigInt,
+  _saldoCredito: BigInt,
+  _saldoConsolidado: BigInt,
   numeroTarjetaDebito: Int,
   fechaUltimoDesbloqueoTarjeta: Int,
   fechaValidez: Int,
@@ -108,9 +110,9 @@ type CivicaCardReloadPurchaseReceipt{
   id: String,
   timestamp: BigInt,
 
-  reloadValue: Int,
-  cardInitialValue: Int,
-  cardFinalValue: Int,
+  reloadValue: BigInt,
+  cardInitialValue: BigInt,
+  cardFinalValue: BigInt,
   
   businesId: String,
   posId: String,

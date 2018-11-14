@@ -52,8 +52,8 @@ class CivicaCardReload {
                 id: uuidv4(),// TODO: replace with auto increment
                 timestamp: Date.now(),
                 reloadValue: value,
-                cardInitialValue: conversation.initialCard.civicaData._saldoTarjeta,
-                cardFinalValue: (conversation.initialCard.civicaData._saldoTarjeta + value),
+                cardInitialValue: conversation.initialCard.civicaData._saldoConsolidado,
+                cardFinalValue: (conversation.initialCard.civicaData._saldoConsolidado + value),
                 businesId: conversation.businessId,
                 posId: conversation.pos.id,
                 posUserName: conversation.pos.userName,

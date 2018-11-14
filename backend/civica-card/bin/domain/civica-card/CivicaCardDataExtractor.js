@@ -62,16 +62,10 @@ const mapping = {
 
     },
     '1': {},
-    '2': {},
-    '3': {},
-    '4': {},
-    '5': {},
-    '6': {},
-    '7': {},
-    '8': {},
-    '9': {},
-    '10': {},
+    '2': {}
 };
+
+const MAX_SALDO_CREDITO = 16777215;
 
 class CivicaCardDataExtractor {
 
@@ -89,6 +83,11 @@ class CivicaCardDataExtractor {
             map(civicaCard => {
                 if (civicaCard.saldoTarjeta != undefined && civicaCard.saldoTarjetaBk != undefined) {
                     civicaCard._saldoTarjeta = Math.min(civicaCard.saldoTarjeta, civicaCard.saldoTarjetaBk);
+                    civicaCard._saldoConsolidado = civicaCard._saldoTarjeta;
+                }
+                if (civicaCard.saldoCredito != undefined && civicaCard.saldoCreditoBk != undefined) {
+                    civicaCard._saldoCredito = MAX_SALDO_CREDITO - Math.min(civicaCard.saldoCredito, civicaCard.saldoCreditoBk);
+                    civicaCard._saldoConsolidado -= civicaCard._saldoCredito;
                 }
                 return civicaCard;
             })
@@ -115,21 +114,23 @@ class CivicaCardDataExtractor {
                     case 1: civicaCard[fieldName] = blockData.readUInt8(offset); break;
                     case 2: civicaCard[fieldName] = blockData.readUInt16BE(offset); break;
                     case 4: civicaCard[fieldName] = blockData.readUInt32BE(offset); break;
-                    default: throw new Error(`NUMBER len=${len} not allowed at CivicaCardDataExtractor.extractFiled`);
+                    default: throw new Error(`NUMBER len=${len} not allowed at CivicaCardDataExtractor.extractFiled at block ${block}`);
                 }
                 break;
             case 'VALUE_BLOCK':
-                //const bufferValue = Buffer.from([blockDatap[3] &);
-                civicaCard[fieldName] = blockData.readUInt32LE(0); break; //TODO: verificar el resto de campos
 
-                /*
-                boolean cumpleIntegridad = ((byteLectura[3] & 0x80) == 0x80) && (byteLectura[12] == byteLectura[14]) && (byteLectura[13] == byteLectura[15])
-                            && (~byteLectura[12] == byteLectura[13]) && (~byteLectura[14] == byteLectura[15]);
-                byte[] lectInv = {(byte) (byteLectura[3] & (byte) 0x7f), byteLectura[2], byteLectura[1], byteLectura[0]};
-                */
-
+                const integrity =
+                    ((blockData[3] & 0x80) == 0x80) &&
+                    (blockData[12] == blockData[14]) &&
+                    (blockData[13] == blockData[15]) &&
+                    (Uint8Array.of(~blockData[12])[0] == blockData[13]) &&
+                    (Uint8Array.of(~blockData[14])[0] == blockData[15]);
+                if (!integrity) {
+                    throw new Error(`VALUE_BLOCK integrity check failed at CivicaCardDataExtractor.extractFiled at block ${block}`);
+                }
+                civicaCard[fieldName] = Buffer.from([blockData[3] & 0x7F, blockData[2], blockData[1], blockData[0]]).readUInt32BE(0);
                 break;
-            default: throw new Error(`FieldType=${fieldType} not allowed at CivicaCardDataExtractor.extractFiled`);
+            default: throw new Error(`FieldType=${fieldType} not allowed at CivicaCardDataExtractor.extractFiled at block ${block}`);
         }
         return civicaCard;
     }
