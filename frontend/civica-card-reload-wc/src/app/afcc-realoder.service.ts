@@ -197,9 +197,6 @@ export class AfccRealoderService {
         this.gateway,
         'PUBLIC'
       ).pipe(
-        mergeMap(result => this.changeOperationState$('READING_CARD').pipe(
-          mapTo(result)
-          )),
         delay(500),
         mergeMap(cardNumberResult => {
         console.log('PUBLIC: ', cardNumberResult);
