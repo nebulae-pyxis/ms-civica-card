@@ -41,8 +41,8 @@ class CivicaCardReloadConversationDA {
     const conversation = {
       _id: id,
       timestamp: Date.now(),
-      uiStateHistory:[],
-      uiState : '',
+      uiStateHistory: [],
+      uiState: '',
       businessId,
       user: {
         jwt: userJwt,
@@ -89,7 +89,7 @@ class CivicaCardReloadConversationDA {
       { 'returnOriginal': true }
     )).pipe(
       tap(result => { if (!result || !result.value) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
-      map(result => result && result.value ? result.value : undefined) 
+      map(result => result && result.value ? result.value : undefined)
     );
   }
 
@@ -167,6 +167,7 @@ class CivicaCardReloadConversationDA {
     const purchase = {
       granted,
       errorMsg,
+      value: receipt.reloadValue,
       receipt
     };
     const updateQuery = [

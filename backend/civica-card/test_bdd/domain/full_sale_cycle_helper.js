@@ -49,6 +49,15 @@ const readBlockData$ = ({ reader, protocol, apdu }) => {
             map(respBuffer => respBuffer.toString('hex')),
         )
 };
+const writeBlockData$ = ({ reader, protocol, apdu }) => {
+    return sendApduCommandToCard$({ reader, protocol, apdu, resLen: 1024 })
+        .pipe(
+            //tap(resp => console.log(`  readBlockData_raw: ${resp.toString('hex')}`)),
+            //tap(respBuffer => expect(respBuffer[0]).to.be.equals(0x90)),
+            //map(respBuffer => respBuffer.slice(1, respBuffer.length)),
+            map(respBuffer => respBuffer.toString('hex')),
+        )
+};
 
 const requestCardFirstStepAuth$ = ({ reader, protocol, authRol }) => {    
     return sendApduCommandToCard$({ reader, protocol, apdu: [0x70, ...authRol, 0x00], resLen: 256 })
@@ -81,7 +90,8 @@ module.exports = {
     requestUid$,
     requestCardFirstStepAuth$,
     requestCardSecondStepAuth$,
-    readBlockData$
+    readBlockData$,
+    writeBlockData$
 }
 
 

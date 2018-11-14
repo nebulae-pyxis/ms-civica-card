@@ -2,6 +2,7 @@
 
 const Rx = require("rxjs");
 const { reduce, map } = require('rxjs/operators');
+const { MAX_SALDO_CREDITO } = require('./CivicaCardTools');
 
 
 /**
@@ -65,7 +66,7 @@ const mapping = {
     '2': {}
 };
 
-const MAX_SALDO_CREDITO = 16777215;
+
 
 class CivicaCardDataExtractor {
 
@@ -128,7 +129,11 @@ class CivicaCardDataExtractor {
                 if (!integrity) {
                     throw new Error(`VALUE_BLOCK integrity check failed at CivicaCardDataExtractor.extractFiled at block ${block}`);
                 }
-                civicaCard[fieldName] = Buffer.from([blockData[3] & 0x7F, blockData[2], blockData[1], blockData[0]]).readUInt32BE(0);
+                const value = blockData.slice(0, 4);
+                value[3] = value[3] & 0x7F;
+                civicaCard[fieldName] = value.readUInt32LE(0);
+
+                //civicaCard[fieldName] = Buffer.from([blockData[3] & 0x7F, blockData[2], blockData[1], blockData[0]]).readUInt32BE(0);
                 break;
             default: throw new Error(`FieldType=${fieldType} not allowed at CivicaCardDataExtractor.extractFiled at block ${block}`);
         }

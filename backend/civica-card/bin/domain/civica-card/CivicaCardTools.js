@@ -1,5 +1,7 @@
 'use strict'
 
+const MAX_SALDO_CREDITO = 16777215;
+
 const getSamAuthKeyAndDiversifiedKey = (cardRole, cardUid, samClusterClient) => {
     let key;
     let dataDiv;
@@ -22,5 +24,6 @@ const getSamAuthKeyAndDiversifiedKey = (cardRole, cardUid, samClusterClient) => 
 }
 
 module.exports = {
-    getSamAuthKeyAndDiversifiedKey
+    getSamAuthKeyAndDiversifiedKey,
+    MAX_SALDO_CREDITO
 };

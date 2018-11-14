@@ -41,6 +41,7 @@ class Sl3HighLevel {
         const [code, ...args] = codeArgs.trim().split(' ');
         switch (code) {
             case CRDB: return this.compileCRDB$(order, args, samAuthObj, aesCypher);
+            case CWDB: return this.compileCWDB$(order, args, samAuthObj, aesCypher);
             default: throw new Error(`invalid bytecode line code(${code}) Sl3HighLevel.compileLine`);
         }
     }
@@ -74,6 +75,43 @@ class Sl3HighLevel {
             observer.next(binaryCommand);
             observer.complete();
         });
+    }
+
+    /**
+     * 
+     * @param {*} param0 
+     * @param {*} samAuthObj 
+     * @param {AesCypher} aesCypher 
+     */
+    compileCWDB$(order, [blockNumber, blockCount, ...blockDataList], samAuthObj, aesCypher) {
+
+        return Rx.range(0, blockDataList.length).pipe(
+            concatMap(index => Rx.Observable.create(observer => {
+                const writeCmd_buff = Buffer.alloc(1, 0xA2);
+                const writeCounter_buff = Buffer.alloc(2, 0);
+                writeCounter_buff.writeUInt16LE(samAuthObj.writeCount, 0);
+                const ti_buff = Buffer.from(samAuthObj.ti);
+                const blockNumber_buff = Buffer.alloc(2);//Buffer.alloc(1, parseInt(blockNumber));
+                blockNumber_buff.writeUInt16LE(parseInt(blockNumber), 0);
+                const blockCount_buff = Buffer.alloc(1, parseInt(blockCount));
+
+                const oddDataCmac = this.calculateOddCmac(samAuthObj, aesCypher, Buffer.concat([writeCmd_buff, writeCounter_buff, ti_buff, blockNumber_buff, blockCount_buff]));
+
+                samAuthObj.readCount += 1;
+                const binaryCommand = {
+                    cmd: Buffer.concat([writeCmd_buff, blockNumber_buff, blockCount_buff, oddDataCmac]).toString('hex'),
+                    order: order + index,
+                    resp: '',
+                    cbc: CRDB,
+                    rbc: RRDB
+                };
+                observer.next(binaryCommand);
+                observer.complete();
+            }))
+        );
+
+
+
     }
     //#endregion
 
@@ -133,10 +171,10 @@ class Sl3HighLevel {
                 const blockCount = executedCommand_buff.readUInt8(3);
 
                 args.push(blockNumber);
-                args.push(blockCount);                
+                args.push(blockCount);
                 for (let i = 0; i < blockCount; i++) {
                     args.push(actualData_buff.slice(i * 16, i * 16 + 16).toString('hex'));
-                }                
+                }
 
                 /* * /
                 ////////// compara CMAC generado con el CMAC recibido  /////////

@@ -22,12 +22,12 @@ const RASE = 'RASE';// Response Auth Sector
  * 
  * @param [ {code : [arg]}] codeArgsList eg. [ {code:'CRDB', args:['1','2','3']}, {code:'CRDB', args:['1','2','3']} ]
  */
-const generateByteCode = (codeArgsList) => {
-    let bytecode = '';
+const generateByteCode = (codeArgsList,  bytecode = '') => {
+    const byteCodeIndex = bytecode == '' ? 0 : 1 + Math.max(bytecode.split('\n').filter(l => l !== '').map(l => l.split(':')[0]).map(i => parseInt(i)));
     let i;
     for (i = 0; i < codeArgsList.length; i++) {
         const { code, args } = codeArgsList[i];
-        bytecode += `${i}: ${code} ${args.join(' ')}\n`;
+        bytecode += `${byteCodeIndex+i}: ${code} ${args.join(' ')}\n`;
     }
     return bytecode;
 }
