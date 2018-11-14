@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { AfccRealoderService } from '../../afcc-realoder.service';
 import { OperabilityState } from '../../utils/operability-sate';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { ReloadConfirmationDialogComponent } from './reload-confirmation-dialog/reload-confirmation-dialog.component';
 import { interval, of, Subject, BehaviorSubject } from 'rxjs';
 import { mergeMap, catchError, tap, takeUntil } from 'rxjs/operators';
@@ -20,7 +20,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   private ngUnsubscribe = new Subject();
   constructor(
     private afccReloadService: AfccRealoderService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -99,20 +100,39 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   }
 
   reloadCard() {
-    this.dialog
+    if (parseInt(this.value, 0) < 1000) {
+      this.openSnackBar('Monto de recarga invalido');
+    } else {
+      this.dialog
       .open(ReloadConfirmationDialogComponent, {
         width: '500px',
         data: this.value
       })
-      .afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.afccReloadService.operabilityState$.next(
-            OperabilityState.RELOADING_CARD
-          );
-          this.afccReloadService.conversation.reloadValue = this.value;
-        }
+        .afterClosed().pipe(
+        mergeMap(granted => {
+          if (granted) {
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.REQUESTING_RELOAD_PERMISSION
+            );
+            this.afccReloadService.conversation.reloadValue = this.value;
+            return this.afccReloadService.purchaseCivicaCardReload$(this.value);
+          } else {
+            return of('Operation cancelled');
+          }
+        })
+      )
+        .subscribe(result => {
+          if (result.granted) {
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.RELOADING_CARD
+            );
+          } else {
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.RELOAD_CARD_REFUSED
+            );
+          }
       });
+    }
   }
 
   cancelReloadCard() {
@@ -121,19 +141,10 @@ export class ReadCardComponent implements OnInit, OnDestroy {
 
   reloadCardShortCut(value) {
     this.value = value;
-    this.dialog
-      .open(ReloadConfirmationDialogComponent, {
-        width: '500px',
-        data: this.value
-      })
-      .afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.afccReloadService.operabilityState$.next(
-            OperabilityState.RELOADING_CARD
-          );
-          this.afccReloadService.conversation.reloadValue = this.value;
-        }
-      });
+    this.reloadCard();
+  }
+
+  openSnackBar(text) {
+    this.snackBar.open(text, 'Cerrar', { duration: 2000 });
   }
 }

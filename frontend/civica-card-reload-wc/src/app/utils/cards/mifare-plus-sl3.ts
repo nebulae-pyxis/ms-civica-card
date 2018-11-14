@@ -412,7 +412,8 @@ export class MyfarePlusSl3 {
                     apduResp.data
                   );
                   return apduCommand;
-                })
+              }),
+                delay(100)
               );
           }),
           toArray()

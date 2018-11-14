@@ -6,9 +6,12 @@ import { ConnectionStatus } from './utils/connection-status';
 import { CypherAes } from './utils/cypher-aes';
 import { ReaderAcr1255 } from './utils/readers/reader-acr1255';
 import * as Rx from 'rxjs';
-import { switchMap, mergeMap, takeUntil, filter, map, tap } from 'rxjs/operators';
+import { switchMap, mergeMap, takeUntil, filter, map, tap, delay } from 'rxjs/operators';
 import { GatewayService } from './api/gateway.service';
 import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
+import {
+  purchaseCivicaCardReload
+} from './api/gql/afcc-reloader.js';
 
 @Injectable({
   providedIn: 'root'
@@ -190,6 +193,7 @@ export class AfccRealoderService {
         this.gateway,
         'PUBLIC'
       ).pipe(
+        delay(500),
         mergeMap(cardNumberResult => {
         console.log('PUBLIC: ', cardNumberResult);
         return this.myfarePlusSl3.readCurrentCard$(
@@ -214,4 +218,26 @@ export class AfccRealoderService {
   }
 
   // #endregion
+
+  purchaseCivicaCardReload$(reloadValue) {
+    return this.gateway.apollo
+      .mutate<any>({
+        mutation: purchaseCivicaCardReload,
+        variables: {
+          conversationId: this.conversation.id,
+          value: parseInt(reloadValue, 0)
+        },
+        errorPolicy: 'all'
+      })
+      .pipe(
+        map(rawData =>
+          JSON.parse(
+            JSON.stringify(
+              rawData.data.purchaseCivicaCardReload
+            )
+          )
+        )
+      );
+  }
+
 }
