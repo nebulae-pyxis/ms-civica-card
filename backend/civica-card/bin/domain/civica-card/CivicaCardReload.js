@@ -73,7 +73,7 @@ class CivicaCardReload {
             aggregateId: conversation.businessId,
             data: {
                 businessId: conversation.businessId,
-                type: "VENTA",
+                type: "SALE",
                 concept: "RECARGA_CIVICA",
                 value: receipt.reloadValue,
                 terminal: {

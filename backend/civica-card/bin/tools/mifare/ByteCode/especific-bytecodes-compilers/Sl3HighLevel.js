@@ -84,7 +84,6 @@ class Sl3HighLevel {
      * @param {AesCypher} aesCypher 
      */
     compileCWDB$(order, [blockNumber, blockCount, ...blockDataList], samAuthObj, aesCypher) {
-
         return Rx.range(0, blockDataList.length).pipe(
             concatMap(index => Rx.Observable.create(observer => {
                 const writeCmd_buff = Buffer.alloc(1, 0xA2);
@@ -92,26 +91,23 @@ class Sl3HighLevel {
                 writeCounter_buff.writeUInt16LE(samAuthObj.writeCount, 0);
                 const ti_buff = Buffer.from(samAuthObj.ti);
                 const blockNumber_buff = Buffer.alloc(2);//Buffer.alloc(1, parseInt(blockNumber));
-                blockNumber_buff.writeUInt16LE(parseInt(blockNumber), 0);
-                const blockCount_buff = Buffer.alloc(1, parseInt(blockCount));
+                blockNumber_buff.writeUInt16LE(parseInt(blockNumber) + index, 0);
+                const blockData_buff = Buffer.from(blockDataList[index], 'hex');
 
-                const oddDataCmac = this.calculateOddCmac(samAuthObj, aesCypher, Buffer.concat([writeCmd_buff, writeCounter_buff, ti_buff, blockNumber_buff, blockCount_buff]));
+                const oddDataCmac = this.calculateOddCmac(samAuthObj, aesCypher, Buffer.concat([writeCmd_buff, writeCounter_buff, ti_buff, blockNumber_buff, blockData_buff]));
 
-                samAuthObj.readCount += 1;
+                samAuthObj.writeCount += 1;
                 const binaryCommand = {
-                    cmd: Buffer.concat([writeCmd_buff, blockNumber_buff, blockCount_buff, oddDataCmac]).toString('hex'),
+                    cmd: Buffer.concat([writeCmd_buff, blockNumber_buff, blockData_buff, oddDataCmac]).toString('hex'),
                     order: order + index,
                     resp: '',
                     cbc: CRDB,
-                    rbc: RRDB
+                    rbc: RWDB
                 };
                 observer.next(binaryCommand);
                 observer.complete();
             }))
         );
-
-
-
     }
     //#endregion
 
@@ -148,6 +144,7 @@ class Sl3HighLevel {
         const respCode = binaryCommand.rbc;
         switch (respCode) {
             case RRDB: return this.decompileResponseRRDB$(binaryCommand, samAuthObj, aesCypher);
+            case RWDB: return this.decompileResponseRWDB$(binaryCommand, samAuthObj, aesCypher);
             default: throw new Error(`invalid binary command response code(${code}) Sl3HighLevel.decompileResponse`);
         }
     }
@@ -205,6 +202,26 @@ class Sl3HighLevel {
                 /* */
             }
             observer.next(codeArgs(RRDB, [errorCode, errorDesc, ...args]));
+            observer.complete();
+        });
+    }
+
+    decompileResponseRWDB$(binaryCommand, samAuthObj, aesCypher) {
+        return Rx.Observable.create(observer => {
+            const resp_buff = Buffer.from(binaryCommand.resp, 'hex');
+
+            let errorCode = '00';
+            let errorDesc = 'OK'
+            let args = [];
+            if (resp_buff[0] !== 0x90) {
+                errorCode = '01';
+                errorDesc = binaryCommand.resp;
+            } else {
+                const executedCommand_buff = Buffer.from(binaryCommand.cmd, 'hex');
+                const blockNumber = executedCommand_buff.readUInt16LE(1);                
+                args.push(blockNumber);
+            }
+            observer.next(codeArgs(RWDB, [errorCode, errorDesc, ...args]));
             observer.complete();
         });
     }
