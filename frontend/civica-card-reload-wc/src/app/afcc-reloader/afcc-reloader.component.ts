@@ -148,8 +148,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         this.afccRealoderService.initBluetoothValues();
         this.initConversationValues();
       }
-      if (state === OperabilityState.READING_CARD ||
-        state === OperabilityState.REQUESTING_RELOAD_PERMISSION ||
+      if (state === OperabilityState.REQUESTING_RELOAD_PERMISSION ||
         state === OperabilityState.READING_CARD_ERROR ||
         state === OperabilityState.CARD_READED_NOT_SUPPORTED ||
         state === OperabilityState.CARD_READED ||
