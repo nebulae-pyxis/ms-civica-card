@@ -115,7 +115,7 @@ export class MyfarePlusSl3 {
         return this.startReloadConversation(gateway, conversation, uid);
       }),
       mergeMap(conversationResult => {
-        conversation.timestamp = (conversationResult as any).timestamp;
+        conversation = conversationResult;
         // after succesful getted the card uiid start the first step of auth in the card
         return bluetoothService
           .sendAndWaitResponse$(
@@ -469,12 +469,14 @@ export class MyfarePlusSl3 {
    * @param uid Card uid
    */
   startReloadConversation(gateway: GatewayService, conversation, uid) {
+    if (uid === conversation.cardUid) {
+      return of(conversation);
+    }
     const posLocation = [
       conversation.position.latitude,
       conversation.position.longitude
     ];
-    console.log('PosLocation: ', posLocation);
-    conversation.id = uuid();
+    conversation.cardUid = uid;
     return gateway.apollo
       .mutate<any>({
         mutation: startCivicaCardReloadConversation,

@@ -85,7 +85,7 @@ export const processCivicaCardReloadReadApduCommandRespones = gql`
       commands: $commands
     ) {
       numeroTarjetaPublico
-      _saldoTarjeta
+      _saldoConsolidado
     }
   }
 `;
@@ -107,5 +107,11 @@ export const purchaseCivicaCardReload = gql`
         posTerminal
       }
     }
+  }
+`;
+
+export const setCivicaCardReloadConversationUiState = gql`
+  mutation setCivicaCardReloadConversationUiState($conversationId: String!, $uiState: String!) {
+    setCivicaCardReloadConversationUiState(conversationId: $conversationId, uiState: $uiState)
   }
 `;

@@ -35,47 +35,51 @@ export class ReadCardComponent implements OnInit, OnDestroy {
     };
     this.afccReloadService.conversation = newConversation;
     interval(2000)
-      .pipe(
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe(() => {
-        if (!this.afccReloadService.readingCard) {
-        this.afccReloadService.readCard$().pipe(
-          catchError(error => {
-            console.log('error: ', error);
-            this.afccReloadService.readingCard = false;
-            if (error === 'card not supported') {
-              this.afccReloadService.operabilityState$.next(OperabilityState.CARD_READED_NOT_SUPPORTED);
-            }
-            return of('Error reading the card: ', error);
-          })
-        ).subscribe(data => {
-          if ((data as any).status === 'COMPLETED') {
-            this.afccReloadService.readingCard = false;
-            this.afccReloadService.readCardAttempts = 0;
-            this.ngUnsubscribe.next();
-            console.log('llega result: ', data);
-            if ((data as any).result.cardNumber) {
-               this.balance = (data.result._saldoTarjeta);
-               this.state = (data.result.numeroTarjetaPublico);
-              this.afccReloadService.currentCardReaded$.next(data.result);
-            }
-            this.afccReloadService.operabilityState$.next(OperabilityState.CARD_READED);
-          } else if ((data as any).status === 'TIMEOUT') {
-            this.afccReloadService.readingCard = false;
-            this.afccReloadService.readCardAttempts = 0;
-            this.ngUnsubscribe.next();
-            this.readCardError();
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(
+        () => {
+          if (!this.afccReloadService.readingCard) {
+            this.afccReloadService
+              .readCard$()
+              .pipe(
+                catchError(error => {
+                  console.log('error: ', error);
+                  this.afccReloadService.readingCard = false;
+                  if (error === 'card not supported') {
+                    this.afccReloadService.operabilityState$.next(
+                      OperabilityState.CARD_READED_NOT_SUPPORTED
+                    );
+                  }
+                  return of('Error reading the card: ', error);
+                })
+              )
+              .subscribe(data => {
+                if ((data as any).status === 'COMPLETED') {
+                  this.afccReloadService.readingCard = false;
+                  this.afccReloadService.readCardAttempts = 0;
+                  this.ngUnsubscribe.next();
+                  console.log('llega result: ', data);
+                  this.balance = data.result._saldoConsolidado;
+                  this.state = data.result.numeroTarjetaPublico;
+                  this.afccReloadService.currentCardReaded$.next(data.result);
+                  this.afccReloadService.operabilityState$.next(
+                    OperabilityState.CARD_READED
+                  );
+                } else if ((data as any).status === 'TIMEOUT') {
+                  this.afccReloadService.readingCard = false;
+                  this.afccReloadService.readCardAttempts = 0;
+                  this.ngUnsubscribe.next();
+                  this.readCardError();
+                }
+              });
           }
-        });
-      }
-      },
-      error => {
-      },
-      () => {
-        this.afccReloadService.readCardAttempts = 0;
-        this.afccReloadService.readingCard = false;
-      });
+        },
+        error => {},
+        () => {
+          this.afccReloadService.readCardAttempts = 0;
+          this.afccReloadService.readingCard = false;
+        }
+      );
     this.afccReloadService.operabilityState$.subscribe(state => {
       this.operationState = state;
     });
@@ -104,23 +108,26 @@ export class ReadCardComponent implements OnInit, OnDestroy {
       this.openSnackBar('Monto de recarga invalido');
     } else {
       this.dialog
-      .open(ReloadConfirmationDialogComponent, {
-        width: '500px',
-        data: this.value
-      })
-        .afterClosed().pipe(
-        mergeMap(granted => {
-          if (granted) {
-            this.afccReloadService.operabilityState$.next(
-              OperabilityState.REQUESTING_RELOAD_PERMISSION
-            );
-            this.afccReloadService.conversation.reloadValue = this.value;
-            return this.afccReloadService.purchaseCivicaCardReload$(this.value);
-          } else {
-            return of('Operation cancelled');
-          }
+        .open(ReloadConfirmationDialogComponent, {
+          width: '500px',
+          data: this.value
         })
-      )
+        .afterClosed()
+        .pipe(
+          mergeMap(granted => {
+            if (granted) {
+              this.afccReloadService.operabilityState$.next(
+                OperabilityState.REQUESTING_RELOAD_PERMISSION
+              );
+              this.afccReloadService.conversation.reloadValue = this.value;
+              return this.afccReloadService.purchaseCivicaCardReload$(
+                this.value
+              );
+            } else {
+              return of('Operation cancelled');
+            }
+          })
+        )
         .subscribe(result => {
           if (result.granted) {
             this.afccReloadService.operabilityState$.next(
@@ -131,7 +138,7 @@ export class ReadCardComponent implements OnInit, OnDestroy {
               OperabilityState.RELOAD_CARD_REFUSED
             );
           }
-      });
+        });
     }
   }
 
