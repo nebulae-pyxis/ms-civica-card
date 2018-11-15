@@ -115,16 +115,15 @@ class PubSubBroker {
     configMessageListener$(topics) {
         return Rx.Observable.create((observer) => {
             Rx.from(topics).pipe(
-                filter(topicName => Object.keys(this.listeningTopics).indexOf(topicName) === -1).pipe(
-                    mergeMap(topicName => {
-                        const subscriptionName = `${topicName}_civica-card`;
-
-                        return this.getSubscription$(topicName, subscriptionName)
-                            .map(subsription => {
-                                return { topicName, subsription, subscriptionName };
-                            })
-                    })
-                )
+                filter(topicName => Object.keys(this.listeningTopics).indexOf(topicName) === -1),
+                mergeMap(topicName => {
+                    const subscriptionName = `${topicName}_civica-card`;
+                    return this.getSubscription$(topicName, subscriptionName).pipe(
+                        map(subsription => {
+                            return { topicName, subsription, subscriptionName };
+                        })
+                    )
+                })
             ).subscribe(
                 ({ topicName, subsription, subscriptionName }) => {
                     this.listeningTopics[topicName] = subscriptionName;
