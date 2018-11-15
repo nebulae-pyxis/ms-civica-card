@@ -74,7 +74,7 @@ jobs:
   build-api:    
     working_directory: ~/nebulae/
     docker:
-      - image: circleci/node:9.9.0
+      - image: circleci/node:10.12
         command: bash
     steps:
       - attach_workspace:
@@ -152,7 +152,7 @@ jobs:
             cd ~/nebulae/repo/
             mkdir ~/nebulae/backend
             cp ~/nebulae/go/mbinit ~/nebulae/repo/backend/civica-card/
-            export DOCKERHUB_IMAGE=ms-civica-card.backend.civica-card
+            export DOCKERHUB_IMAGE=civica-card.backend.civica-card
             export DOCKERHUB_TAG=0.0.1
             gitChanged backend/civica-card || docker build  -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest ~/nebulae/repo/backend/civica-card/
             gitChanged backend/civica-card || docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
