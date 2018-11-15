@@ -119,7 +119,7 @@ class GraphQlService {
     return Rx.of(msg).pipe(mergeMap(
       ({ response, correlationId, replyTo }) =>
         replyTo
-          ? broker.send$(replyTo, "sales-gateway.graphql.Query.response", response, {
+          ? broker.send$(replyTo, "salesgateway.graphql.Query.response", response, {
             correlationId
           })
           : Rx.of(undefined)
