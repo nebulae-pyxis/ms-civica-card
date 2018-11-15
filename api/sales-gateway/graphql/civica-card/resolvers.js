@@ -4,7 +4,6 @@ const pubsub = new PubSub();
 const Rx = require("rxjs");
 const broker = require("../../broker/BrokerFactory")();
 const RoleValidator = require('../../tools/RoleValidator');
-
 const INTERNAL_SERVER_ERROR_CODE = 18001;
 const USERS_PERMISSION_DENIED_ERROR_CODE = 18002;
 
@@ -24,9 +23,8 @@ function getResponseFromBackEnd$(response) {
 }
 
 module.exports = {
-
+    
     //// QUERY ///////
-
     Query: {
         CivicaCardReloadConversation(root, args, context) {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'CivicaCardReloadConversation', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])                

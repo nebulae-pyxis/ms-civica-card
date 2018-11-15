@@ -234,7 +234,6 @@ class CivicaCardCQRS {
                 }
             )),
             mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
-            tap(x => console.log(`====================${JSON.stringify(x)}=======================`)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
                 console.error(error.stack || error);
