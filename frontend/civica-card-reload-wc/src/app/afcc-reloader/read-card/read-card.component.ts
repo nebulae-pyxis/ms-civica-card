@@ -58,7 +58,6 @@ export class ReadCardComponent implements OnInit, OnDestroy {
                   this.afccReloadService.readingCard = false;
                   this.afccReloadService.readCardAttempts = 0;
                   this.ngUnsubscribe.next();
-                  console.log('llega result: ', data);
                   this.balance = data.result._saldoConsolidado;
                   this.state = data.result.numeroTarjetaPublico;
                   this.afccReloadService.currentCardReaded$.next(data.result);

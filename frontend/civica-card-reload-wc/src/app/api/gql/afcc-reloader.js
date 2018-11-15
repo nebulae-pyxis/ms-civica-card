@@ -31,7 +31,6 @@ export const startCivicaCardReloadConversation = gql`
       posUser
       posTerminal
       posLocation
-      operationState
       readerType
       cardType
     }
@@ -103,16 +102,42 @@ export const purchaseCivicaCardReload = gql`
         cardFinalValue
         businesId
         posId
-        posUserName,
-        posUserId,
+        posUserName
+        posUserId
         posTerminal
       }
     }
   }
 `;
 
+export const CivicaCardReloadConversation = gql`
+  query CivicaCardReloadConversation($id: ID!) {
+    CivicaCardReloadConversation(id: $id) {
+      id
+      timestamp
+      userJwt
+      userName
+      posId
+      posUser
+      posTerminal
+      posLocation
+      readerType
+      cardType
+      cardUid
+      uiState
+      uiStateHistory
+    }
+  }
+`;
+
 export const setCivicaCardReloadConversationUiState = gql`
-  mutation setCivicaCardReloadConversationUiState($conversationId: String!, $uiState: String!) {
-    setCivicaCardReloadConversationUiState(conversationId: $conversationId, uiState: $uiState)
+  mutation setCivicaCardReloadConversationUiState(
+    $conversationId: String!
+    $uiState: String!
+  ) {
+    setCivicaCardReloadConversationUiState(
+      conversationId: $conversationId
+      uiState: $uiState
+    )
   }
 `;

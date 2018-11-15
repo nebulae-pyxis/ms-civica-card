@@ -112,9 +112,11 @@ export class MyfarePlusSl3 {
         return uid;
       }),
       mergeMap(uid => {
+        console.log('inicia conversacion!!!!!!!!!!!!');
         return this.startReloadConversation(gateway, conversation, uid);
       }),
       mergeMap(conversationResult => {
+        console.log('resultado de inicio de conversacion: ', conversationResult);
         conversation = conversationResult;
         // after succesful getted the card uiid start the first step of auth in the card
         return bluetoothService

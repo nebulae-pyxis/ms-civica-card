@@ -11,7 +11,8 @@ import { GatewayService } from './api/gateway.service';
 import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 import {
   purchaseCivicaCardReload,
-  setCivicaCardReloadConversationUiState
+  setCivicaCardReloadConversationUiState,
+  CivicaCardReloadConversation
 } from './api/gql/afcc-reloader.js';
 import { v4 as uuid } from 'uuid';
 
