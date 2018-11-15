@@ -2,6 +2,7 @@
 const Rx = require("rxjs");
 const eventSourcing = require("../../tools/EventSourcing")();
 const { map, switchMap, filter, mergeMap, concatMap } = require('rxjs/operators');
+const { walletES } = require('../../domain/wallet');
 /**
  * Singleton instance
  */
@@ -119,14 +120,15 @@ class EventStoreService {
   ////////////////////////////////////////////////////////////////////////////////////////
 
   generateFunctionMap() {
-    return {
-
-      //Sample for handling event-sourcing events, please remove
-      // HelloWorldEvent: {
-      //   fn: helloWorld.handleHelloWorld$,
-      //   obj: helloWorld
-      // },
-
+    return {      
+      WalletSpendingForbidden: {
+        fn: walletES.handleWalletSpendingForbiddenEvent$,
+        obj: walletES
+      },
+      WalletSpendingAllowed: {
+        fn: walletES.handleWalletSpendingAllowedEvent$,
+        obj: walletES
+      },
     };
   }
 
@@ -136,11 +138,15 @@ class EventStoreService {
   generateAggregateEventsArray() {
     return [
 
-      //Sample for assoc events and aggregates, please remove
-      // {
-      //   aggregateType: "HelloWorld",
-      //   eventType: "HelloWorldEvent"
-      // },
+      
+      {
+        aggregateType: "Wallet",
+        eventType: "WalletSpendingForbidden"
+      },
+      {
+        aggregateType: "Wallet",
+        eventType: "WalletSpendingAllowed"
+      },
 
     ]
   }
