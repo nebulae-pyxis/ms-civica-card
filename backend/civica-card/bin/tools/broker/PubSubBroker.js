@@ -174,7 +174,7 @@ class PubSubBroker {
             //if not cached, then tries to know if the topic exists
             const topic = this.pubsubClient.topic(topicName);
 
-            return Rx.fromPromise(topic.exists()).pipe(
+            return Rx.from(topic.exists()).pipe(
                 map(data => data[0]),
                 switchMap(exists => {
                     if (exists) {
@@ -198,7 +198,7 @@ class PubSubBroker {
      * @param {string} topicName 
      */
     createTopic$(topicName) {
-        return Rx.fromPromise(this.pubsubClient.createTopic(topicName)).pipe(
+        return Rx.from(this.pubsubClient.createTopic(topicName)).pipe(
             switchMap(data => {
                 this.verifiedTopics[topicName] = this.pubsubClient.topic(topicName);
                 return Rx.of(this.verifiedTopics[topicName]);
@@ -216,7 +216,7 @@ class PubSubBroker {
     */
     publish$(topic, type, data, { correlationId } = {}) {
         const dataBuffer = Buffer.from(JSON.stringify(data));
-        return Rx.fromPromise(
+        return Rx.from(
             topic.publisher().publish(
                 dataBuffer,
                 {
@@ -235,7 +235,7 @@ class PubSubBroker {
      */
     getSubscription$(topicName, subscriptionName) {
         return this.getTopic$(topicName).pipe(
-            switchMap(topic => Rx.fromPromise(
+            switchMap(topic => Rx.from(
                 topic.subscription(subscriptionName)
                     .get({ autoCreate: true }))
             ),
