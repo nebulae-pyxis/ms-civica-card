@@ -181,11 +181,11 @@ jobs:
               gcloud --quiet config set project $GKE_PROJECT_PROD
               gcloud --quiet config set compute/zone $GKE_ZONE_PROD
               gcloud --quiet container clusters get-credentials $GKE_CLUSTER
-        - run:
-            name: Deploy frontendid FrontEnd
-            command: |
-              (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && echo docker image DIGEST to set $(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
-              (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && kubectl set image deployment/frontend-frontendid frontend-frontendid=$(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
+        # - run:
+        #     name: Deploy frontendid FrontEnd
+        #     command: |
+        #       (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && echo docker image DIGEST to set $(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
+        #       (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && kubectl set image deployment/frontend-frontendid frontend-frontendid=$(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
         - run:
             name: Deploy apiid API
             command: |
@@ -204,10 +204,10 @@ workflows:
     jobs:
       - prepare:
           context: project_context_uc
-      - build-frontend:
-          context: project_context_uc
-          requires:
-            - prepare
+      # - build-frontend:
+      #     context: project_context_uc
+      #     requires:
+      #       - prepare
       - build-api:
           context: project_context_uc
           requires:
@@ -224,6 +224,6 @@ workflows:
       - deploy-prod:
           context: project_context_uc
           requires:
-            - build-frontend
+            # - build-frontend
             - build-api
             - build-backend

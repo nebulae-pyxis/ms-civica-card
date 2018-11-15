@@ -8,6 +8,7 @@ const RoleValidator = require('../../tools/RoleValidator');
 const INTERNAL_SERVER_ERROR_CODE = 18001;
 const USERS_PERMISSION_DENIED_ERROR_CODE = 18002;
 
+
 function getResponseFromBackEnd$(response) {
     return Rx.Observable.of(response)
         .map(resp => {
