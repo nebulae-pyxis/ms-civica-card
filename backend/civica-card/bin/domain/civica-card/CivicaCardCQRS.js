@@ -1,5 +1,5 @@
 'use strict'
-const CivicaCardReloadConversationDA = require("../../data/CivicaCardReloadConversationDA");
+
 const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
@@ -9,6 +9,8 @@ const CivicaCardReadWriteFlow = require('./CivicaCardReadWriteFlow');
 const { getSamAuthKeyAndDiversifiedKey } = require('./CivicaCardTools');
 const CivicaCardDataExtractor = require('./CivicaCardDataExtractor');
 const CivicaCardReload = require('./CivicaCardReload');
+const CivicaCardReloadConversationDA = require("../../data/CivicaCardReloadConversationDA");
+const WalletDA = require("../../data/WalletDA");
 
 
 /**
@@ -199,6 +201,13 @@ class CivicaCardCQRS {
     purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+            mergeMap(conversation => 
+                WalletDA.find$(conversation.businessId).pipe(
+                    tap(wallet => { if (wallet === null) throw new CustomError('Bolsas no activas', `Asegurese que su bolsa ha sido creada y activada`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+                    tap(wallet => { if (!wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+                    mapTo(conversation)
+                )
+            ),
             mergeMap(conversation => CivicaCardReload.purchaseCivicaCardReload$(conversation, args.value)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {

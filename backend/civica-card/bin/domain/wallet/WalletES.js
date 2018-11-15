@@ -15,29 +15,25 @@ class WalletES {
     constructor() {
     }
 
-
     /**
-     * Creates and returns a CivicaCardReloadConversation
+     * updates wallet state
+     * @param {Event} event 
      */
-    processWalletSpendingForbiddenEvent$(event) {
+    handleWalletSpendingForbiddenEvent$(event) {
         const data = event.data;
-        return WalletDA.updateWallet$(data.businessId,data.wallet)
-            .pipe(
-                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
-                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-                catchError(error => {
-                    console.error(error.stack || error);
-                    return GraphqlResponseTools.handleError$(error);
-                })
-            );
+        return WalletDA.updateWallet$(data.businessId, data.wallet, false);
     }
 
-
+    /**
+     * updates wallet state
+     * @param {Event} event 
+     */
+    handleWalletSpendingAllowedEvent$(event) {
+        const data = event.data;
+        return WalletDA.updateWallet$(data.businessId, data.wallet, true);
+    }
 
 }
-
-
 
 
 /**
