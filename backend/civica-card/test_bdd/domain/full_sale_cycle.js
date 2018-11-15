@@ -196,7 +196,7 @@ describe('CivicaCardReloadConversation', function () {
                 gqlClient.query(`
                 query{
                     CivicaCardReloadConversation(id: "not-a-real-conversation-id"){
-                      id,operationState,readerType,cardType
+                      id,uiState,readerType,cardType
                     }
                   }`, {}, (req, res) => { if (res.status !== 200) throw new Error(`HTTP ERR: ${JSON.stringify(res)}`) })
             ).pipe(
