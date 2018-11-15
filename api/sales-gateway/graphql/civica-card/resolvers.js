@@ -26,7 +26,6 @@ function getResponseFromBackEnd$(response) {
 module.exports = {
 
     //// QUERY ///////
-
     Query: {
         CivicaCardReloadConversation(root, args, context) {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'CivicaCardReloadConversation', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])                
