@@ -203,26 +203,26 @@ workflows:
   build-and-deploy:
     jobs:
       - prepare:
-          context: project_context_uc
+          context: PYXIS
       # - build-frontend:
-      #     context: project_context_uc
+      #     context: PYXIS
       #     requires:
       #       - prepare
       - build-api:
-          context: project_context_uc
+          context: PYXIS
           requires:
             - prepare
       - build-mbinit:
-          context: project_context_uc
+          context: PYXIS
           requires:
             - prepare
       - build-backend:
-          context: project_context_uc
+          context: PYXIS
           requires:
             - prepare
             - build-mbinit      
       - deploy-prod:
-          context: project_context_uc
+          context: PYXIS
           requires:
             # - build-frontend
             - build-api

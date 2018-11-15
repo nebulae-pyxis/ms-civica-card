@@ -1,6 +1,5 @@
 'use strict';
 
-
 // TEST LIBS
 const assert = require('assert');
 const expect = require('chai').expect
