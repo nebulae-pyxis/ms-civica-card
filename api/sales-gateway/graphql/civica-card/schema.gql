@@ -16,14 +16,8 @@ type CivicaCardReloadConversation {
 
   uiState: String,
   uiStateHistory: [String],
-  # initCardData: CardData,
-  # initCardState: String,
-  # reloadValue: Int,
-  # receipt: String,
-  # business: String,
-  # terminal: String,
-  # endCardData: CardData,
-  # endCardState: String,
+
+  purchase: CivicaCardReloadPurchase
 }
 
 type CivicaCardReloadSecondAuthToken {

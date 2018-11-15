@@ -100,7 +100,12 @@ class CivicaCardCQRS {
             cardType: conversation.cardType,
             cardUid: conversation.cardUid,
             uiState: conversation.uiState,
-            uiStateHistory: conversation.uiStateHistory.map(h => h.uiState)
+            uiStateHistory: conversation.uiStateHistory.map(h => h.uiState),
+            purchase: conversation.purchase === undefined ? undefined : {
+                granted: conversation.purchase.granted,
+                errorMsg: conversation.purchase.errorMsg,
+                receipt: conversation.purchase.receipt
+            }
         };
     }
 
@@ -120,7 +125,7 @@ class CivicaCardCQRS {
             }
             ),
             mergeMap(({ samFirstStepAuthResponse, conversation }) => {
-                return CivicaCardReloadConversationDA.setSamIdSamKeyAndCardRole$(conversation._id, samFirstStepAuthResponse.samId,samFirstStepAuthResponse.samKey, args.cardRole )
+                return CivicaCardReloadConversationDA.setSamIdSamKeyAndCardRole$(conversation._id, samFirstStepAuthResponse.samId, samFirstStepAuthResponse.samKey, args.cardRole)
                     .pipe(mapTo(samFirstStepAuthResponse))
             }),
             map(samFirstStepAuthResponse => ({ token: samFirstStepAuthResponse.secondStepSamToken.toString('hex') })),
@@ -234,7 +239,6 @@ class CivicaCardCQRS {
      * process and translate binary commands respone sequence to infer civica card data
      */
     processCivicaCardReloadWriteAndReadApduCommandResponses$({ root, args, jwt }, authToken) {
-        console.log(`++++++++${JSON.stringify(args)}++++++++`);
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
