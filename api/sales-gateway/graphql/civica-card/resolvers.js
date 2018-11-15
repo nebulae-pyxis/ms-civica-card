@@ -23,7 +23,6 @@ function getResponseFromBackEnd$(response) {
 }
 
 module.exports = {
-
     //// QUERY ///////
     Query: {
         CivicaCardReloadConversation(root, args, context) {

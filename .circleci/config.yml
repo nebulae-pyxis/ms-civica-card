@@ -146,18 +146,18 @@ jobs:
           at: ~/nebulae
       - setup_remote_docker      
       - run:
-          name: Build docker image for backendname
+          name: Build docker image for civica-card
           command: |
             source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
             cd ~/nebulae/repo/
             mkdir ~/nebulae/backend
-            cp ~/nebulae/go/mbinit ~/nebulae/repo/backend/backendname/
-            export DOCKERHUB_IMAGE=ms-civica-card.backend.backendname
+            cp ~/nebulae/go/mbinit ~/nebulae/repo/backend/civica-card/
+            export DOCKERHUB_IMAGE=ms-civica-card.backend.civica-card
             export DOCKERHUB_TAG=0.0.1
-            gitChanged backend/backendname || docker build  -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest ~/nebulae/repo/backend/backendname/
-            gitChanged backend/backendname || docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
-            gitChanged backend/backendname || docker push $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG
-            gitChanged backend/backendname || docker push $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest      
+            gitChanged backend/civica-card || docker build  -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest ~/nebulae/repo/backend/civica-card/
+            gitChanged backend/civica-card || docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
+            gitChanged backend/civica-card || docker push $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG
+            gitChanged backend/civica-card || docker push $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest      
       - persist_to_workspace:
           root: ~/nebulae/
           paths:
