@@ -4,7 +4,6 @@ const pubsub = new PubSub();
 const Rx = require("rxjs");
 const broker = require("../../broker/BrokerFactory")();
 const RoleValidator = require('../../tools/RoleValidator');
-
 const INTERNAL_SERVER_ERROR_CODE = 18001;
 const USERS_PERMISSION_DENIED_ERROR_CODE = 18002;
 
