@@ -123,7 +123,7 @@ class PubSubBroker {
                             return { topicName, subsription, subscriptionName };
                         })
                     )
-                })
+                }) 
             ).subscribe(
                 ({ topicName, subsription, subscriptionName }) => {
                     this.listeningTopics[topicName] = subscriptionName;
