@@ -39,17 +39,19 @@ class CivicaCardCQRS {
      * Creates and returns a CivicaCardReloadConversation
      */
     startCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name, businessId: authToken.businessId })
-            .pipe(
-                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                mergeMap(conversation => this.verifyWallet$(conversation)),
-                map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
-                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-                catchError(error => {
-                    console.error(error.stack || error);
-                    return GraphqlResponseTools.handleError$(error);
-                })
-            );
+
+        return WalletDA.find$(businessId).pipe(
+            tap(wallet => { if (wallet === null) throw new CustomError('Bolsas no activas', `Asegurese que su bolsa ha sido creada y activada`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+            tap(wallet => { if (!wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+        ).pipe(
+            mergeMap(wallet => CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name, businessId: authToken.businessId })),
+            map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(error => {
+                console.error(error.stack || error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
     }
 
 
@@ -212,7 +214,7 @@ class CivicaCardCQRS {
         );
     }
 
-    
+
 
 
     generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
@@ -280,6 +282,7 @@ class CivicaCardCQRS {
             mapTo(conversation)
         );
     }
+
 
 
 
