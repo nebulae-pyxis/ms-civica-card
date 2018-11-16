@@ -52,7 +52,6 @@ class CivicaCardReloadConversationDA {
 
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
       tap(x => { if (x.result.ok !== 1) throw (new Error(`Wallet(id:${id}) updated failed`)); }),
-      mapTo(civicaData)
     );
   }
 
