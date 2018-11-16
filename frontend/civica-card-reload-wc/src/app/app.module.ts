@@ -52,7 +52,7 @@ import { ReloadCardRefusedComponent } from './afcc-reloader/reload-card-refused/
     HttpClientModule,
     AngularSvgIconModule,
     AngularBleModule.forRoot({
-      enableTracing: true
+      enableTracing: false
     }),
     CurrencyMaskModule,
     FormsModule,

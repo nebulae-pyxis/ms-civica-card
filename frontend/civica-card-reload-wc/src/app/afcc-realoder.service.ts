@@ -220,6 +220,7 @@ export class AfccRealoderService {
   // #region Authentication ACR1255
 
   changeCypherMasterKey(masterKey) {
+    console.log('llega masterKey: ', masterKey);
     this.sessionKey = masterKey;
     this.cypherAesService.changeMasterKey(this.sessionKey);
   }

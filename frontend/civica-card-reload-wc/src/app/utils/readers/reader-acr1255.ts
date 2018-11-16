@@ -47,7 +47,6 @@ export class ReaderAcr1255 {
             tap(result => {
             console.log('Emite startNotifiersListener: ', result);
             }),
-            mergeMap(_ => this.startAuthReader$(bluetoothService, cypherAesService)),
             mapTo(gattServer));
         }),
         tap(server => {
@@ -55,6 +54,7 @@ export class ReaderAcr1255 {
             `${(server as BluetoothRemoteGATTServer).device.name}`
           );
         }),
+        mergeMap(_ => this.startAuthReader$(bluetoothService, cypherAesService))
          // Start the auth process with the reader
       );
   }
