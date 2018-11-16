@@ -46,14 +46,14 @@ jobs:
             cd ~/nebulae/repo/
             mkdir -p ~/nebulae/frontend/shell 
             gitChanged frontend || ( git clone --depth=1 https://github.com/nebulae-pyxis/emi ~/nebulae/frontend/shell )      
-      # - run:
-      #     name: commit & push package-lock.json changes
-      #     command: |
-      #       source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
-      #       cd ~/nebulae/repo/
-      #       gitChanged frontend || cp /home/circleci/nebulae/frontend/emi/package-lock.json ~/nebulae/frontend/shell/frontend/emi/package-lock.json                        
-      #       gitChanged frontend || ( cd ~/nebulae/frontend/shell && gitPublishPackageLockChanges "$GITHUB_USER_EMAIL" "$GITHUB_USER_NAME" "$GITHUB_PERSONAL_ACCESS_TOKEN" "nebulae-pyxis/emi" "master" && cd ~/nebulae/repo/)
-      # - setup_remote_docker
+      - run:
+          name: commit & push package-lock.json changes
+          command: |
+            source ~/nebulae/repo/.circleci/scripts/gitChanged.sh
+            cd ~/nebulae/repo/
+            gitChanged frontend || cp /home/circleci/nebulae/frontend/emi/package-lock.json ~/nebulae/frontend/shell/frontend/emi/package-lock.json                        
+            gitChanged frontend || ( cd ~/nebulae/frontend/shell && gitPublishPackageLockChanges "$GITHUB_USER_EMAIL" "$GITHUB_USER_NAME" "$GITHUB_PERSONAL_ACCESS_TOKEN" "nebulae-pyxis/emi" "master" && cd ~/nebulae/repo/)
+      - setup_remote_docker
       - run:
           name: Build docker image and push it to hub
           command: |
@@ -181,11 +181,11 @@ jobs:
               gcloud --quiet config set project $GKE_PROJECT_PROD
               gcloud --quiet config set compute/zone $GKE_ZONE_PROD
               gcloud --quiet container clusters get-credentials $GKE_CLUSTER
-        # - run:
-        #     name: Deploy emi FrontEnd
-        #     command: |
-        #       (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && echo docker image DIGEST to set $(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
-        #       (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && kubectl set image deployment/frontend-emi frontend-emi=$(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
+        - run:
+            name: Deploy emi FrontEnd
+            command: |
+              (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && echo docker image DIGEST to set $(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
+              (ls ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST && kubectl set image deployment/frontend-emi frontend-emi=$(< ~/nebulae/frontend/DOCKERHUB_GENERATED_IMAGE_DIGEST) ) || echo frontend not found
         - run:
             name: Deploy sales-gateway API
             command: |
@@ -204,10 +204,10 @@ workflows:
     jobs:
       - prepare:
           context: PYXIS
-      # - build-frontend:
-      #     context: PYXIS
-      #     requires:
-      #       - prepare
+      - build-frontend:
+          context: PYXIS
+          requires:
+            - prepare
       - build-api:
           context: PYXIS
           requires:
@@ -224,6 +224,6 @@ workflows:
       - deploy-prod:
           context: PYXIS
           requires:
-            # - build-frontend
+            - build-frontend
             - build-api
             - build-backend

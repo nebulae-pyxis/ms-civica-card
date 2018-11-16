@@ -4,13 +4,13 @@ import { SharedModule } from '../../../core/modules/shared.module';
 import { DatePipe } from '@angular/common';
 import { FuseWidgetModule } from '../../../core/components/widget/widget.module';
 
-import { civicaCardService } from './civica-card.service';
-import { civicaCardComponent } from './civica-card.component';
+import { CivicaCardReloadPosService } from './civica-card-reload-pos.service';
+import { CivicaCardReloadPosComponent } from './civica-card-reload-pos.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: civicaCardComponent,
+    component: CivicaCardReloadPosComponent,
   }
 ];
 
@@ -21,9 +21,9 @@ const routes: Routes = [
     FuseWidgetModule
   ],
   declarations: [
-    civicaCardComponent    
+    CivicaCardReloadPosComponent    
   ],
-  providers: [ civicaCardService, DatePipe]
+  providers: [ CivicaCardReloadPosService, DatePipe]
 })
 
-export class civicaCardModule {}
+export class CivicaCardReloadPosModule {}

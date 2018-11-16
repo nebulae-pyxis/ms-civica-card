@@ -1,33 +1,33 @@
 [
     {
-        "name": "civica-card",
-        "src": "frontend/emi/civica-card",
+        "name": "civica-card-reload-pos",
+        "src": "frontend/emi/civica-card-reload-pos",
         "groups": [
             {
-              "id": "GROUP_NAME",
-              "icon": "location_searching",
+              "id": "POS",
+              "icon": "store",
               "translate": {
-                "en": "Group Name",
-                "es": "Nombre de Grupo"
+                "en": "POS",
+                "es": "POS"
               },
               "priority": 1000
             }
           ],
         "contents": [
             {
-                "groupId": "GROUP_NAME",
-                "id": "civica-card",
-                "icon": "dashboard",
+                "groupId": "POS",
+                "id": "civica-card-reload-pos",
+                "icon": "credit_card",
                 "translate": {
-                    "en": "civica-card_en",
-                    "es": "civica-card_es"
+                    "en": "Cívica",
+                    "es": "Cívica"
                 },
-                "navURL": "/civica-card",
-                "path": "civica-card",
-                "loadChildren": "./main/content/civica-card/civica-card.module#civicaCardModule",
+                "navURL": "/civica-card-reload-pos",
+                "path": "civica-card-reload-pos",
+                "loadChildren": "./main/content/civica-card-reload-pos/civica-card-reload-pos.module#CivicaCardReloadPosModule",
                 "priority": 1000,
-                "roles" : ["developer"],
-                "default" : false
+                "roles" : ["POS"],
+                "default" : true
             }            
         ],
         "preBuildCommands": [],
