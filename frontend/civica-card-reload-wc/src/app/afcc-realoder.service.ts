@@ -6,7 +6,17 @@ import { ConnectionStatus } from './utils/connection-status';
 import { CypherAes } from './utils/cypher-aes';
 import { ReaderAcr1255 } from './utils/readers/reader-acr1255';
 import * as Rx from 'rxjs';
-import { switchMap, mergeMap, takeUntil, filter, map, tap, delay, mapTo } from 'rxjs/operators';
+import {
+  switchMap,
+  mergeMap,
+  takeUntil,
+  filter,
+  map,
+  tap,
+  delay,
+  mapTo,
+  catchError
+} from 'rxjs/operators';
 import { GatewayService } from './api/gateway.service';
 import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 import {
@@ -19,12 +29,14 @@ import { v4 as uuid } from 'uuid';
 @Injectable({
   providedIn: 'root'
 })
-
 export class AfccRealoderService {
-
   operabilityState$ = new BehaviorSubject<OperabilityState>(
     OperabilityState.UNKNOWN_POSITION
   );
+  posPosition;
+  posTerminal;
+  posUserId;
+  posUserName;
   conversation: any = {};
   error$ = new Rx.Subject<any>();
   cardReloadAborted$ = new Rx.Subject<any>();
@@ -38,7 +50,6 @@ export class AfccRealoderService {
   receipt$ = new Rx.Subject<String>();
   readerType;
   currentCardReaded$ = new Rx.BehaviorSubject<any>({});
-
 
   // #region VARIABLES ACR1255
   deviceConnectionStatus$ = new BehaviorSubject<String>(
@@ -60,23 +71,44 @@ export class AfccRealoderService {
   myfarePlusSl3: MyfarePlusSl3;
   // #endregion
 
-  constructor(private bluetoothService: BluetoothService,
-    public gateway: GatewayService) {
+  constructor(
+    private bluetoothService: BluetoothService,
+    public gateway: GatewayService
+  ) {
     this.cypherAesService = new CypherAes();
     this.readerAcr1255 = new ReaderAcr1255();
     this.myfarePlusSl3 = new MyfarePlusSl3();
     // TODO: ESTA LLAVE SE DEBE CONSULTAR POR GRAPHQL Y SE DEBE QUITAR DEL CONSTRUCTOR
-    const key = [65, 67, 82, 49, 50, 53, 53, 85, 45, 74, 49, 32, 65, 117, 116, 104];
+    const key = [
+      65,
+      67,
+      82,
+      49,
+      50,
+      53,
+      53,
+      85,
+      45,
+      74,
+      49,
+      32,
+      65,
+      117,
+      116,
+      104
+    ];
     this.keyReader = key;
     this.cypherAesService.config(key);
 
     this.operabilityState$.subscribe(operabilityState => {
-      if (operabilityState === OperabilityState.RELOADING_CARD ||
+      if (
+        operabilityState === OperabilityState.RELOADING_CARD ||
         operabilityState === OperabilityState.RELOADING_CARD_ERROR ||
         operabilityState === OperabilityState.RELOAD_CARD_ABORTED ||
-        operabilityState === OperabilityState.RELOAD_CARD_SUCCESS) {
+        operabilityState === OperabilityState.RELOAD_CARD_SUCCESS
+      ) {
         this.conversation.state = operabilityState;
-        }
+      }
     });
   }
 
@@ -113,9 +145,7 @@ export class AfccRealoderService {
       );
   }
 
-
-
-   /**
+  /**
    * change the reader key to the session key and change the state to connected
    */
   onConnectionSuccessful$(sessionKey) {
@@ -125,10 +155,43 @@ export class AfccRealoderService {
       this.deviceConnectionStatus$.next(ConnectionStatus.CONNECTED);
       this.operabilityState$.next(OperabilityState.CONNECTED);
       return Rx.of('connection succeful');
-    });
+    }).pipe(
+      mergeMap(() => {
+        return this.gateway.apollo.query<any>({
+          query: CivicaCardReloadConversation,
+          variables: {
+            id: localStorage.conversationId
+          },
+          errorPolicy: 'all',
+          fetchPolicy: 'network-only'
+        }).pipe(
+          catchError(error => {
+          return Rx.of(undefined);
+          })
+        );
+      }),
+      map(rawData => {
+        if (rawData) {
+          return JSON.parse(JSON.stringify(rawData.data.CivicaCardReloadConversation));
+        }
+      }
+      ),
+      tap(result => {
+        console.log('conversation recibida: ', result);
+        if (
+          result &&
+          ((result as any).uiState === OperabilityState.RELOADING_CARD ||
+          (result as any).uiState === OperabilityState.RELOADING_CARD_ERROR)
+        ) {
+          console.log('estado: ', (result as any).uiState);
+          this.conversation = result;
+          this.operabilityState$.next(OperabilityState.RELOADING_CARD);
+        }
+      })
+    );
   }
 
-   /**
+  /**
    * disconnect from the current device
    */
   disconnectDevice() {
@@ -154,7 +217,7 @@ export class AfccRealoderService {
 
   // #endregion
 
-   // #region Authentication ACR1255
+  // #region Authentication ACR1255
 
   changeCypherMasterKey(masterKey) {
     this.sessionKey = masterKey;
@@ -189,37 +252,50 @@ export class AfccRealoderService {
       this.readingCard = true;
       this.conversation.id = uuid();
       localStorage.conversationId = this.conversation.id;
-      return this.myfarePlusSl3.readCurrentCard$(
-        this.bluetoothService,
-        this.readerAcr1255,
-        this.sessionKey,
-        this.cypherAesService,
-        this.conversation,
-        this.gateway,
-        'PUBLIC'
-      ).pipe(
-        delay(500),
-        mergeMap(cardNumberResult => {
-        console.log('PUBLIC: ', cardNumberResult);
-        return this.myfarePlusSl3.readCurrentCard$(
+      return this.myfarePlusSl3
+        .readCurrentCard$(
           this.bluetoothService,
           this.readerAcr1255,
           this.sessionKey,
           this.cypherAesService,
           this.conversation,
           this.gateway,
-          'CIVICA'
-        ).pipe(
-          map(result => {
-            console.log('CIVICA: ', result);
-          (result as any).result.numeroTarjetaPublico = (cardNumberResult as any).result.numeroTarjetaPublico;
-          return result;
+          'PUBLIC'
+        )
+        .pipe(
+          delay(500),
+          mergeMap(cardNumberResult => {
+            return this.myfarePlusSl3
+              .readCurrentCard$(
+                this.bluetoothService,
+                this.readerAcr1255,
+                this.sessionKey,
+                this.cypherAesService,
+                this.conversation,
+                this.gateway,
+                'CIVICA'
+              )
+              .pipe(
+                map(result => {
+                  (result as any).result.numeroTarjetaPublico = (cardNumberResult as any).result.numeroTarjetaPublico;
+                  return result;
+                })
+              );
           })
         );
-        })
-      );
     }
-    return Rx.of({status: 'READING'});
+    return Rx.of({ status: 'READING' });
+  }
+
+  writeCard$() {
+    return this.myfarePlusSl3.writeCurrentCard$(
+      this.bluetoothService,
+      this.readerAcr1255,
+      this.sessionKey,
+      this.cypherAesService,
+      this.conversation,
+      this.gateway
+    );
   }
 
   // #endregion
@@ -235,30 +311,29 @@ export class AfccRealoderService {
         errorPolicy: 'all'
       })
       .pipe(
-        map(rawData =>
-          JSON.parse(
-            JSON.stringify(
-              rawData.data.purchaseCivicaCardReload
-            )
-          )
+      map(rawData => {
+        if (rawData.errors) {
+          throw new Error(rawData.errors[0].message.method);
+        } else {
+          return JSON.parse(JSON.stringify(rawData.data.purchaseCivicaCardReload));
+         }
+      }
         )
       );
   }
 
   changeOperationState$(uiState) {
-    console.log('Conversation id: ', this.conversation);
     return this.gateway.apollo
-    .mutate<any>({
-      mutation: setCivicaCardReloadConversationUiState,
-      variables: {
-        conversationId: this.conversation.id,
-        uiState: uiState
-      },
-      errorPolicy: 'all'
-    })
-    .pipe(
-      map(rawData => rawData.data.setCivicaCardReloadConversationUiState)
-    );
+      .mutate<any>({
+        mutation: setCivicaCardReloadConversationUiState,
+        variables: {
+          conversationId: this.conversation.id,
+          uiState: uiState
+        },
+        errorPolicy: 'all'
+      })
+      .pipe(
+        map(rawData => rawData.data.setCivicaCardReloadConversationUiState)
+      );
   }
-
 }

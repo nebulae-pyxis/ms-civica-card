@@ -33,6 +33,8 @@
         "preBuildCommands": [],
         "environmentVars": {
         },
-        "indexHeadAmends" : [ ]
+        "indexHeadAmends" : [ 
+         ],
+         "assets" :"frontend/emi/assets/civica-card-reload-pos"
     }
 ]

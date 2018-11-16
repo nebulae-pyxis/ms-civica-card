@@ -6,15 +6,15 @@
     <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
       <div style="margin-top: 20px;" class="horizontal-container">
         <label><b>Saldo inicial:</b></label>
-        <label>$1,200</label>
+        <label>{{receipt.cardInitialValue | currency:'USD':'$':'4.0-0'}}</label>
       </div>
       <div style="margin-top: 20px;" class="horizontal-container">
         <label><b>Valor carga:</b></label>
-        <label>{{reloadValue | currency:'USD':'$':'4.0-0'}}</label>
+        <label>{{receipt.reloadValue | currency:'USD':'$':'4.0-0'}}</label>
       </div>
       <div style="margin-top: 20px;" class="horizontal-container">
         <label><b>Saldo Final:</b></label>
-        <label>{{finalValue | currency:'USD':'$':'4.0-0'}}</label>
+        <label>{{receipt.cardFinalValue | currency:'USD':'$':'4.0-0'}}</label>
       </div>
       <div style="margin-top: 20px;" class="horizontal-container">
         <label><b>Estado:</b></label>

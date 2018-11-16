@@ -23,6 +23,7 @@ export class ReaderAcr1255 {
     batteryLevel$,
     deviceName$
   ) {
+    console.log('Inicia flujo de conexion************');
     return bluetoothService
       .connectDevice$({
         optionalServices: [GattService.NOTIFIER.SERVICE],
@@ -30,17 +31,24 @@ export class ReaderAcr1255 {
       })
       .pipe(
         mergeMap(gattServer => {
-          return Rx.forkJoin(
+          return Rx.combineLatest(
             // get the current battery lever of the connected device
             this.getBatteryLevel$(bluetoothService).pipe(
               tap(batteryLevel => {
-                console.log('Nivel de bateria: ', batteryLevel);
+                console.log('batteryLevel: ', batteryLevel);
                 batteryLevel$.next(batteryLevel);
               })
             ),
+            bluetoothService.getNotifierStartedSubject$().pipe(tap(() => console.log('SE INCIA EXITOSAMENTE NOTIFIER!!!!!!!!!'))),
             // Start all bluetooth notifiers to the operation
-            this.startNotifiersListener$(bluetoothService)
-          ).pipe(mapTo(gattServer));
+            this.startNotifiersListener$(bluetoothService).pipe(tap(() => console.log('emite startNotifiersListener$'))),
+
+          ).pipe(
+            tap(result => {
+            console.log('Emite startNotifiersListener: ', result);
+            }),
+            mergeMap(_ => this.startAuthReader$(bluetoothService, cypherAesService)),
+            mapTo(gattServer));
         }),
         tap(server => {
           deviceName$.next(
@@ -48,7 +56,6 @@ export class ReaderAcr1255 {
           );
         }),
          // Start the auth process with the reader
-         mergeMap(_ => this.startAuthReader$(bluetoothService, cypherAesService)),
       );
   }
 
@@ -98,7 +105,6 @@ export class ReaderAcr1255 {
       map(message => {
 
       const deviceConnectionStatusResp = new DeviceConnectionStatus(message);
-      console.log('llega IDLE: ', deviceConnectionStatusResp.cmdMessageType);
         switch (deviceConnectionStatusResp.cmdMessageType) {
           // this case represents MessageType.START_IDLE_STATUS
           case '52':

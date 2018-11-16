@@ -5,7 +5,7 @@
   <svg-icon src="assets/card.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#838583'}"></svg-icon>
   <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
     <mat-form-field class="example-full-width">
-      <input matInput name="balance" [(ngModel)]="balance" placeholder="Saldo" >
+      <input matInput name="balance" [(ngModel)]="balance" currencyMask [options]="{ prefix: '$ ', thousands: '.', precision: '0' }" placeholder="Saldo" >
     </mat-form-field>
     <mat-form-field class="example-full-width">
       <input matInput [(ngModel)]="state" placeholder="Estado">

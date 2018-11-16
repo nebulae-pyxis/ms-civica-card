@@ -27,11 +27,11 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const newConversation = {
       posId: this.afccReloadService.conversation.posId,
-      posTerminal: this.afccReloadService.conversation.posTerminal,
-      posUserId: this.afccReloadService.conversation.posUserId,
-      posUserName: this.afccReloadService.conversation.posUserName,
+      posTerminal: this.afccReloadService.posTerminal,
+      posUserId: this.afccReloadService.posUserId,
+      posUserName: this.afccReloadService.posUserName,
       readerType: this.afccReloadService.readerType,
-      position: this.afccReloadService.conversation.position
+      position: this.afccReloadService.posPosition
     };
     this.afccReloadService.conversation = newConversation;
     interval(2000)
@@ -42,8 +42,9 @@ export class ReadCardComponent implements OnInit, OnDestroy {
             this.afccReloadService
               .readCard$()
               .pipe(
-                catchError(error => {
-                  console.log('error: ', error);
+              catchError(error => {
+                console.log('conversacion: ', this.afccReloadService.conversation);
+                console.log('error: ', error);
                   this.afccReloadService.readingCard = false;
                   if (error === 'card not supported') {
                     this.afccReloadService.operabilityState$.next(
@@ -59,7 +60,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
                   this.afccReloadService.readCardAttempts = 0;
                   this.ngUnsubscribe.next();
                   this.balance = data.result._saldoConsolidado;
-                  this.state = data.result.numeroTarjetaPublico;
+                  // TODO: Se debe cambiar por el estado real de la tarjeta
+                  this.state = 'OK';
                   this.afccReloadService.currentCardReaded$.next(data.result);
                   this.afccReloadService.operabilityState$.next(
                     OperabilityState.CARD_READED
@@ -129,6 +131,7 @@ export class ReadCardComponent implements OnInit, OnDestroy {
         )
         .subscribe(result => {
           if (result.granted) {
+            this.afccReloadService.conversation.purchase = result;
             this.afccReloadService.operabilityState$.next(
               OperabilityState.RELOADING_CARD
             );
@@ -137,6 +140,12 @@ export class ReadCardComponent implements OnInit, OnDestroy {
               OperabilityState.RELOAD_CARD_REFUSED
             );
           }
+        },
+        error => {
+          this.afccReloadService.conversation.error = error.toString().replace(/Error: /g, '');
+          this.afccReloadService.operabilityState$.next(
+            OperabilityState.RELOAD_CARD_REFUSED
+          );
         });
     }
   }

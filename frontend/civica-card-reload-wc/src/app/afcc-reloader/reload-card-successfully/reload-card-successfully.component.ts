@@ -7,14 +7,12 @@ import { AfccRealoderService } from '../../afcc-realoder.service';
   styleUrls: ['./reload-card-successfully.component.scss']
 })
 export class ReloadCardSuccessfullyComponent implements OnInit {
-  reloadValue;
-  finalValue;
+  receipt;
   constructor(private afccReloaderService: AfccRealoderService) { }
 
   ngOnInit() {
-    this.afccReloaderService.cardReloadDone$.next('here final card info and part of the conversation');
-    this.reloadValue = this.afccReloaderService.conversation.reloadValue;
-    this.finalValue = this.afccReloaderService.conversation.finalValue;
+    this.receipt = this.afccReloaderService.conversation.purchase.receipt;
+    this.afccReloaderService.cardReloadDone$.next(this.receipt);
   }
 
 }

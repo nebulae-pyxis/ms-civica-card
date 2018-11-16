@@ -11,45 +11,16 @@ import { mergeMap, tap, map } from 'rxjs/operators';
   styleUrls: ['./reload-card.component.scss']
 })
 export class ReloadCardComponent implements OnInit {
-  reloadValue;
-  finalValue;
+  receipt;
   reloadState$ = new BehaviorSubject<ReloadState>(ReloadState.READING);
   constructor(private afccReloaderService: AfccRealoderService) {}
 
   ngOnInit() {
-    // TODO: Must request the sale authorizaton to the backend before write the card
-    this.afccReloaderService.saleAuthorization$.next('Here the sale authorization received');
-    this.reloadValue = this.afccReloaderService.conversation.reloadValue;
-    const sub = interval(2000)
-      .subscribe(() => {
-      switch (this.reloadState$.value) {
-        case ReloadState.READING:
-          this.reloadState$.next(ReloadState.WRITING);
-          break;
-        case ReloadState.VERIFING:
-          const rnd = Math.floor(Math.random() * 100 + 1);
-          if (rnd <= 50) {
-            this.reloadState$.next(ReloadState.SUCCESS);
-          } else {
-            this.reloadState$.next(ReloadState.ERROR);
-          }
-          break;
-        case ReloadState.WRITING:
-        this.reloadState$.next(ReloadState.VERIFING);
-          break;
-        case ReloadState.SUCCESS:
-          this.finalValue = this.reloadValue + 1200;
-          this.afccReloaderService.conversation.finalValue = this.finalValue;
-          this.afccReloaderService.receipt$.next('here reload receipt');
-          sub.unsubscribe();
-          this.reloadCardSuccessfully();
-          break;
-        case ReloadState.ERROR:
-          sub.unsubscribe();
-          this.reloadCardError();
-          break;
-      }
-    });
+    this.receipt = this.afccReloaderService.conversation.purchase.receipt;
+    this.afccReloaderService.writeCard$().subscribe(result => {
+      this.reloadCardSuccessfully();
+    },
+    error => this.reloadCardError());
   }
 
   refreshReloadState$() {

@@ -1,6 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, Injector } from '@angular/core';
-
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialDependencyModule } from './material-dependency.module';
 import { AfccReloaderComponent } from './afcc-reloader/afcc-reloader.component';
@@ -53,7 +52,7 @@ import { ReloadCardRefusedComponent } from './afcc-reloader/reload-card-refused/
     HttpClientModule,
     AngularSvgIconModule,
     AngularBleModule.forRoot({
-      enableTracing: false
+      enableTracing: true
     }),
     CurrencyMaskModule,
     FormsModule,

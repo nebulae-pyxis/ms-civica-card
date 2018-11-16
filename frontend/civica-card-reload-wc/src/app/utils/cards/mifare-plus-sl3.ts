@@ -26,7 +26,9 @@ import {
   startCivicaCardReloadConversation,
   generateCivicaCardReloadSecondAuthToken,
   generateCivicaCardReloadReadApduCommands,
-  processCivicaCardReloadReadApduCommandRespones
+  generateCivicaCardReloadWriteAndReadApduCommands,
+  processCivicaCardReloadReadApduCommandRespones,
+  processCivicaCardReloadWriteAndReadApduCommandResponses
 } from '../../api/gql/afcc-reloader.js';
 import { v4 as uuid } from 'uuid';
 import { CardPowerOnResp } from '../communication_profile/messages/response/card-power-on-resp';
@@ -112,11 +114,9 @@ export class MyfarePlusSl3 {
         return uid;
       }),
       mergeMap(uid => {
-        console.log('inicia conversacion!!!!!!!!!!!!');
         return this.startReloadConversation(gateway, conversation, uid);
       }),
       mergeMap(conversationResult => {
-        console.log('resultado de inicio de conversacion: ', conversationResult);
         conversation = conversationResult;
         // after succesful getted the card uiid start the first step of auth in the card
         return bluetoothService
@@ -170,6 +170,9 @@ export class MyfarePlusSl3 {
       cypherAesService,
       sessionKey
     ).pipe(
+      tap(() => {
+        console.log('CardPowerOn ', new Date());
+      }),
       mergeMap(result => {
         const cardPowerOnResp = new CardPowerOnResp(result);
         let cardType;
@@ -192,6 +195,9 @@ export class MyfarePlusSl3 {
           gateway
         );
       }),
+      tap(() => {
+        console.log('Solicitud de token a tarjeta ', new Date());
+      }),
       mergeMap(authToken => {
         return this.getReadCardSecondAuthToken(
           gateway,
@@ -199,6 +205,9 @@ export class MyfarePlusSl3 {
           conversation,
           dataType === 'CIVICA' ? 'DEBIT' : 'PUBLIC'
         );
+      }),
+      tap(() => {
+        console.log('Solicitud de token a servidor ', new Date());
       }),
       mergeMap(serverResp => {
         return this.cardAuthenticationSecondStep$(
@@ -208,6 +217,9 @@ export class MyfarePlusSl3 {
           sessionKey,
           serverResp
         );
+      }),
+      tap(() => {
+        console.log('Envio de token a tarjeta ', new Date());
       }),
       mergeMap(authCardConfirmation => {
         const authCardSecondStep = new AuthCardSecondStepResp(
@@ -219,6 +231,9 @@ export class MyfarePlusSl3 {
           conversation,
           dataType
         );
+      }),
+      tap(() => {
+        console.log('envio de token de confirmacion y solicitud de apdus ', new Date());
       })
     );
   }
@@ -323,6 +338,7 @@ export class MyfarePlusSl3 {
     gateway,
     dataType
   ) {
+    console.log('Inicia proceso de lectura ', new Date());
     return this.authWithCardAndGetReadApduCommands$(
       bluetoothService,
       gateway,
@@ -332,8 +348,9 @@ export class MyfarePlusSl3 {
       conversation,
       dataType
     ).pipe(
+
       mergeMap(apduCommands => {
-        return this.sendReadApduCommandsCard(
+        return this.sendApduCommandsCard(
           apduCommands,
           readerAcr1255,
           cypherAesService,
@@ -341,12 +358,18 @@ export class MyfarePlusSl3 {
           sessionKey
         );
       }),
+      tap(() => {
+        console.log('ejecucion de apdus', new Date());
+      }),
       mergeMap(apduCommandsResp => {
         return this.processReadApduCommandsCard(
           apduCommandsResp,
           conversation,
           gateway
         );
+      }),
+      tap(() => {
+        console.log('procesar apdus', new Date());
       }),
       mergeMap(result => {
         return this.cardPowerOff$(
@@ -367,7 +390,7 @@ export class MyfarePlusSl3 {
    * @param bluetoothService The instance of the bluetooth library
    * @param sessionKey Current session key of the comunication channel between the reader and the Front end
    */
-  sendReadApduCommandsCard(
+  sendApduCommandsCard(
     apduCommands,
     readerAcr1255,
     cypherAesService,
@@ -527,7 +550,204 @@ export class MyfarePlusSl3 {
   }
 
   // #endregion
+  // #region WRITE CARD FLOW
 
+  /**
+   * Auth with the card and read the info requested
+   * @param bluetoothService The instance of the bluetooth library
+   * @param readerAcr1255 The instance of the comunication channel by the reader
+   * @param sessionKey Current session key of the comunication channel between the reader and the Front end
+   * @param cypherAesService This instance of the tools used to encrypt and decrypt
+   * @param conversation Current conversation
+   * @param gateway The instance of the comunication channel by the server
+   * @param dataType Type of data to read
+   */
+  writeCurrentCard$(
+    bluetoothService,
+    readerAcr1255,
+    sessionKey,
+    cypherAesService: CypherAes,
+    conversation,
+    gateway
+  ) {
+    return this.authWithCardAndGetWriteApduCommands$(
+      bluetoothService,
+      gateway,
+      readerAcr1255,
+      cypherAesService,
+      sessionKey,
+      conversation
+    ).pipe(
+      mergeMap(apduCommands => {
+        return this.sendApduCommandsCard(
+          apduCommands,
+          readerAcr1255,
+          cypherAesService,
+          bluetoothService,
+          sessionKey
+        );
+      }),
+      mergeMap(apduCommandsResp => {
+        return this.processWriteApduCommandsCard(
+          apduCommandsResp,
+          conversation,
+          gateway
+        );
+      }),
+      mergeMap(result => {
+        return this.cardPowerOff$(
+          bluetoothService,
+          readerAcr1255,
+          cypherAesService,
+          sessionKey
+        ).pipe(mapTo({ result, status: 'COMPLETED' }));
+      })
+    );
+  }
+
+  /**
+   * Send the response of the apdu commands to the server to convert the bytes to object
+   * @param apduCommandsResp responses of the Apdu commands sended to the card
+   * @param conversation Current conversation
+   * @param gateway The instance of the comunication channel by the server
+   */
+  processWriteApduCommandsCard(
+    apduCommandsResp,
+    conversation,
+    gateway: GatewayService
+  ) {
+    return from(apduCommandsResp).pipe(
+      map(apduCommand => {
+        delete (apduCommand as any).__typename;
+        return apduCommand;
+      }),
+      toArray(),
+      mergeMap(apduCommands => {
+        return gateway.apollo
+          .mutate<any>({
+            mutation: processCivicaCardReloadWriteAndReadApduCommandResponses,
+            variables: {
+              conversationId: conversation.id,
+              commands: apduCommands
+            },
+            errorPolicy: 'all'
+          })
+          .pipe(
+            map(rawData =>
+              JSON.parse(
+                JSON.stringify(
+                  rawData.data.processCivicaCardReloadWriteAndReadApduCommandResponses
+                )
+              )
+            )
+          );
+      })
+    );
+  }
+
+  /**
+   * get the apduCommands used to read the card info
+   * @param gateway The instance of the comunication channel by the server
+   * @param cardAuthConfirmationToken token used to confirm the
+   * @param conversation current conversation of the operation
+   * @param dataType data type to read
+   */
+  getWriteCardApduCommands(
+    gateway: GatewayService,
+    cardAuthConfirmationToken,
+    conversation
+  ): Observable<number> {
+    return gateway.apollo
+      .mutate<any>({
+        mutation: generateCivicaCardReloadWriteAndReadApduCommands,
+        variables: {
+          conversationId: conversation.id,
+          cardAuthConfirmationToken,
+          dataType: 'CIVICA'
+        },
+        errorPolicy: 'all'
+      })
+      .pipe(
+        map(rawData => rawData.data.generateCivicaCardReloadWriteAndReadApduCommands)
+      );
+  }
+
+  /**
+   * start comunication channel with the card and request a auth token to start the auth
+   * flow
+   * @param bluetoothService The instance of the bluetooth library
+   * @param gateway The instance of the comunication channel by the server
+   * @param readerAcr1255 The instance of the comunication channel by the reader
+   * @param cypherAesService This instance of the tools used to encrypt and decrypt
+   * @param sessionKey Current session key of the comunication channel between the reader and the Front end
+   * @param conversation Current conversation
+   */
+  authWithCardAndGetWriteApduCommands$(
+    bluetoothService,
+    gateway,
+    readerAcr1255,
+    cypherAesService,
+    sessionKey,
+    conversation
+  ) {
+    return this.cardPowerOn$(
+      bluetoothService,
+      readerAcr1255,
+      cypherAesService,
+      sessionKey
+    ).pipe(
+      mergeMap(result => {
+        const cardPowerOnResp = new CardPowerOnResp(result);
+        let cardType;
+        if (
+          cypherAesService.bytesTohex(cardPowerOnResp.data.slice(3, 5)) ===
+          '01c1'
+        ) {
+          cardType = 'SL3';
+        } else {
+          throw new Error('card not supported');
+        }
+        conversation.cardType = cardType;
+        return this.cardAuthenticationFirstStep$(
+          bluetoothService,
+          readerAcr1255,
+          cypherAesService,
+          sessionKey,
+          '0540',
+          conversation,
+          gateway
+        );
+      }),
+      mergeMap(authToken => {
+        return this.getReadCardSecondAuthToken(
+          gateway,
+          authToken,
+          conversation,
+          'CREDIT'
+        );
+      }),
+      mergeMap(serverResp => {
+        return this.cardAuthenticationSecondStep$(
+          bluetoothService,
+          readerAcr1255,
+          cypherAesService,
+          sessionKey,
+          serverResp
+        );
+      }),
+      mergeMap(authCardConfirmation => {
+        const authCardSecondStep = new AuthCardSecondStepResp(
+          authCardConfirmation
+        );
+        return this.getWriteCardApduCommands(
+          gateway,
+          cypherAesService.bytesTohex(authCardSecondStep.data.slice(1)),
+          conversation
+        );
+      })
+    );
+  }
+  // #endregion
   // #region GENERAL_UTILS
 
   /**

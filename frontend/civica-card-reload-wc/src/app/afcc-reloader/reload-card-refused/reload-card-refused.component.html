@@ -5,13 +5,13 @@
     <svg-icon src="assets/check.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#F59100'}"></svg-icon>
     <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
       <mat-list>
-        <mat-list-item *ngIf="operationState === 'READING_CARD_ERROR' ">
+        <mat-list-item>
           <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
           Venta no aceptada
         </mat-list-item>
-        <mat-list-item *ngIf="operationState === 'CARD_READED_NOT_SUPPORTED' ">
+        <mat-list-item>
             <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
-            Razon: AQUI LA RAZON ENTREGADA POR EL SERVIDOR
+            {{error | async}}
           </mat-list-item>
       </mat-list>
     </div>

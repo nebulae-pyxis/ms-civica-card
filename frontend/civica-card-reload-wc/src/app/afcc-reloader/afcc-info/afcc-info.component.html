@@ -13,15 +13,19 @@
 </div>
 <mat-divider></mat-divider>
 <div style="margin-top: 10px">
-    <b style="font-size: 16px; color: #444">Aca info JWT Y Pos</b>
+    <b style="font-size: 16px; color: #444">Info de POS({{posId}})</b>
     <mat-list>
         <mat-list-item>
           <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
-          JWT por definir
+          <b style="font-size: 16px; color: #444">ID negocio: </b> {{businessId}}
         </mat-list-item>
         <mat-list-item>
           <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
-          POS por definir
+          <b style="font-size: 16px; color: #444">Nombre Usuario: </b> {{posUserName}} 
+        </mat-list-item>
+        <mat-list-item>
+          <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+          <b style="font-size: 16px; color: #444">Nombre POS:  </b> {{jwtName}} 
         </mat-list-item>
       </mat-list>
 </div>

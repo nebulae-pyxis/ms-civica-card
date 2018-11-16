@@ -13,6 +13,7 @@ import { OperabilityState } from '../../utils/operability-sate';
 })
 export class BluetoothConnectionComponent implements OnInit, OnDestroy {
 
+  jwtTest;
   operabilityState$ = new Rx.BehaviorSubject<OperabilityState>(OperabilityState.DISCONNECTED);
   ngUnsubscribe = new Rx.Subject<any>();
   constructor(
@@ -26,6 +27,10 @@ export class BluetoothConnectionComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  refreshJwt() {
+    this.afccReloaderService.gateway.token = this.jwtTest;
   }
 
   connect() {

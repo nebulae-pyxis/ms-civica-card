@@ -74,12 +74,47 @@ export const generateCivicaCardReloadReadApduCommands = gql`
   }
 `;
 
+export const generateCivicaCardReloadWriteAndReadApduCommands = gql`
+  mutation generateCivicaCardReloadWriteAndReadApduCommands(
+    $conversationId: String!
+    $cardAuthConfirmationToken: String
+    $dataType: String!
+  ) {
+    generateCivicaCardReloadWriteAndReadApduCommands(
+      conversationId: $conversationId
+      cardAuthConfirmationToken: $cardAuthConfirmationToken
+      dataType: $dataType
+    ) {
+      order
+      cmd
+      resp
+      cbc
+      rbc
+    }
+  }
+`;
+
 export const processCivicaCardReloadReadApduCommandRespones = gql`
   mutation processCivicaCardReloadReadApduCommandRespones(
     $conversationId: String!
     $commands: [BinaryCommandInput]!
   ) {
     processCivicaCardReloadReadApduCommandRespones(
+      conversationId: $conversationId
+      commands: $commands
+    ) {
+      numeroTarjetaPublico
+      _saldoConsolidado
+    }
+  }
+`;
+
+export const processCivicaCardReloadWriteAndReadApduCommandResponses = gql`
+  mutation processCivicaCardReloadWriteAndReadApduCommandResponses(
+    $conversationId: String!
+    $commands: [BinaryCommandInput]!
+  ) {
+    processCivicaCardReloadWriteAndReadApduCommandResponses(
       conversationId: $conversationId
       commands: $commands
     ) {
@@ -118,7 +153,6 @@ export const CivicaCardReloadConversation = gql`
       userJwt
       userName
       posId
-      posUser
       posTerminal
       posLocation
       readerType
@@ -126,6 +160,20 @@ export const CivicaCardReloadConversation = gql`
       cardUid
       uiState
       uiStateHistory
+      purchase{
+        receipt{
+          id
+          timestamp
+          reloadValue
+          cardInitialValue
+          cardFinalValue
+          businesId
+          posId
+          posUserName
+          posUserId
+          posTerminal
+        }
+      }
     }
   }
 `;

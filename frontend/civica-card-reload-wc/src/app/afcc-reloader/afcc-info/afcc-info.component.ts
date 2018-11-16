@@ -3,6 +3,7 @@ import { AfccRealoderService } from '../../afcc-realoder.service';
 import { OperabilityState } from '../../utils/operability-sate';
 import { map } from 'rxjs/operators';
 import { of, Subject, BehaviorSubject } from 'rxjs';
+import * as JwtDecode from "jwt-decode";
 
 @Component({
   selector: 'app-afcc-info',
@@ -10,12 +11,28 @@ import { of, Subject, BehaviorSubject } from 'rxjs';
   styleUrls: ['./afcc-info.component.scss']
 })
 export class AfccInfoComponent implements OnInit {
+  posId;
+  businessId;
+  jwtName;
+  posUserName;
   deviceName;
   batteryLevel$ = new BehaviorSubject<Number>(0);
-  constructor(private afccReloaderService: AfccRealoderService) { }
+  constructor(private afccReloaderService: AfccRealoderService) {}
 
   ngOnInit() {
-    this.afccReloaderService.reloaderConnected$.next(`device connected: ${this.deviceName}`);
+    let jwtDecoded;
+    try {
+      jwtDecoded = (JwtDecode(this.afccReloaderService.gateway.token));
+    } catch (Error) {
+      return null;
+    }
+    this.posId = this.afccReloaderService.conversation.posId;
+    this.posUserName = this.afccReloaderService.conversation.posUserName;
+    this.businessId = jwtDecoded.businessId;
+    this.jwtName = jwtDecoded.name;
+    this.afccReloaderService.reloaderConnected$.next(
+      `device connected: ${this.deviceName}`
+    );
     this.afccReloaderService.deviceName$.subscribe(name => {
       this.deviceName = name;
     });
@@ -41,11 +58,15 @@ export class AfccInfoComponent implements OnInit {
   }
 
   disconnect() {
-    this.afccReloaderService.operabilityState$.next(OperabilityState.DISCONNECTED);
+    this.afccReloaderService.operabilityState$.next(
+      OperabilityState.DISCONNECTED
+    );
   }
 
   readCard() {
-    this.afccReloaderService.operabilityState$.next(OperabilityState.READING_CARD);
+    this.afccReloaderService.operabilityState$.next(
+      OperabilityState.READING_CARD
+    );
   }
 
   batteryLevelToBatteryIcon(value) {
@@ -54,18 +75,18 @@ export class AfccInfoComponent implements OnInit {
       : value <= 10
       ? 'battery_alert'
       : value > 10 && value <= 20
-        ? 'battery_20'
-        : value > 20 && value <= 30
-          ? 'battery_30'
-          : value > 30 && value <= 50
-            ? 'battery_50'
-            : value > 50 && value <= 60
-              ? 'battery_60'
-              : value > 60 && value <= 80
-                ? 'battery_80'
-                : value > 80 && value <= 90
-                  ? 'battery_90'
-                  : 'battery_full';
+      ? 'battery_20'
+      : value > 20 && value <= 30
+      ? 'battery_30'
+      : value > 30 && value <= 50
+      ? 'battery_50'
+      : value > 50 && value <= 60
+      ? 'battery_60'
+      : value > 60 && value <= 80
+      ? 'battery_80'
+      : value > 80 && value <= 90
+      ? 'battery_90'
+      : 'battery_full';
   }
 
   batteryLevelToBatteryColor(value) {
@@ -74,8 +95,7 @@ export class AfccInfoComponent implements OnInit {
       : value <= 10
       ? '#E5491C'
       : value > 10 && value <= 40
-        ? '#F09900'
-        : '#47BF07';
+      ? '#F09900'
+      : '#47BF07';
   }
-
 }

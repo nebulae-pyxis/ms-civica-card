@@ -108,7 +108,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         position => {
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
-          this.afccRealoderService.conversation.position = {
+          this.afccRealoderService.posPosition = {
             latitude,
             longitude
           };
@@ -123,7 +123,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         }
       );
     }
-    console.log('pasa de localizacion');
     this.afccRealoderService.error$.subscribe(val => {
       this.error.next(val);
     });
@@ -147,6 +146,9 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         this.afccRealoderService.initBluetoothValues();
         this.initConversationValues();
       }
+      if (state === OperabilityState.CONNECTED) {
+        this.initConversationValues();
+      }
       if (state === OperabilityState.REQUESTING_RELOAD_PERMISSION ||
         state === OperabilityState.READING_CARD_ERROR ||
         state === OperabilityState.CARD_READED_NOT_SUPPORTED ||
@@ -157,6 +159,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         state === OperabilityState.RELOAD_CARD_SUCCESS ||
         state === OperabilityState.RELOAD_CARD_REFUSED
       ) {
+        console.log('Envia estado al servidor: ', state);
        this.afccRealoderService.changeOperationState$(state).subscribe();
       }
       this.operabilityState$.next(state);
@@ -168,12 +171,15 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   }
 
   initConversationValues() {
+    this.afccRealoderService.posTerminal = this.pos_terminal;
+    this.afccRealoderService.posUserName = this.pos_user_name;
+    this.afccRealoderService.posUserId = this.pos_user_id;
     this.afccRealoderService.conversation = {
       posId: this.pos_id,
-      posTerminal: this.pos_terminal,
-      posUserName: this.pos_user_name,
-      posUserId: this.pos_user_id,
-      position: this.afccRealoderService.conversation.position
+      posTerminal: this.afccRealoderService.posTerminal,
+      posUserName: this.afccRealoderService.posUserName,
+      posUserId: this.afccRealoderService.posUserId,
+      position: this.afccRealoderService.posPosition
     };
   }
 
@@ -197,8 +203,9 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
             status as String
           );
         },
-        error => {
-          console.log(error);
+      error => {
+        console.log('error en la conexion: ', error);
+          this.afccRealoderService.disconnectDevice();
           this.openSnackBar('Fallo al comunicarse con la lectora');
           this.afccRealoderService.operabilityState$.next(
             OperabilityState.DISCONNECTED
@@ -207,8 +214,8 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
             ConnectionStatus.DISCONNECTED
           );
         },
-        () => {
-          console.log('Se completa OBS');
+      () => {
+          this.afccRealoderService.disconnectDevice();
           this.afccRealoderService.operabilityState$.next(
             OperabilityState.DISCONNECTED
           );
