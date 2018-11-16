@@ -40,7 +40,7 @@ class CivicaCardCQRS {
      */
     startCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
 
-        return WalletDA.find$(businessId).pipe(
+        return WalletDA.find$(authToken.businessId).pipe(
             tap(wallet => { if (wallet === null) throw new CustomError('Bolsas no activas', `Asegurese que su bolsa ha sido creada y activada`, ENTITY_NOT_FOUND_ERROR_CODE) }),
             tap(wallet => { if (!wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, ENTITY_NOT_FOUND_ERROR_CODE) }),
         ).pipe(
