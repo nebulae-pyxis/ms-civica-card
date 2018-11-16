@@ -32,6 +32,7 @@
         ],
         "preBuildCommands": [],
         "environmentVars": {
-        }
+        },
+        "indexHeadAmends" : [ ]
     }
 ]
