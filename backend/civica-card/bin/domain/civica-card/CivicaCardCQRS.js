@@ -120,7 +120,6 @@ class CivicaCardCQRS {
     generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            mergeMap(conversation => this.verifyWallet$(conversation)),
             mergeMap(conversation => {
                 const { key, dataDiv } = getSamAuthKeyAndDiversifiedKey(args.cardRole, conversation.cardUid, this.samClusterClient);
                 return this.samClusterClient.requestSamFirstStepAuth$(
@@ -149,7 +148,6 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                mergeMap(conversation => this.verifyWallet$(conversation)),
                 map(conversation => (
                     {
                         conversation,
@@ -173,7 +171,6 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                mergeMap(conversation => this.verifyWallet$(conversation)),
                 mergeMap(conversation =>
                     this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
                 ),
@@ -221,7 +218,6 @@ class CivicaCardCQRS {
     generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            mergeMap(conversation => this.verifyWallet$(conversation)),
             map(conversation => (
                 {
                     conversation,
@@ -251,7 +247,6 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                mergeMap(conversation => this.verifyWallet$(conversation)),
                 mergeMap(conversation =>
                     this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
                 ),
