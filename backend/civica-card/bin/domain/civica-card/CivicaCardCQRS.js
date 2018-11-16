@@ -42,6 +42,7 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name, businessId: authToken.businessId })
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+                mergeMap(conversation => this.verifyWallet$(conversation)),
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => {
@@ -119,6 +120,7 @@ class CivicaCardCQRS {
     generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+            mergeMap(conversation => this.verifyWallet$(conversation)),
             mergeMap(conversation => {
                 const { key, dataDiv } = getSamAuthKeyAndDiversifiedKey(args.cardRole, conversation.cardUid, this.samClusterClient);
                 return this.samClusterClient.requestSamFirstStepAuth$(
@@ -147,6 +149,7 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+                mergeMap(conversation => this.verifyWallet$(conversation)),
                 map(conversation => (
                     {
                         conversation,
@@ -170,6 +173,7 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+                mergeMap(conversation => this.verifyWallet$(conversation)),
                 mergeMap(conversation =>
                     this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
                 ),
@@ -201,13 +205,7 @@ class CivicaCardCQRS {
     purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            mergeMap(conversation => 
-                WalletDA.find$(conversation.businessId).pipe(
-                    tap(wallet => { if (wallet === null) throw new CustomError('Bolsas no activas', `Asegurese que su bolsa ha sido creada y activada`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                    tap(wallet => { if (!wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                    mapTo(conversation)
-                )
-            ),
+            mergeMap(conversation => this.verifyWallet$(conversation)),
             mergeMap(conversation => CivicaCardReload.purchaseCivicaCardReload$(conversation, args.value)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
@@ -217,10 +215,13 @@ class CivicaCardCQRS {
         );
     }
 
+    
+
 
     generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+            mergeMap(conversation => this.verifyWallet$(conversation)),
             map(conversation => (
                 {
                     conversation,
@@ -250,6 +251,7 @@ class CivicaCardCQRS {
         return CivicaCardReloadConversationDA.find$(args.conversationId)
             .pipe(
                 tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+                mergeMap(conversation => this.verifyWallet$(conversation)),
                 mergeMap(conversation =>
                     this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
                 ),
@@ -266,6 +268,22 @@ class CivicaCardCQRS {
                     return GraphqlResponseTools.handleError$(error);
                 })
             );
+    }
+
+
+
+
+    /**
+     * Verifies the Business unit is allowed to spend wallet money
+     * @param {*} conversation
+     * @returns {Rx.Observable}
+     */
+    verifyWallet$(conversation) {
+        return WalletDA.find$(conversation.businessId).pipe(
+            tap(wallet => { if (wallet === null) throw new CustomError('Bolsas no activas', `Asegurese que su bolsa ha sido creada y activada`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+            tap(wallet => { if (!wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+            mapTo(conversation)
+        );
     }
 
 

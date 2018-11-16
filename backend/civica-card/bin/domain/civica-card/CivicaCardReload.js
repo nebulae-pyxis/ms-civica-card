@@ -83,7 +83,7 @@ class CivicaCardReload {
                 },
                 location: conversation.pos.location,
                 user: conversation.user.name,
-                notes: `POS: id=${receipt.posId}, userName=${receipt.posUserName}, userId=${receipt.posUserId}, terminal=${receipt.posTerminal} `
+                notes: ""
             },
             user: conversation.user.name
         })).pipe(
