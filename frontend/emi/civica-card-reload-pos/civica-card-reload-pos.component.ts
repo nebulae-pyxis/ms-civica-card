@@ -1,5 +1,6 @@
 import { CivicaCardReloadPosService } from './civica-card-reload-pos.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { KeycloakService } from "keycloak-angular";
 import { fuseAnimations } from '../../../core/animations';
 import { Subscription } from 'rxjs/Subscription';
 import * as Rx from 'rxjs/Rx';
