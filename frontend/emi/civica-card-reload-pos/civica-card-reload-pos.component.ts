@@ -12,16 +12,18 @@ import * as Rx from 'rxjs/Rx';
   animations: fuseAnimations
 })
 export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
-    
 
-  constructor(private civicaCardReloadPosService: CivicaCardReloadPosService  ) {    
+  userDetails: KeycloakProfile = {};
 
-  }    
+  constructor(private civicaCardReloadPosService: CivicaCardReloadPosService, private keycloakService: KeycloakService) {
 
-  ngOnInit() {    
   }
 
-  
+  async ngOnInit() {
+    this.userDetails = await this.keycloakService.loadUserProfile();
+    console.log(`====${JSON.stringify(this.userDetails)}===`);
+  }
+
   ngOnDestroy() {
   }
 
