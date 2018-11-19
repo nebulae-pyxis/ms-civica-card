@@ -49,10 +49,6 @@ export abstract class DataBlockRequest extends DeviceMessageReq
    * Genarate XOR checksum of General Message
    */
   generateDeviceMessageXOR() {
-    /*
-    console.log('Toma datablock para crear XOR: ', this.getDataBlock());
-    console.log('Toma messagelenght para crear XOR: ', this.getDeviceMessageLenght());
-    */
     const lenVsDatablockXOR = Commons.concatenate(this.getDeviceMessageLenght(), this.getDataBlock());
     const xor = lenVsDatablockXOR.reduce((acc, val) => {
       // tslint:disable-next-line:no-bitwise

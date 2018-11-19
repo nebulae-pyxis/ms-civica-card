@@ -177,13 +177,11 @@ export class AfccRealoderService {
       }
       ),
       tap(result => {
-        console.log('conversation recibida: ', result);
         if (
           result &&
           ((result as any).uiState === OperabilityState.RELOADING_CARD ||
           (result as any).uiState === OperabilityState.RELOADING_CARD_ERROR)
         ) {
-          console.log('estado: ', (result as any).uiState);
           this.conversation = result;
           this.operabilityState$.next(OperabilityState.RELOADING_CARD);
         }
@@ -220,7 +218,6 @@ export class AfccRealoderService {
   // #region Authentication ACR1255
 
   changeCypherMasterKey(masterKey) {
-    console.log('llega masterKey: ', masterKey);
     this.sessionKey = masterKey;
     this.cypherAesService.changeMasterKey(this.sessionKey);
   }

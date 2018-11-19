@@ -9,11 +9,16 @@ import { OperabilityState } from '../../utils/operability-sate';
 })
 export class InternalErrorComponent implements OnInit {
 
+  errorType = 'DEFAULT';
   constructor(private afccReloaderService: AfccRealoderService) { }
 
   ngOnInit() {
+    const error = this.afccReloaderService.conversation.error;
+    if (error === 'INVALID_SESSION') {
+      this.errorType = error;
+    }
   }
   retry() {
-    this.afccReloaderService.operabilityState$.next(OperabilityState.RELOADING_CARD);
+    this.afccReloaderService.operabilityState$.next(OperabilityState.CONNECTED);
   }
 }

@@ -6,11 +6,12 @@
     <svg-icon src="assets/check.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#F59100'}"></svg-icon>
     <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
       <mat-list>
-        <mat-list-item>
+        <mat-list-item  *ngIf="errorType === 'INVALID_SESSION'">
           <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
-          Token JWT no es valido
+          Sesión de usuario inválida, por favor comuniquese con soporte para
+        verificar y solucionar este error
         </mat-list-item>
-        <mat-list-item>
+        <mat-list-item *ngIf="errorType === 'DEFAULT'">
             <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
             No fue posible conectarse con el API
           </mat-list-item>
@@ -18,5 +19,5 @@
     </div>
   </div>
   <div style="justify-content: flex-end" class="horizontal-container">
-      <button style="margin-right: 20px" mat-stroked-button color="primary" (click)="retry()">Reintentar</button>
+      <button style="margin-right: 20px" mat-stroked-button color="primary" (click)="retry()">volver</button>
   </div>

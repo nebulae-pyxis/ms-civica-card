@@ -170,9 +170,6 @@ export class MyfarePlusSl3 {
       cypherAesService,
       sessionKey
     ).pipe(
-      tap(() => {
-        console.log('CardPowerOn ', new Date());
-      }),
       mergeMap(result => {
         const cardPowerOnResp = new CardPowerOnResp(result);
         let cardType;
@@ -181,8 +178,10 @@ export class MyfarePlusSl3 {
           '01c1'
         ) {
           cardType = 'SL3';
+        } else if (!cypherAesService.bytesTohex(cardPowerOnResp.data.slice(3, 5))) {
+          throw new Error('CARD_NOT_FOUND');
         } else {
-          throw new Error('card not supported');
+          throw new Error('CARD_NOT_SUPPORTED');
         }
         conversation.cardType = cardType;
         return this.cardAuthenticationFirstStep$(
@@ -195,9 +194,6 @@ export class MyfarePlusSl3 {
           gateway
         );
       }),
-      tap(() => {
-        console.log('Solicitud de token a tarjeta ', new Date());
-      }),
       mergeMap(authToken => {
         return this.getReadCardSecondAuthToken(
           gateway,
@@ -205,9 +201,6 @@ export class MyfarePlusSl3 {
           conversation,
           dataType === 'CIVICA' ? 'DEBIT' : 'PUBLIC'
         );
-      }),
-      tap(() => {
-        console.log('Solicitud de token a servidor ', new Date());
       }),
       mergeMap(serverResp => {
         return this.cardAuthenticationSecondStep$(
@@ -217,9 +210,6 @@ export class MyfarePlusSl3 {
           sessionKey,
           serverResp
         );
-      }),
-      tap(() => {
-        console.log('Envio de token a tarjeta ', new Date());
       }),
       mergeMap(authCardConfirmation => {
         const authCardSecondStep = new AuthCardSecondStepResp(
@@ -231,9 +221,6 @@ export class MyfarePlusSl3 {
           conversation,
           dataType
         );
-      }),
-      tap(() => {
-        console.log('envio de token de confirmacion y solicitud de apdus ', new Date());
       })
     );
   }
@@ -338,7 +325,6 @@ export class MyfarePlusSl3 {
     gateway,
     dataType
   ) {
-    console.log('Inicia proceso de lectura ', new Date());
     return this.authWithCardAndGetReadApduCommands$(
       bluetoothService,
       gateway,
@@ -348,7 +334,6 @@ export class MyfarePlusSl3 {
       conversation,
       dataType
     ).pipe(
-
       mergeMap(apduCommands => {
         return this.sendApduCommandsCard(
           apduCommands,
@@ -358,18 +343,12 @@ export class MyfarePlusSl3 {
           sessionKey
         );
       }),
-      tap(() => {
-        console.log('ejecucion de apdus', new Date());
-      }),
       mergeMap(apduCommandsResp => {
         return this.processReadApduCommandsCard(
           apduCommandsResp,
           conversation,
           gateway
         );
-      }),
-      tap(() => {
-        console.log('procesar apdus', new Date());
       }),
       mergeMap(result => {
         return this.cardPowerOff$(
@@ -437,7 +416,7 @@ export class MyfarePlusSl3 {
                     apduResp.data
                   );
                   return apduCommand;
-              }),
+                }),
                 delay(100)
               );
           }),
@@ -518,7 +497,23 @@ export class MyfarePlusSl3 {
         },
         errorPolicy: 'all'
       })
-      .pipe(map(rawData => rawData.data.startCivicaCardReloadConversation));
+      .pipe(
+        map(rawData => {
+        if (rawData.errors) {
+            const error = rawData.errors[0];
+            switch (error.message.code) {
+              case 9:
+                // TODO: aqui el error por falta de saldo
+                throw new Error('NO_BALANCE');
+              // TODO: error por sesion caducada
+              case 2001:
+                throw new Error('INVALID_SESSION');
+            }
+          } else {
+            return rawData.data.startCivicaCardReloadConversation;
+          }
+        })
+      );
   }
 
   /**
@@ -636,7 +631,8 @@ export class MyfarePlusSl3 {
             map(rawData =>
               JSON.parse(
                 JSON.stringify(
-                  rawData.data.processCivicaCardReloadWriteAndReadApduCommandResponses
+                  rawData.data
+                    .processCivicaCardReloadWriteAndReadApduCommandResponses
                 )
               )
             )
@@ -668,7 +664,10 @@ export class MyfarePlusSl3 {
         errorPolicy: 'all'
       })
       .pipe(
-        map(rawData => rawData.data.generateCivicaCardReloadWriteAndReadApduCommands)
+        map(
+          rawData =>
+            rawData.data.generateCivicaCardReloadWriteAndReadApduCommands
+        )
       );
   }
 
@@ -705,7 +704,7 @@ export class MyfarePlusSl3 {
         ) {
           cardType = 'SL3';
         } else {
-          throw new Error('card not supported');
+          throw new Error('CARD_NOT_SUPPORTED');
         }
         conversation.cardType = cardType;
         return this.cardAuthenticationFirstStep$(
@@ -800,5 +799,4 @@ export class MyfarePlusSl3 {
   }
 
   // #endregion
-
 }

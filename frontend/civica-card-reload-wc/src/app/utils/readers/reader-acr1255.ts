@@ -23,7 +23,6 @@ export class ReaderAcr1255 {
     batteryLevel$,
     deviceName$
   ) {
-    console.log('Inicia flujo de conexion************');
     return bluetoothService
       .connectDevice$({
         optionalServices: [GattService.NOTIFIER.SERVICE],
@@ -35,18 +34,14 @@ export class ReaderAcr1255 {
             // get the current battery lever of the connected device
             this.getBatteryLevel$(bluetoothService).pipe(
               tap(batteryLevel => {
-                console.log('batteryLevel: ', batteryLevel);
                 batteryLevel$.next(batteryLevel);
               })
             ),
-            bluetoothService.getNotifierStartedSubject$().pipe(tap(() => console.log('SE INCIA EXITOSAMENTE NOTIFIER!!!!!!!!!'))),
+            bluetoothService.getNotifierStartedSubject$(),
             // Start all bluetooth notifiers to the operation
-            this.startNotifiersListener$(bluetoothService).pipe(tap(() => console.log('emite startNotifiersListener$'))),
+            this.startNotifiersListener$(bluetoothService),
 
           ).pipe(
-            tap(result => {
-            console.log('Emite startNotifiersListener: ', result);
-            }),
             mapTo(gattServer));
         }),
         tap(server => {

@@ -151,7 +151,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
       }
       if (state === OperabilityState.REQUESTING_RELOAD_PERMISSION ||
         state === OperabilityState.READING_CARD_ERROR ||
-        state === OperabilityState.CARD_READED_NOT_SUPPORTED ||
         state === OperabilityState.CARD_READED ||
         state === OperabilityState.RELOADING_CARD ||
         state === OperabilityState.RELOADING_CARD_ERROR ||
@@ -159,7 +158,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         state === OperabilityState.RELOAD_CARD_SUCCESS ||
         state === OperabilityState.RELOAD_CARD_REFUSED
       ) {
-        console.log('Envia estado al servidor: ', state);
        this.afccRealoderService.changeOperationState$(state).subscribe();
       }
       this.operabilityState$.next(state);
@@ -204,7 +202,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
           );
         },
       error => {
-        console.log('error en la conexion: ', error);
           this.afccRealoderService.disconnectDevice();
           this.openSnackBar('Fallo al comunicarse con la lectora');
           this.afccRealoderService.operabilityState$.next(

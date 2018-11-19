@@ -72,11 +72,7 @@
           *ngIf="(operabilityState$ | async).valueOf() === 'INTERNAL_ERROR'"
         ></app-internal-error>
         <app-read-card-error
-          *ngIf="
-            (operabilityState$ | async).valueOf() === 'READING_CARD_ERROR' ||
-            (operabilityState$ | async).valueOf() ===
-              'CARD_READED_NOT_SUPPORTED'
-          "
+          *ngIf="(operabilityState$ | async).valueOf() === 'READING_CARD_ERROR'"
         ></app-read-card-error>
         <app-reload-card
           *ngIf="(operabilityState$ | async).valueOf() === 'RELOADING_CARD'"

@@ -42,15 +42,24 @@ export class ReadCardComponent implements OnInit, OnDestroy {
             this.afccReloadService
               .readCard$()
               .pipe(
-              catchError(error => {
-                console.log('conversacion: ', this.afccReloadService.conversation);
-                console.log('error: ', error);
+                catchError(error => {
                   this.afccReloadService.readingCard = false;
-                  if (error === 'card not supported') {
-                    this.afccReloadService.operabilityState$.next(
-                      OperabilityState.CARD_READED_NOT_SUPPORTED
-                    );
-                  }
+                if (error.toString().indexOf('CARD_NOT_SUPPORTED') !== -1) {
+                  this.afccReloadService.conversation.error = 'CARD_READED_NOT_SUPPORTED';
+                  this.afccReloadService.operabilityState$.next(
+                    OperabilityState.READING_CARD_ERROR
+                  );
+                } else if (error.toString().indexOf('INVALID_SESSION') !== -1) {
+                  this.afccReloadService.conversation.error = 'INVALID_SESSION';
+                  this.afccReloadService.operabilityState$.next(
+                    OperabilityState.INTERNAL_ERROR
+                  );
+                } else if (error.toString().indexOf('NO_BALANCE') !== -1) {
+                  this.afccReloadService.conversation.error = 'NO_BALANCE';
+                  this.afccReloadService.operabilityState$.next(
+                    OperabilityState.READING_CARD_ERROR
+                  );
+                }
                   return of('Error reading the card: ', error);
                 })
               )
@@ -116,37 +125,37 @@ export class ReadCardComponent implements OnInit, OnDestroy {
         .afterClosed()
         .pipe(
           mergeMap(granted => {
-          if (granted) {
+            if (granted) {
               this.afccReloadService.operabilityState$.next(
                 OperabilityState.REQUESTING_RELOAD_PERMISSION
               );
               this.afccReloadService.conversation.reloadValue = this.value;
-            return this.afccReloadService.purchaseCivicaCardReload$(
-              this.value
-            );
+              return this.afccReloadService.purchaseCivicaCardReload$(
+                this.value
+              );
             } else {
               return of('Operation cancelled');
             }
           })
         )
-        .subscribe(result => {
-          if (result.granted) {
-            this.afccReloadService.conversation.purchase = result;
-            this.afccReloadService.operabilityState$.next(
-              OperabilityState.RELOADING_CARD
-            );
-          } else {
+        .subscribe(
+          result => {
+            if (result.granted) {
+              this.afccReloadService.conversation.purchase = result;
+              this.afccReloadService.operabilityState$.next(
+                OperabilityState.RELOADING_CARD
+              );
+            }
+          },
+          error => {
+            this.afccReloadService.conversation.error = error
+              .toString()
+              .replace(/Error: /g, '');
             this.afccReloadService.operabilityState$.next(
               OperabilityState.RELOAD_CARD_REFUSED
             );
           }
-        },
-        error => {
-          this.afccReloadService.conversation.error = error.toString().replace(/Error: /g, '');
-          this.afccReloadService.operabilityState$.next(
-            OperabilityState.RELOAD_CARD_REFUSED
-          );
-        });
+        );
     }
   }
 

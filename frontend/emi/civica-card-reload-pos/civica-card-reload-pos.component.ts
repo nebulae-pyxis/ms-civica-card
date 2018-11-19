@@ -23,7 +23,6 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.userDetails = await this.keycloakService.loadUserProfile();
-    console.log(`====${JSON.stringify(this.userDetails)}===`);
   }
 
   ngOnDestroy() {

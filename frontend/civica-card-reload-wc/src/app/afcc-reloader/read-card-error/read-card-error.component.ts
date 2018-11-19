@@ -13,7 +13,11 @@ export class ReadCardErrorComponent implements OnInit {
   constructor(private afccReloaderService: AfccRealoderService) { }
 
   ngOnInit() {
-    this.operationState = this.afccReloaderService.operabilityState$.value;
+    if (this.afccReloaderService.conversation.error) {
+      this.operationState = this.afccReloaderService.conversation.error;
+    } else {
+      this.operationState = this.afccReloaderService.operabilityState$.value;
+    }
   }
 
   retry() {
