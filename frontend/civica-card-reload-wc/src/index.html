@@ -7,17 +7,10 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script type="text/javascript" src="https://unpkg.com/zone.js"></script>
 </head>
 <body>
   <afcc-reloader width='400' height='500' jwt="eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJORWNiRnljUVFfbHUweG5uWmtZYTFKNHhpaFBCSHhMOUNaa2hJTkYtLS04In0.eyJqdGkiOiI1ZWZkMDMwYi01ZDFlLTRjODYtYTk0Zi02MmQwZDMzMWYxYzEiLCJleHAiOjE1NDIzOTkxODAsIm5iZiI6MCwiaWF0IjoxNTQyMzc3NTgwLCJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwODAvYXV0aC9yZWFsbXMvREVWX1BZWElTIiwiYXVkIjoiRU1JIiwic3ViIjoiM2YwZWI0YTQtMTRhOC00MjFlLTgzZDgtMjZhYmQwNjVjNDE2IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiRU1JIiwibm9uY2UiOiJkY2NkNDJmNi1lMmRjLTRlMWMtODE3MC1iOTEwNDI1ZTNlNDgiLCJhdXRoX3RpbWUiOjE1NDIzNzc1NzgsInNlc3Npb25fc3RhdGUiOiJiYmIzN2QyNi0wNzg3LTQxZGMtYWMxYy00NzQyZjU1N2ViZTgiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIlBPUyIsImRldmVsb3BlciIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwibmFtZSI6ImRhbmllbCBUb2JvbiIsImJ1c2luZXNzSWQiOiIxIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiZHJpbWF4IiwiZ2l2ZW5fbmFtZSI6ImRhbmllbCIsImZhbWlseV9uYW1lIjoiVG9ib24iLCJlbWFpbCI6ImRhbmllbHRlc3RAZ21haWwuY29tIn0.Yv5UXhBUjjRCAc9KvjcQ8ytj0Pg-nTRS6JtuFrrau8mZ149yAHrLb1sWXf2mSQWBDIXfFbj8jniAA_3xtRooH9I_m20-ihN_paDQeeJ0x0_GaXgvxFczUAlLwxppHoUbrRUAgXEE7QC8yOtcg1KiMWccaRne4NOrcfsbjlYE7MjEbH7k13j1UMsy3NTazogSTOAUpoSLCyCmb5r6SXhltOdtS7Q8sr_ZyRDet8T5eQi_skrUxMxlS6daAWWj1aluluaI_A4OG4oprREn4uQhn5SbVKMfOklh9YfeONiglANZR4RJmI57z0DLvfhtlrTfqLovlclr0edlFTUWkiaPsw"
   pos_id="testPosId" pos_terminal="testPosTerminal" pos_user_name="testPosUser" pos_user_id="testPosUserId"></afcc-reloader>
-  <script>
-    const afccReloader = document.querySelector('afcc-reloader');
-    afccReloader.addEventListener('reloaderConnected', (event) => {
-      console.log(`"action" emitted: ${event.detail}`);
-      afccReloader.setJwt = 'test3';
-    });
-    afccReloader.setJwt = 'test';
-  </script>
 </body>
 </html>

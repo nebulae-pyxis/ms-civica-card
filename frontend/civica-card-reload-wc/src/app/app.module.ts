@@ -23,6 +23,7 @@ import { FormsModule } from '@angular/forms';
 import { UnknownPositionComponent } from './afcc-reloader/unknown-position/unknown-position.component';
 import { ApolloModule } from 'apollo-angular';
 import { HttpLinkModule } from 'apollo-angular-link-http';
+import { ElementZoneStrategyFactory } from 'elements-zone-strategy';
 import { ReloadConfirmationDialogComponent } from './afcc-reloader/read-card/reload-confirmation-dialog/reload-confirmation-dialog.component';
 import { ReloadCardRefusedComponent } from './afcc-reloader/reload-card-refused/reload-card-refused.component';
 
@@ -66,7 +67,8 @@ import { ReloadCardRefusedComponent } from './afcc-reloader/reload-card-refused/
 })
 export class AppModule {
   constructor(private injector: Injector) {
-    const afccReloader = createCustomElement(AfccReloaderComponent, { injector });
+    const strategyFactory = new ElementZoneStrategyFactory(AfccReloaderComponent, this.injector);
+    const afccReloader = createCustomElement(AfccReloaderComponent, { injector: this.injector, strategyFactory });
     customElements.define('afcc-reloader', afccReloader);
   }
 

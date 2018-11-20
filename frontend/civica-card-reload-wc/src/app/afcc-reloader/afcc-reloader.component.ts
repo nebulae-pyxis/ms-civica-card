@@ -24,7 +24,9 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   operabilityState$ = new BehaviorSubject<OperabilityState>(
     OperabilityState.DISCONNECTED
   );
-
+  _enable_reload_value_keys;
+  _recharge_value;
+  _pos_id;
   _width = '500';
   _height = '500';
   @Input()
@@ -67,21 +69,63 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
 
   // #region Data input
   @Input()
-  pos_id: String;
   @Input()
-  jwt: String;
+  set pos_id(pos_id) {
+    this._pos_id = pos_id;
+  }
+  get pos_id() {
+    return this._pos_id;
+  }
   @Input()
-  recharge_value: Number;
+  set jwt(jwt) {
+    console.log('se setea JWT: ', jwt);
+    this.afccRealoderService.gateway.token = jwt;
+  }
+  get jwt() {
+    return this.afccRealoderService.gateway.token;
+  }
   @Input()
-  enable_reload_value_keys = true;
+  set recharge_value(recharge_value) {
+    this._recharge_value = recharge_value;
+  }
+  get recharge_value() {
+    return this._recharge_value;
+  }
   @Input()
-  position: any;
+  set enable_reload_value_keys(enable_reload_value_keys) {
+    this._enable_reload_value_keys = enable_reload_value_keys;
+  }
+  get enable_reload_value_keys() {
+    return this._enable_reload_value_keys;
+  }
   @Input()
-  pos_user_name: String;
+  set position(position) {
+    this.afccRealoderService.posPosition = position;
+  }
+  get position() {
+    return this.afccRealoderService.posPosition;
+  }
   @Input()
-  pos_terminal: String;
+  set pos_user_name(posUserName) {
+    this.afccRealoderService.posUserName = posUserName;
+  }
+  get pos_user_name() {
+    return this.afccRealoderService.posUserName;
+  }
   @Input()
-  pos_user_id: String;
+  set pos_terminal(posTerminal) {
+    this.afccRealoderService.posTerminal = posTerminal;
+  }
+  get pos_terminal() {
+    return this.afccRealoderService.posTerminal;
+  }
+  @Input()
+  set pos_user_id(posUserId) {
+    this.afccRealoderService.posUserId = posUserId;
+  }
+  get pos_user_id() {
+    return this.afccRealoderService.posUserId;
+  }
   // #endregion
 
   connectionSub;
@@ -92,7 +136,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {}
   ngOnInit() {
-    this.afccRealoderService.gateway.token = this.jwt;
     this.afccRealoderService.gateway.initService();
     if (this.position) {
       const arrPosition = this.position.split(',');

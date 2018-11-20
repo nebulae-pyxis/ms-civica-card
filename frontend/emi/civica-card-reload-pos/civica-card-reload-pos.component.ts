@@ -1,7 +1,7 @@
 import { CivicaCardReloadPosService } from './civica-card-reload-pos.service';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { KeycloakService } from "keycloak-angular";
-import { KeycloakProfile } from "keycloak-js";
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { KeycloakService } from 'keycloak-angular';
+import { KeycloakProfile } from 'keycloak-js';
 import { fuseAnimations } from '../../../core/animations';
 import { Subscription } from 'rxjs/Subscription';
 import * as Rx from 'rxjs/Rx';
@@ -16,6 +16,7 @@ import * as Rx from 'rxjs/Rx';
 export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
 
   userDetails: KeycloakProfile = {};
+  @ViewChild('webcomponent') webComponent;
 
   constructor(private civicaCardReloadPosService: CivicaCardReloadPosService, private keycloakService: KeycloakService) {
 
@@ -23,6 +24,7 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.userDetails = await this.keycloakService.loadUserProfile();
+    this.webComponent.nativeElement.jwt = await this.keycloakService.getToken();
   }
 
   ngOnDestroy() {

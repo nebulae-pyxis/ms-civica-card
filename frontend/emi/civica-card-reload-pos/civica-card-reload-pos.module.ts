@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../../core/modules/shared.module';
 import { DatePipe } from '@angular/common';
@@ -21,9 +21,10 @@ const routes: Routes = [
     FuseWidgetModule
   ],
   declarations: [
-    CivicaCardReloadPosComponent    
+    CivicaCardReloadPosComponent
   ],
-  providers: [ CivicaCardReloadPosService, DatePipe]
+  providers: [CivicaCardReloadPosService, DatePipe],
+  schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })
 
 export class CivicaCardReloadPosModule {}

@@ -2,19 +2,19 @@
     <b style="font-size: 16px; color: #444">Fallo tratando de leer la tarjeta</b>
   </div>
   <div style="margin-top: 20px;" class="horizontal-container">
-    <svg-icon src="assets/check.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#F59100'}"></svg-icon>
+    <svg-icon src="assets/civica-card-reload-pos/assets/check.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#F59100'}"></svg-icon>
     <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
       <mat-list>
         <mat-list-item *ngIf="operationState === 'READING_CARD_ERROR' ">
-          <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+          <svg-icon src="assets/civica-card-reload-pos/assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
           Asegúrese que la tarjeta se encuentra de forma fija y centrada en el lector
         </mat-list-item>
         <mat-list-item *ngIf="operationState === 'CARD_READED_NOT_SUPPORTED' ">
-            <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+            <svg-icon src="assets/civica-card-reload-pos/assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
             El tipo de tarjeta ingresada no es soportada actualmente
         </mat-list-item>
         <mat-list-item *ngIf="operationState === 'NO_BALANCE' ">
-          <svg-icon src="assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+          <svg-icon src="assets/civica-card-reload-pos/assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
           Saldo insuficiente para realizar la operación
       </mat-list-item>
       </mat-list>
