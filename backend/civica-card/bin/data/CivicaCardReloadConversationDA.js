@@ -2,13 +2,17 @@
 
 let mongoDB = undefined;
 const Rx = require('rxjs');
-const CollectionName = "CivicaCardReloadConversationDA";
-const { CustomError } = require('../tools/customError');
+const CollectionName = "CivicaCardReloadConversation";
+const { CustomError, CONVERSATION_NOT_FOUND } = require('../tools/customError');
 const { map, tap, mapTo } = require('rxjs/operators');
 
 
 class CivicaCardReloadConversationDA {
 
+  /**
+   * prepare thsi DA to work
+   * @param {*} mongoDbInstance 
+   */
   static start$(mongoDbInstance) {
     return Rx.Observable.create((observer) => {
       if (mongoDbInstance) {
@@ -28,12 +32,14 @@ class CivicaCardReloadConversationDA {
    */
   static find$(id) {
     const collection = mongoDB.db.collection(CollectionName);
-    return Rx.defer(() => collection.findOne({ _id: id }));
+    return Rx.defer(() => collection.findOne({ _id: id })).pipe(
+      tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND) })
+    );
   }
 
   /**
-   * Finds a CivicaCardReloadConversation by its id
-   * @param string id 
+   * id CivicaCardReloadConversation
+   * @param {{ id, userJwt, userName, businessId, posId, posUserName, posUserId, posTerminal, posLocation, readerType, cardType, cardUid }} data 
    */
   static create$({ id, userJwt, userName, businessId, posId, posUserName, posUserId, posTerminal, posLocation, readerType, cardType, cardUid }) {
     const collection = mongoDB.db.collection(CollectionName);
@@ -78,6 +84,11 @@ class CivicaCardReloadConversationDA {
     );
   }
 
+  /**
+   * Sets the property uiState at the conversation
+   * @param {String} id conversation id
+   * @param {String} uiState state to set
+   */
   static setUiState$(id, uiState) {
     const collection = mongoDB.db.collection(CollectionName);
     return Rx.defer(() => collection.findOneAndUpdate(
@@ -85,11 +96,17 @@ class CivicaCardReloadConversationDA {
       { '$set': { 'uiState': uiState }, '$push': { 'uiStateHistory': { uiState, ts: Date.now() } } },
       { 'returnOriginal': true }
     )).pipe(
-      tap(result => { if (!result || !result.value) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
       map(result => result && result.value ? result.value : undefined)
     );
   }
 
+  /**
+   * Sets the samId, samKey and cardRole currently being used in the conversation
+   * @param {String} id conversation id
+   * @param {*} samId 
+   * @param {*} samKey 
+   * @param {*} cardRole 
+   */
   static setSamIdSamKeyAndCardRole$(id, samId, samKey, cardRole) {
     const collection = mongoDB.db.collection(CollectionName);
     return Rx.defer(() => collection.update(
@@ -103,10 +120,15 @@ class CivicaCardReloadConversationDA {
       },
       { 'multi': false }
     )).pipe(
-      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); })
+      tap(x => { if (x.result.n < 1) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND); })
     );
   }
 
+  /**
+   * Sets the samAuthObject currently being used in the conversation
+   * @param {String} id conversation id
+   * @param {*} samAuthObj 
+   */
   static setSamAuthObj$(id, samAuthObj) {
     const collection = mongoDB.db.collection(CollectionName);
     return Rx.defer(() => collection.update(
@@ -125,11 +147,16 @@ class CivicaCardReloadConversationDA {
       },
       { 'multi': false }
     )).pipe(
-      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      tap(x => { if (x.result.n < 1) throw (new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND)); }),
       mapTo(samAuthObj)
     );
   }
 
+  /**
+   * Sets the origianl client's card raw data
+   * @param {String} id conversation id
+   * @param {*} rawData client's card raw data
+   */
   static setInitialCardRawData$(id, rawData) {
     const collection = mongoDB.db.collection(CollectionName);
     const updateQuery = [
@@ -143,11 +170,16 @@ class CivicaCardReloadConversationDA {
     ];
 
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
-      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      tap(x => { if (x.result.n < 1) throw (new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND)); }),
       mapTo(rawData)
     );
   }
 
+  /**
+   *  Sets the origianl client's card data
+   * @param {String} id conversation id
+   * @param {*} civicaData 
+   */
   static setInitialCardCivicaData$(id, civicaData) {
     const collection = mongoDB.db.collection(CollectionName);
     const updateQuery = [
@@ -161,11 +193,18 @@ class CivicaCardReloadConversationDA {
     ];
 
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
-      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      tap(x => { if (x.result.n < 1) throw (new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND)); }),
       mapTo(civicaData)
     );
   }
 
+  /**
+   * Sets the purchase data for a conversation
+   * @param {String} id conversation id
+   * @param {Boolean} granted 
+   * @param {String} errorMsg 
+   * @param {*} receipt 
+   */
   static setPurchaseData$(id, granted, errorMsg, receipt) {
     const purchase = {
       granted,
@@ -184,13 +223,17 @@ class CivicaCardReloadConversationDA {
     ];
     const collection = mongoDB.db.collection(CollectionName);
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
-      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      tap(x => { if (x.result.n < 1) throw (new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND)); }),
       mapTo(purchase)
     );
   }
 
 
-
+  /**
+   * Sets the final (after being written) client's card raw data
+   * @param {String} id conversation id
+   * @param {*} rawData client's card raw data
+   */
   static setFinalCardRawData$(id, rawData) {
     const collection = mongoDB.db.collection(CollectionName);
     const updateQuery = [
@@ -204,11 +247,16 @@ class CivicaCardReloadConversationDA {
     ];
 
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
-      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      tap(x => { if (x.result.n < 1) throw (new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND)); }),
       mapTo(rawData)
     );
   }
 
+  /**
+   * Sets the final (after being written) client's card  data
+   * @param {String} id conversation id
+   * @param {*} rawData client's card data
+   */
   static setFinalCardCivicaData$(id, civicaData) {
     const collection = mongoDB.db.collection(CollectionName);
     const updateQuery = [
@@ -222,7 +270,7 @@ class CivicaCardReloadConversationDA {
     ];
 
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
-      tap(x => { if (x.result.n < 1) throw (new Error(`CivicaCardReloadConversation(id:${id}) not found`)); }),
+      tap(x => { if (x.result.n < 1) throw (new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${id})`, CONVERSATION_NOT_FOUND)); }),
       mapTo(civicaData)
     );
   }

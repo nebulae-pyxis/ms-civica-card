@@ -2,7 +2,7 @@
 
 const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
-const WalletDA = require('../../data/WalletDA');
+const BusinessDA = require('../../data/BusinessDA');
 
 
 /**
@@ -16,21 +16,21 @@ class WalletES {
     }
 
     /**
-     * updates wallet state
+     * updates business state
      * @param {Event} event 
      */
     handleWalletSpendingForbiddenEvent$(event) {
         const data = event.data;
-        return WalletDA.updateWallet$(data.businessId, data.wallet, false);
+        return BusinessDA.updateBusinessWallet$(data.businessId, data.wallet, false);
     }
 
     /**
-     * updates wallet state
+     * updates business state
      * @param {Event} event 
      */
     handleWalletSpendingAllowedEvent$(event) {
         const data = event.data;
-        return WalletDA.updateWallet$(data.businessId, data.wallet, true);
+        return BusinessDA.updateBusinessWallet$(data.businessId, data.wallet, true);
     }
 
 }

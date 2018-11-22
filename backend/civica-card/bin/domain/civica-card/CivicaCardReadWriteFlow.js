@@ -4,8 +4,12 @@ const {
     RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RASE
 } = require('../../tools/mifare/ByteCode/ByteCode');
 const { MAX_SALDO_CREDITO } = require('./CivicaCardTools');
+const { CustomError, HW_CARD_TYPE_INVALID, HW_CARD_ROLE_INVALID, HW_CARD_DATA_TYPE_INVALID } = require('../../tools/customError');
 
 
+/**
+ * Holds the civica card binary data read and write flow
+ */
 class CivicaCardReadWriteFlow {
 
 
@@ -21,14 +25,14 @@ class CivicaCardReadWriteFlow {
                     case 'PUBLIC': return this.getSl3PublicReadBytecode(bytecode);
                     case 'CIVICA':
                         switch (cardRole) {
-                            case 'DEBIT' : return this.getSl3CivicaDebitReadBytecode(bytecode);
-                            case 'CREDIT' : return this.getSl3CivicaCreditReadBytecode(bytecode);
-                            default: throw new Error(`invalid cardRole ${dataType}`);        
+                            case 'DEBIT': return this.getSl3CivicaDebitReadBytecode(bytecode);
+                            case 'CREDIT': return this.getSl3CivicaCreditReadBytecode(bytecode);
+                            default: throw new CustomError(`Invalid card Role`, 'CivicaCardReadWriteFlow.generateReadBytecode', HW_CARD_ROLE_INVALID, `invalid card role: ${cardRole}`);
                         }
                         break;
-                    default: throw new Error(`invalid dataType ${dataType}`);
+                    default: throw new CustomError(`Invalid data type`, 'CivicaCardReadWriteFlow.generateReadBytecode', HW_CARD_DATA_TYPE_INVALID, `invalid data type: ${dataType}`);
                 }
-            default: throw new Error(`invalid cardType${cardType}`);
+            default: throw new CustomError(`Invalid card type`, 'CivicaCardReadWriteFlow.generateReadBytecode', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);
         }
     }
 
@@ -41,7 +45,7 @@ class CivicaCardReadWriteFlow {
         ], bytecode);
     }
     /**
-     * predefined bytecode to read the civica data on Civica card
+     * predefined bytecode to read the civica data on Civica card the DEBIT role
      */
     static getSl3CivicaDebitReadBytecode(bytecode = '') {
         return generateByteCode([
@@ -51,7 +55,7 @@ class CivicaCardReadWriteFlow {
     }
 
     /**
-     * predefined bytecode to read the civica data on Civica card
+     * predefined bytecode to read the civica data on Civica card when using the CREDIT role
      */
     static getSl3CivicaCreditReadBytecode(bytecode = '') {
         return generateByteCode([
@@ -87,9 +91,9 @@ class CivicaCardReadWriteFlow {
                 switch (dataType) {
                     case 'CIVICA': return this.getSl3CivicaWriteBytecode(conversation.initialCard, mods, bytecode);
                     //case 'PUBLIC': return this.getSl3PublicWriteBytecode(bytecode);                    
-                    default: throw new Error(`invalid dataType${dataType}`);
+                    default: throw new CustomError(`Invalid data type`, 'CivicaCardReadWriteFlow.generateWriteBytecode', HW_CARD_DATA_TYPE_INVALID, `invalid data type: ${dataType}`);
                 }
-            default: throw new Error(`invalid cardType${cardType}`);
+            default: throw new CustomError(`Invalid card type`, 'CivicaCardReadWriteFlow.generateWriteBytecode', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);
         }
     }
 

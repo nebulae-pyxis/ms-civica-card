@@ -3,14 +3,14 @@
 const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
-const { CustomError, ENTITY_NOT_FOUND_ERROR_CODE } = require('../../tools/customError');
+const { CustomError, CONVERSATION_NOT_FOUND, BUSINESS_NOT_FOUND, BUSINESS_NOT_ACTIVE, BUSINESS_WALLET_NOT_FOUND, BUSINESS_WALLET_SPENDING_FORBIDDEN } = require('../../tools/customError');
 const { SamClusterClient, Compiler, BytecodeMifareBindTools } = require('../../tools/mifare/');
 const CivicaCardReadWriteFlow = require('./CivicaCardReadWriteFlow');
 const { getSamAuthKeyAndDiversifiedKey } = require('./CivicaCardTools');
 const CivicaCardDataExtractor = require('./CivicaCardDataExtractor');
 const CivicaCardReload = require('./CivicaCardReload');
 const CivicaCardReloadConversationDA = require("../../data/CivicaCardReloadConversationDA");
-const WalletDA = require("../../data/WalletDA");
+const BusinessDA = require("../../data/BusinessDA");
 
 
 /**
@@ -20,9 +20,13 @@ let instance;
 
 class CivicaCardCQRS {
 
+    //#region CONSTRUCTOR + START SEQUENCE    
     constructor() {
     }
 
+    /**
+     * Prepares this class to be ready to handle requests
+     */
     start$() {
         return Rx.Observable.create(observer => {
             const mqttServerUrl = process.env.SAM_CLUSTER_MQTT_CONN_STR;
@@ -34,21 +38,20 @@ class CivicaCardCQRS {
             observer.complete();
         });
     }
+    //#endregion
+
+    //#region Conversation
 
     /**
      * Creates and returns a CivicaCardReloadConversation
      */
     startCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
-
-        return WalletDA.find$(authToken.businessId).pipe(
-            tap(wallet => { if (wallet === null) throw new CustomError('Bolsas no activas', `Asegurese que su bolsa ha sido creada y activada`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            tap(wallet => { if (!wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-        ).pipe(
-            mergeMap(wallet => CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name, businessId: authToken.businessId })),
+        return this.verifyBusiness$(authToken.businessId, undefined).pipe(
+            mergeMap(() => CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name, businessId: authToken.businessId })),
             map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
-                console.error(error.stack || error);
+                this.logError(error);
                 return GraphqlResponseTools.handleError$(error);
             })
         );
@@ -61,32 +64,203 @@ class CivicaCardCQRS {
     setCivicaCardReloadConversationUiState$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.setUiState$(args.conversationId, args.uiState)
             .pipe(
-                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
                 map(oldConversation => oldConversation.uiState),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => {
-                    console.error(error.stack || error);
+                    this.logError(error);
                     return GraphqlResponseTools.handleError$(error);
                 })
             );
     }
+
 
     /**
      * Finds a CivicaCardReloadConversation by its ID, format it to the graphql schema and returns it
      */
     getCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.id)
-            .pipe(
-                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.id})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
+            .pipe(                
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => {
-                    //console.error(error.stack || error);
+                    this.logError(error);
                     return GraphqlResponseTools.handleError$(error);
                 })
             );
     }
 
+    //#endregion
+
+    //#region CIVICA CART AUTH
+
+    /**
+    * generates CivicaCard SecondAuthToken using the SAM cluster
+    */
+    generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+            mergeMap(conversation => {
+                const { key, dataDiv } = getSamAuthKeyAndDiversifiedKey(args.cardRole, conversation.cardUid, this.samClusterClient);
+                return this.samClusterClient.requestSamFirstStepAuth$(
+                    { dataDiv, key, cardFirstSteptAuthChallenge: args.cardChallenge }, { transactionId: conversation._id })
+                    .pipe(map(samFirstStepAuthResponse => ({ samFirstStepAuthResponse, conversation })));
+            }
+            ),
+            mergeMap(({ samFirstStepAuthResponse, conversation }) => {
+                return CivicaCardReloadConversationDA.setSamIdSamKeyAndCardRole$(conversation._id, samFirstStepAuthResponse.samId, samFirstStepAuthResponse.samKey, args.cardRole)
+                    .pipe(mapTo(samFirstStepAuthResponse))
+            }),
+            map(samFirstStepAuthResponse => ({ token: samFirstStepAuthResponse.secondStepSamToken.toString('hex') })),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(error => {
+                this.logError(error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
+    }
+
+    //#endregion
+
+    //#region CIVICA CARD READ
+
+    /**
+     * Generates binary commands sequence to read a civica card
+     */
+    generateCivicaCardReloadReadApduCommands$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId)
+            .pipe(
+                map(conversation => (
+                    {
+                        conversation,
+                        bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole)
+                    }
+                )),
+                mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
+                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+                catchError(error => {
+                    this.logError(error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
+            );
+    }
+
+
+    /**
+     * process and translate binary commands respone sequence to infer civica card data
+     */
+    processCivicaCardReloadReadApduCommandRespones$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId)
+            .pipe(
+                mergeMap(conversation =>
+                    this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
+                ),
+                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.initialCard.rawData).pipe(map(mifareCard => ({ conversation, mifareCard })))),
+                mergeMap(({ conversation, mifareCard }) =>
+                    CivicaCardReloadConversationDA.setInitialCardRawData$(conversation._id, mifareCard).pipe(
+                        mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
+                        mergeMap(civicaData => CivicaCardReloadConversationDA.setInitialCardCivicaData$(conversation._id, civicaData))
+                    )),
+                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
+            ).pipe(
+                catchError(error => {
+                    this.logError(error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
+            );
+    }
+
+    //#endregion
+
+    //#region RELOAD PURCHASE
+
+    /**
+     * Tries to generate the purchase itself
+     * @param {*} param0 
+     * @param {*} authToken 
+     */
+    purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+            mergeMap(conversation => this.verifyBusiness$(conversation.businessId, conversation)),
+            mergeMap(conversation => CivicaCardReload.purchaseCivicaCardReload$(conversation, args.value)),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(error => {
+                this.logError(error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
+    }
+
+    //#endregion
+
+    //#region CIVICA WRITE AND READ
+
+    /**
+     * Generates the write card sequence to recharge the card after the reload purchase and adds the read card sequence to verify written data
+     */
+    generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+            map(conversation => (
+                {
+                    conversation,
+                    bytecode: CivicaCardReadWriteFlow.generateWriteBytecode(conversation.cardType, args.dataType, conversation)
+                }
+            )),
+            map(({ conversation, bytecode }) => (
+                {
+                    conversation,
+                    bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole, bytecode)
+                }
+            )),
+            mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(error => {
+                this.logError(error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
+    }
+
+
+    /**
+     * process and translate binary commands respone sequence  to verify the card has valid data after being written and infers civica card data
+     */
+    processCivicaCardReloadWriteAndReadApduCommandResponses$({ root, args, jwt }, authToken) {
+        return CivicaCardReloadConversationDA.find$(args.conversationId)
+            .pipe(
+                mergeMap(conversation =>
+                    this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
+                ),
+                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.finalCard.rawData).pipe(map(mifareCard => ({ conversation, mifareCard })))),
+                mergeMap(({ conversation, mifareCard }) =>
+                    CivicaCardReloadConversationDA.setFinalCardRawData$(conversation._id, mifareCard).pipe(
+                        mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
+                        mergeMap(civicaData => CivicaCardReloadConversationDA.setFinalCardCivicaData$(conversation._id, civicaData))
+                    )),
+                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
+            ).pipe(
+                catchError(error => {
+                    this.logError(error);
+                    return GraphqlResponseTools.handleError$(error);
+                })
+            );
+    }
+    //#endregion
+
+    //#region TOOLS/OTHERS
+
+    /**
+     * Verifies the Business unit is allowed to spend wallet money
+     * @param {*} conversation
+     * @returns {Rx.Observable}
+     */
+    verifyBusiness$(businessId, returnObject) {
+        return BusinessDA.find$(businessId).pipe(
+            tap(business => { if (business === null) throw new CustomError('Unidad de negocio no encontrada', `verifique que el ID de su negocio sea el correcto`, BUSINESS_NOT_FOUND) }),
+            tap(business => { if (!business.active) throw new CustomError('Unidad de negocio no activa', `comuniquese con el adminsitrador para activar su negocio `, BUSINESS_NOT_ACTIVE) }),
+            tap(business => { if (business.wallet === null) throw new CustomError('Bolsas no encontradas', `comuniquese con el adminsitrador para activar su bolsas de saldo `, BUSINESS_WALLET_NOT_FOUND) }),
+            tap(business => { if (!business.wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, BUSINESS_WALLET_SPENDING_FORBIDDEN) }),
+            mapTo(returnObject)
+        );
+    }
 
     /**
      * Fromats CivicaCardReloadConversation to the GraphQL schema 
@@ -114,182 +288,23 @@ class CivicaCardCQRS {
         };
     }
 
-
-
     /**
-    * generates CivicaCard SecondAuthToken using the SAM cluster
-    */
-    generateCivicaCardReloadSecondAuthToken$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
-            tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            mergeMap(conversation => {
-                const { key, dataDiv } = getSamAuthKeyAndDiversifiedKey(args.cardRole, conversation.cardUid, this.samClusterClient);
-                return this.samClusterClient.requestSamFirstStepAuth$(
-                    { dataDiv, key, cardFirstSteptAuthChallenge: args.cardChallenge }, { transactionId: conversation._id })
-                    .pipe(map(samFirstStepAuthResponse => ({ samFirstStepAuthResponse, conversation })));
-            }
-            ),
-            mergeMap(({ samFirstStepAuthResponse, conversation }) => {
-                return CivicaCardReloadConversationDA.setSamIdSamKeyAndCardRole$(conversation._id, samFirstStepAuthResponse.samId, samFirstStepAuthResponse.samKey, args.cardRole)
-                    .pipe(mapTo(samFirstStepAuthResponse))
-            }),
-            map(samFirstStepAuthResponse => ({ token: samFirstStepAuthResponse.secondStepSamToken.toString('hex') })),
-            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-            catchError(error => {
-                console.error(error.stack || error);
-                return GraphqlResponseTools.handleError$(error);
-            })
+     * Logs an error at the console.error printing only the message and the stack related to the project source code
+     * @param {Error} error 
+     */
+    logError(error) {
+        if (!error.stack) {
+            console.error(error);
+        }
+        const stackLines = error.stack.split('\n');
+        console.error(
+            stackLines[0] + '\n' + stackLines.filter(line => line.includes('civica-card/bin')).join('\n') + '\n'
         );
     }
 
-
-    /**
-     * Generates binary commands sequence to read a civica card
-     */
-    generateCivicaCardReloadReadApduCommands$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.find$(args.conversationId)
-            .pipe(
-                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                map(conversation => (
-                    {
-                        conversation,
-                        bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole)
-                    }
-                )),
-                mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
-                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-                catchError(error => {
-                    console.error(error.stack || error);
-                    return GraphqlResponseTools.handleError$(error);
-                })
-            );
-    }
-
-
-    /**
-     * process and translate binary commands respone sequence to infer civica card data
-     */
-    processCivicaCardReloadReadApduCommandRespones$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.find$(args.conversationId)
-            .pipe(
-                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                mergeMap(conversation =>
-                    this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
-                ),
-                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.initialCard.rawData).pipe(map(mifareCard => ({ conversation, mifareCard })))),
-                mergeMap(({ conversation, mifareCard }) =>
-                    CivicaCardReloadConversationDA.setInitialCardRawData$(conversation._id, mifareCard).pipe(
-                        mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
-                        mergeMap(civicaData => CivicaCardReloadConversationDA.setInitialCardCivicaData$(conversation._id, civicaData))
-                    )),
-                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
-            ).pipe(
-                catchError(error => {
-                    console.error(error.stack || error);
-                    return GraphqlResponseTools.handleError$(error);
-                })
-            );
-    }
-
-
-
-
-
-
-    /**
-     * Tries to generate the purchase itself
-     * @param {*} param0 
-     * @param {*} authToken 
-     */
-    purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
-            tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            mergeMap(conversation => this.verifyWallet$(conversation)),
-            mergeMap(conversation => CivicaCardReload.purchaseCivicaCardReload$(conversation, args.value)),
-            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-            catchError(error => {
-                console.error(error.stack || error);
-                return GraphqlResponseTools.handleError$(error);
-            })
-        );
-    }
-
-
-
-
-    generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
-            tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            map(conversation => (
-                {
-                    conversation,
-                    bytecode: CivicaCardReadWriteFlow.generateWriteBytecode(conversation.cardType, args.dataType, conversation)
-                }
-            )),
-            map(({ conversation, bytecode }) => (
-                {
-                    conversation,
-                    bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole, bytecode)
-                }
-            )),
-            mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
-            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-            catchError(error => {
-                console.error(error.stack || error);
-                return GraphqlResponseTools.handleError$(error);
-            })
-        );
-    }
-
-
-    /**
-     * process and translate binary commands respone sequence to infer civica card data
-     */
-    processCivicaCardReloadWriteAndReadApduCommandResponses$({ root, args, jwt }, authToken) {
-        return CivicaCardReloadConversationDA.find$(args.conversationId)
-            .pipe(
-                tap(conversation => { if (conversation === null) throw new CustomError('CivicaCardReloadConversation not Found', `getCivicaCardReloadConversation(${args.conversationId})`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-                mergeMap(conversation =>
-                    this.bytecodeCompiler.decompileResponses$(args.commands, conversation.cardType, conversation.readerType, { conversation }).pipe(map(bytecode => ({ bytecode, conversation })))
-                ),
-                mergeMap(({ bytecode, conversation }) => this.bytecodeMifareBindTools.applyBytecodeToMifareCard$(bytecode, conversation.finalCard.rawData).pipe(map(mifareCard => ({ conversation, mifareCard })))),
-                mergeMap(({ conversation, mifareCard }) =>
-                    CivicaCardReloadConversationDA.setFinalCardRawData$(conversation._id, mifareCard).pipe(
-                        mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
-                        mergeMap(civicaData => CivicaCardReloadConversationDA.setFinalCardCivicaData$(conversation._id, civicaData))
-                    )),
-                mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
-            ).pipe(
-                catchError(error => {
-                    console.error(error.stack || error);
-                    return GraphqlResponseTools.handleError$(error);
-                })
-            );
-    }
-
-
-
-
-    /**
-     * Verifies the Business unit is allowed to spend wallet money
-     * @param {*} conversation
-     * @returns {Rx.Observable}
-     */
-    verifyWallet$(conversation) {
-        return WalletDA.find$(conversation.businessId).pipe(
-            tap(wallet => { if (wallet === null) throw new CustomError('Bolsas no activas', `Asegurese que su bolsa ha sido creada y activada`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            tap(wallet => { if (!wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, ENTITY_NOT_FOUND_ERROR_CODE) }),
-            mapTo(conversation)
-        );
-    }
-
-
-
-
+    //#endregion
 
 }
-
-
 
 
 /**

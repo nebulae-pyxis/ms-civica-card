@@ -2,12 +2,16 @@
 
 let mongoDB = undefined;
 const Rx = require('rxjs');
-const CollectionName = "Wallet";
-const { map, tap, mapTo } = require('rxjs/operators');
+const CollectionName = "Business";
+const { tap } = require('rxjs/operators');
 
 
-class CivicaCardReloadConversationDA {
+class BusinessDA {
 
+  /**
+   * set the DA ready for work
+   * @param {*} mongoDbInstance 
+   */
   static start$(mongoDbInstance) {
     return Rx.Observable.create((observer) => {
       if (mongoDbInstance) {
@@ -22,7 +26,7 @@ class CivicaCardReloadConversationDA {
   }
 
   /**
-   * Finds a Wallet by its buisnessid
+   * Finds a Business by its buisnessid
    * @param string id 
    */
   static find$(businessId) {
@@ -32,32 +36,31 @@ class CivicaCardReloadConversationDA {
 
 
   /**
-   * updates wallet status
+   * updates business wallet status
    * @param {String} businessId 
-   * @param {{main,bonus}} pockets 
-   * @param {boolean} spendingAllowed 
+   * @param {{main,bonus}} pockets wallet pockets
+   * @param {boolean} spendingAllowed wallet spending allowed flag
    */
-  static updateWallet$(businessId, pockets, spendingAllowed) {
+  static updateBusinessWallet$(businessId, pockets, spendingAllowed) {
     const collection = mongoDB.db.collection(CollectionName);
     const updateQuery = [
       { '_id': businessId },
       {
         '$set': {
-          pockets,
-          spendingAllowed
+          'wallet':{pockets,spendingAllowed}          
         }
       },
       { 'multi': false, upsert: true }
     ];
 
     return Rx.defer(() => collection.update(...updateQuery)).pipe(
-      tap(x => { if (x.result.ok !== 1) throw (new Error(`Wallet(id:${id}) updated failed`)); }),
+      tap(x => { if (x.result.ok !== 1) throw (new Error(`Business(id:${id}) updated failed`)); }),
     );
   }
 
 
 }
 /**
- * @returns CivicaCardReloadConversationDA
+ * @returns BusinessDA
  */
-module.exports = CivicaCardReloadConversationDA 
+module.exports = BusinessDA 

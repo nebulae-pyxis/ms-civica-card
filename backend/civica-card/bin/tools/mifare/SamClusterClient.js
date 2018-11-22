@@ -23,7 +23,7 @@ class SamClusterClient {
 
 
     /**
-     * request a SAM to execute the first step auth
+     * request a SAM to execute the first step auth for SL3 cards
      * @param {{ dataDiv, key, cardFirstSteptAuthChallenge }} card.dataDiv Diversified card key, SAM key to use. SamClusterClient.KEY_*, Card First Stept Auth Challenge; hexa string     
      * @param {string} transaction.transactionId trasaction  ID     
      * @returns 
@@ -59,7 +59,7 @@ class SamClusterClient {
         apduBuffer[apduBufferIndex++] = 0x00;
         apduBuffer[apduBufferIndex++] = apduLen;
         apduBuffer[apduBufferIndex++] = keyNo;
-        apduBuffer[apduBufferIndex++] = keyVer;  // 1 + 1 + 16 //  1
+        apduBuffer[apduBufferIndex++] = keyVer;
         apduBuffer.write(data, apduBufferIndex, data.length, 'hex');
         apduBufferIndex += 16;
         if (dataDiv !== undefined) {
@@ -75,7 +75,7 @@ class SamClusterClient {
     };
 
     /**
-     * 
+     * request a SAM to execute the second step auth for SL3 cards
      * @param {string} cardSecondStepAuthConfirmation card second step auth confirmation    
      * @param {string} transaction.transactionId trasaction  ID
      * @param {string} transaction.samId Sam id to use

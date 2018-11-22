@@ -1,20 +1,60 @@
 'use strict'
-
-const CRDB = 'CRDB';// Command Read Data Block; ARGS: BlNumber(int) BlCount()
-const CWDB = 'CWDB';// Command Write Data Block
-const CRVB = 'CRVB';// Command Read Value Block
-const CWVB = 'CWVB';// Command Write Value Block
-const CIVB = 'CIVB';// Command Increment Value Block
-const CDVB = 'CDVB';// Command Decrement Value Block
-const CASE = 'CASE';// Command Auth Sector
-
-const RRDB = 'RRDB';// Response Read Data Block
-const RWDB = 'RWDB';// Response Write Data Block
-const RRVB = 'RRVB';// Response Read Value Block
-const RWVB = 'RWVB';// Response Write Value Block
-const RIVB = 'RIVB';// Response Increment Value Block
-const RDVB = 'RDVB';// Response Decrement Value Block
-const RASE = 'RASE';// Response Auth Sector
+/**
+ * Command Read Data Block; ARGS: BlNumber(int) BlCount()
+ */
+const CRDB = 'CRDB';
+/**
+ * Command Write Data Block
+ */
+const CWDB = 'CWDB';
+/**
+ * Command Read Value Block
+ */
+const CRVB = 'CRVB';
+/**
+ * Command Write Value Block
+ */
+const CWVB = 'CWVB';
+/**
+ * Command Increment Value Block
+ */
+const CIVB = 'CIVB';
+/**
+ * Command Decrement Value Block
+ */
+const CDVB = 'CDVB';
+/**
+ * Command Auth Sector
+ */
+const CASE = 'CASE';
+/**
+ * Response Read Data Block
+ */
+const RRDB = 'RRDB';
+/**
+ * Response Write Data Block
+ */
+const RWDB = 'RWDB';
+/**
+ * Response Read Value Block
+ */
+const RRVB = 'RRVB';
+/**
+ * Response Write Value Block
+ */
+const RWVB = 'RWVB';
+/**
+ * Response Increment Value Block
+ */
+const RIVB = 'RIVB';
+/**
+ * Response Decrement Value Block
+ */
+const RDVB = 'RDVB';
+/**
+ * Response Auth Sector
+ */
+const RASE = 'RASE';
 
 
 /**
@@ -32,6 +72,11 @@ const generateByteCode = (codeArgsList,  bytecode = '') => {
     return bytecode;
 }
 
+/**
+ * generates a Object with both properties: code and arg list
+ * @param {*} code 
+ * @param {*} args 
+ */
 const codeArgs = (code, args) => {
     return {code,args};
 }
