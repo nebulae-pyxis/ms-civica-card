@@ -1,9 +1,9 @@
 'use strict'
 
-
+const { CustomError, HW_CARD_TYPE_INVALID, HW_READER_TYPE_INVALID } = require('../../customError');
 const Sl3HighLevel = require('./especific-bytecodes-compilers/Sl3HighLevel');
 
-class BytecodeCompiler {
+class Compiler {
 
     /**
      * 
@@ -21,7 +21,7 @@ class BytecodeCompiler {
      * @param {*} ops Especial options for an especific card and reader pair
      */
     compile$(bytecode, cardType, readerType, ops) {
-        return this.getSpecificImplementation(cardType, readerType).compile$(bytecode, ops);        
+        return this.getSpecificImplementation(cardType, readerType).compile$(bytecode, ops);
     }
 
     /**
@@ -40,22 +40,17 @@ class BytecodeCompiler {
      * @param {*} cardType 
      * @param {*} readerType 
      */
-    getSpecificImplementation(cardType, readerType){
+    getSpecificImplementation(cardType, readerType) {
         switch (cardType) {
             case 'SL3':
                 switch (readerType) {
                     case 'BLE_HIGH_LEVEL': return this.sl3HighLevel;
-                    default: throw new Error(`invalid readerType${readerType}`);
+                    default: throw new CustomError(`Invalid reader type`, 'Compiler.getSpecificImplementation', HW_READER_TYPE_INVALID, `invalid readerType${readerType}`);
                 }
-            default: throw new Error(`invalid cardType${cardType}`);
+            default: throw new CustomError(`Invalid card type`, 'Compiler.getSpecificImplementation', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);
         }
     }
 
-
-    
-
-
-
 }
 
-module.exports = BytecodeCompiler;
+module.exports = Compiler;

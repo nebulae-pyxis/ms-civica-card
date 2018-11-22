@@ -10,6 +10,22 @@ const {
 const AesCypher = require('../../../AesCypher');
 const { SamClusterClient } = require('../../SamClusterClient');
 const CivicaCardReloadConversationDA = require('../../../../data/CivicaCardReloadConversationDA');
+const { CustomError,
+    DefaultError,
+    BUSINESS_NOT_FOUND,
+    BUSINESS_NOT_ACTIVE,
+    BUSINESS_WALLET_NOT_FOUND,
+    BUSINESS_WALLET_SPENDING_FORBIDDEN,
+    CONVERSATION_NOT_FOUND,
+    CIVICA_CARD_CORRUPTED_DATA,
+    CIVICA_CARD_READ_FAILED,
+    CIVICA_CARD_WRITE_FAILED,
+    CIVICA_CARD_DATA_EXTRACTION_FAILED,
+    BYTECODE_COMPILER_ERROR,
+    HW_CARD_TYPE_INVALID,
+    HW_CARD_ROLE_INVALID,
+    HW_CARD_DATA_TYPE_INVALID,
+    HW_READER_TYPE_INVALID, } = require('../../../../tools/customError');
 
 class Sl3HighLevel {
 
@@ -42,7 +58,7 @@ class Sl3HighLevel {
         switch (code) {
             case CRDB: return this.compileCRDB$(order, args, samAuthObj, aesCypher);
             case CWDB: return this.compileCWDB$(order, args, samAuthObj, aesCypher);
-            default: throw new Error(`invalid bytecode line code(${code}) Sl3HighLevel.compileLine`);
+            default: throw new CustomError(`invalid bytecode line code`, 'Sl3HighLevel.compileLine$', BYTECODE_COMPILER_ERROR, `invalid bytecode line code(${code}) Sl3HighLevel.compileLine`);
         }
     }
 
@@ -145,7 +161,7 @@ class Sl3HighLevel {
         switch (respCode) {
             case RRDB: return this.decompileResponseRRDB$(binaryCommand, samAuthObj, aesCypher);
             case RWDB: return this.decompileResponseRWDB$(binaryCommand, samAuthObj, aesCypher);
-            default: throw new Error(`invalid binary command response code(${code}) Sl3HighLevel.decompileResponse`);
+            default: throw new CustomError(`invalid binary command response code`, 'Sl3HighLevel.decompileResponse$', BYTECODE_COMPILER_ERROR, `invalid binary command response code(${code})`);
         }
     }
 
@@ -197,7 +213,7 @@ class Sl3HighLevel {
                 const x = Buffer.compare(expectedCmac, actualCmac);
 
                 if (cypherAes.bytesTohex(cmacResp) !== cypherAes.bytesTohex(cmacToCompare)) {
-                    throw new Error('Invalid cmac resp');
+                    throw new CustomError('Invalid cmac resp', 'Sl3HighLevel.decompileResponse$', BYTECODE_COMPILER_ERROR,'Invalid cmac resp');
                 }
                 /* */
             }
@@ -218,7 +234,7 @@ class Sl3HighLevel {
                 errorDesc = binaryCommand.resp;
             } else {
                 const executedCommand_buff = Buffer.from(binaryCommand.cmd, 'hex');
-                const blockNumber = executedCommand_buff.readUInt16LE(1);                
+                const blockNumber = executedCommand_buff.readUInt16LE(1);
                 args.push(blockNumber);
             }
             observer.next(codeArgs(RWDB, [errorCode, errorDesc, ...args]));

@@ -3,7 +3,7 @@
 const Rx = require("rxjs");
 const { reduce, map } = require('rxjs/operators');
 const { MAX_SALDO_CREDITO } = require('./CivicaCardTools');
-
+const { CustomError, CIVICA_CARD_CORRUPTED_DATA, CIVICA_CARD_DATA_EXTRACTION_FAILED } = require('../../tools/customError');
 
 /**
  * Mapping dictionary
@@ -67,19 +67,27 @@ const mapping = {
 };
 
 
-
+/**
+ * Extracts Civica real data from the card raw (binary) data
+ */
 class CivicaCardDataExtractor {
 
-
-
+    /**
+     * Extracts the data from the raw blocks bytes
+     * @param {*} mifareCard raw card data
+     */
     static extractCivicaData$(mifareCard) {
         return this.extractCommonData$(mifareCard);
     }
 
+    /**
+     * Extracts the common data among all mapping versions
+     * @param {*} mifareCard raw card data
+     */
     static extractCommonData$(mifareCard) {
         return Rx.from(Object.keys(mapping['*'])).pipe(
             reduce((civicaCard, fieldName) => {
-                return this.extractFiled(mifareCard, civicaCard, fieldName, ...mapping['*'][fieldName]);
+                return this.extractField(mifareCard, civicaCard, fieldName, ...mapping['*'][fieldName]);
             }, {}),
             map(civicaCard => {
                 if (civicaCard.saldoTarjeta != undefined && civicaCard.saldoTarjetaBk != undefined) {
@@ -96,13 +104,28 @@ class CivicaCardDataExtractor {
     }
 
 
+    /**
+     * Extracts the data for a specific mapping version
+     * @param {*} mifareCard raw card data
+     * @param {*} civicaCard partailly filled civica carrd data
+     */
     static extractSpecificMappingVersionData$(mifareCard, civicaCard) {
     }
 
 
-    static extractFiled(mifareCard, civicaCard, fieldName, fieldType, block, offset, len) {
+    /**
+     * Extracts a specific data field from the card raw data
+     * @param {*} mifareCard raw card data
+     * @param {*} civicaCard partailly filled civica carrd data
+     * @param {*} fieldName data field name
+     * @param {*} fieldType data field type
+     * @param {*} block raw data block number
+     * @param {*} offset raw data block offset 
+     * @param {*} len field len
+     */
+    static extractField(mifareCard, civicaCard, fieldName, fieldType, block, offset, len) {
         if (mifareCard[`${block}`] === undefined) {
-            //console.log(`CivicaCardDataExtractor.extractFiled, block ${block} not found`);
+            //console.log(`CivicaCardDataExtractor.extractField, block ${block} not found`);
             return civicaCard;
         }
         const blockData = Buffer.from(mifareCard[`${block}`], 'hex');
@@ -115,11 +138,10 @@ class CivicaCardDataExtractor {
                     case 1: civicaCard[fieldName] = blockData.readUInt8(offset); break;
                     case 2: civicaCard[fieldName] = blockData.readUInt16BE(offset); break;
                     case 4: civicaCard[fieldName] = blockData.readUInt32BE(offset); break;
-                    default: throw new Error(`NUMBER len=${len} not allowed at CivicaCardDataExtractor.extractFiled at block ${block}`);
+                    default: throw new CustomError(`Civica data extraction failed`, 'CivicaCardDataExtractor.extractField', CIVICA_CARD_DATA_EXTRACTION_FAILED, `NUMBER len=${len} not allowed at block ${block} for fieldName ${fieldName}`);
                 }
                 break;
             case 'VALUE_BLOCK':
-
                 const integrity =
                     ((blockData[3] & 0x80) == 0x80) &&
                     (blockData[12] == blockData[14]) &&
@@ -127,15 +149,13 @@ class CivicaCardDataExtractor {
                     (Uint8Array.of(~blockData[12])[0] == blockData[13]) &&
                     (Uint8Array.of(~blockData[14])[0] == blockData[15]);
                 if (!integrity) {
-                    throw new Error(`VALUE_BLOCK integrity check failed at CivicaCardDataExtractor.extractFiled at block ${block}`);
+                    throw new CustomError(`Civica data extraction failed`, 'CivicaCardDataExtractor.extractField', CIVICA_CARD_CORRUPTED_DATA, `VALUE_BLOCK integrity check failed at CivicaCardDataExtractor.extractField field ${fieldName} at block ${block}`);
                 }
                 const value = blockData.slice(0, 4);
                 value[3] = value[3] & 0x7F;
                 civicaCard[fieldName] = value.readUInt32LE(0);
-
-                //civicaCard[fieldName] = Buffer.from([blockData[3] & 0x7F, blockData[2], blockData[1], blockData[0]]).readUInt32BE(0);
                 break;
-            default: throw new Error(`FieldType=${fieldType} not allowed at CivicaCardDataExtractor.extractFiled at block ${block}`);
+            default: throw new CustomError(`Civica data extraction failed`, 'CivicaCardDataExtractor.extractField', CIVICA_CARD_DATA_EXTRACTION_FAILED, `field ${fieldName} of FieldType=${fieldType} not allowed at CivicaCardDataExtractor.extractField at block ${block}`);
         }
         return civicaCard;
     }

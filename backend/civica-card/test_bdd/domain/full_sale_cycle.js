@@ -127,22 +127,22 @@ describe('Prepare', function () {
     describe('JWT', function () {
         it('request token to keycloak', function (done) {
             this.timeout(1000);
-            //const baseUrl = 'http://localhost:8080/auth';
-            const baseUrl = 'https://pyxis.nebulae.com.co/auth';
+            const baseUrl = 'http://localhost:8080/auth';
+            //const baseUrl = 'https://pyxis.nebulae.com.co/auth';
             const settings = {
                 username: 'sebastian.molano@nebulae.com.co',
                 password: 'uno.2.tres',
                 grant_type: 'password',
-                //client_id: 'emi',
-                //realmName: 'DEV_PYXIS'
-                client_id: 'EMI',
-                realmName: 'PYXIS'
+                client_id: 'emi',
+                realmName: 'DEV_PYXIS'
+                //client_id: 'EMI',
+                //realmName: 'PYXIS'
             };
 
             tokenRequester(baseUrl, settings)
                 .then((token) => {
                     jwt = token;
-                    console.log(``);
+                    console.log(`JWT=${jwt}`);
                     done();
                 }).catch((err) => {
                     console.log('err', err);
@@ -155,8 +155,8 @@ describe('Prepare', function () {
     describe('GraphQL', function () {
         it('creating graphQL client', function (done) {
             gqlClient = require('graphql-client')({
-                //url: 'http://localhost:3000/api/sales-gateway/graphql/http',
-                url: 'https://pyxis.nebulae.com.co/api/sales-gateway/graphql/http',
+                url: 'http://localhost:3000/api/sales-gateway/graphql/http',
+                //url: 'https://pyxis.nebulae.com.co/api/sales-gateway/graphql/http',
                 headers: {
                     Authorization: 'Bearer ' + jwt
                 }
@@ -208,7 +208,7 @@ describe('CivicaCardReloadConversation', function () {
                 tap((body) => console.log(JSON.stringify(body))),
                 tap((body) => expect(body.data.CivicaCardReloadConversation).to.be.null),
                 tap((body) => expect(body.errors.length).to.be.gt(0)),
-                tap((body) => expect(body.errors[0].message.code).to.be.eq(9)),
+                tap((body) => expect(body.errors[0].message.code).to.be.eq(18014)),
             ).subscribe(
                 (evt) => { },
                 (error) => { console.error(error.stack || error); done(error); },

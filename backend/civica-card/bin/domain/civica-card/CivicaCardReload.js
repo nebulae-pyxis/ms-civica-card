@@ -7,20 +7,29 @@ const Event = require('@nebulae/event-store').Event;
 const eventSourcing = require('../../tools/EventSourcing')();
 const CivicaCardReloadConversationDA = require('../../data/CivicaCardReloadConversationDA');
 
+/**
+ * Handles Civica reload purchase logic
+ */
 class CivicaCardReload {
 
+    /**
+     * validates and generate a Civica reload purchase
+     * @param {*} conversation current conversation
+     * @param {Number} value reload value
+     */
     static purchaseCivicaCardReload$(conversation, value) {
+        //if the conversation already has a purchase then return it
         if (conversation.purchase !== undefined) {
             return Rx.of(conversation.purchase);
         }
 
         return Rx.forkJoin(
-            this.verifyCardLock$(conversation),
-            this.verifyBusinessSpendingAllowed$(conversation)
+            this.verifyCardLock$(conversation),//verifies the card is no physicly locked
+            //append as many verification might be needed here
         ).pipe(
-            mergeMap(([cardLockVerification, spendingAllowedVerification]) => {
+            mergeMap(([cardLockVerification]) => {
 
-                if (cardLockVerification && spendingAllowedVerification) {
+                if (cardLockVerification) {
                     return this.generateReceipt$(conversation, value).pipe(
                         mergeMap(receipt => Rx.forkJoin(
                             this.sendSpendingCommitEvent$(conversation, receipt),
@@ -29,23 +38,30 @@ class CivicaCardReload {
                         )),
                         map(([spendingCommitedEvent, civicaCardReloadEvent, persistedData]) => (persistedData)));
                 } else {
+                    //if the validation fails, then just return the error
                     return Rx.of({
                         granted: false,
-                        errorMsg: !cardLockVerification ? 'Tarjeta Bloqueada' : !spendingAllowedVerification ? 'Saldo insuficiente: verifique su saldo minimo' : 'desconocido'
+                        errorMsg: !cardLockVerification ? 'Tarjeta Bloqueada' : 'desconocido'
                     });
                 }
             })
         );
     }
 
+    /**
+     * Verifies the civica card is not lockes
+     * @param {*} conversation 
+     */
     static verifyCardLock$(conversation) {
         return Rx.of(conversation.initialCard.civicaData.indicadorTarjetaBloqueada === 0);
     }
 
-    static verifyBusinessSpendingAllowed$(conversation) {
-        return Rx.of(true); //TODO: find real data
-    }
 
+    /**
+     * Generates purchase receipt
+     * @param {*} conversation 
+     * @param {Number} value 
+     */
     static generateReceipt$(conversation, value) {
         return Rx.of(
             {
@@ -64,10 +80,14 @@ class CivicaCardReload {
     }
 
 
-
+    /**
+     * Sends the SpendingCommit Event so the wallet can charge the business account
+     * @param {*} conversation 
+     * @param {*} receipt 
+     */
     static sendSpendingCommitEvent$(conversation, receipt) {
         return Rx.of(new Event({
-            eventType: "WalletSpendingCommited",
+            eventType: "BusinessSpendingCommited",
             eventTypeVersion: 1,
             aggregateType: "Wallet",
             aggregateId: conversation.businessId,
@@ -92,6 +112,11 @@ class CivicaCardReload {
         );
     }
 
+    /**
+     * Sends CivicaCardReload Event so this transaction is commited in the evet store
+     * @param {*} conversation 
+     * @param {*} receipt 
+     */
     static sendCivicaCardReloadEvent$(conversation, receipt) {
         return Rx.of(new Event({
             eventType: "CivicaCardReload",
@@ -112,9 +137,6 @@ class CivicaCardReload {
             map(emitResult => emitResult.storeResult.event)
         );
     }
-
-
-
 
 }
 

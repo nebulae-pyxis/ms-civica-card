@@ -1,7 +1,16 @@
 'use strict'
 
+/**
+ * Max possible amount to set in the SaldoCredito value block
+ */
 const MAX_SALDO_CREDITO = 16777215;
 
+/**
+ * Returns the key and diversified data needed for the SAM based on the card role and card uid
+ * @param {String} cardRole 
+ * @param {String} cardUid 
+ * @param {String} samClusterClient 
+ */
 const getSamAuthKeyAndDiversifiedKey = (cardRole, cardUid, samClusterClient) => {
     let key;
     let dataDiv;

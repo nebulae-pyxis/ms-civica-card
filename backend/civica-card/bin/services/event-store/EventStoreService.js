@@ -2,7 +2,7 @@
 const Rx = require("rxjs");
 const eventSourcing = require("../../tools/EventSourcing")();
 const { map, switchMap, filter, mergeMap, concatMap } = require('rxjs/operators');
-const { walletES } = require('../../domain/wallet');
+const { businessES } = require('../../domain/business');
 /**
  * Singleton instance
  */
@@ -122,12 +122,12 @@ class EventStoreService {
   generateFunctionMap() {
     return {      
       WalletSpendingForbidden: {
-        fn: walletES.handleWalletSpendingForbiddenEvent$,
-        obj: walletES
+        fn: businessES.handleWalletSpendingForbiddenEvent$,
+        obj: businessES
       },
       WalletSpendingAllowed: {
-        fn: walletES.handleWalletSpendingAllowedEvent$,
-        obj: walletES
+        fn: businessES.handleWalletSpendingAllowedEvent$,
+        obj: businessES
       },
     };
   }
