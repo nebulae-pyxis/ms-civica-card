@@ -102,9 +102,14 @@ type CivicaCardReloadPurchaseReceipt{
   posTerminal: String  
 }
 
+type CivicaCardReloadReaderKey{
+  key: String
+}
+
 
 type Query{
   CivicaCardReloadConversation(id: ID!): CivicaCardReloadConversation @requireAuth
+  CivicaCardReloadReaderKey: CivicaCardReloadReaderKey  @requireAuth
 }
 
 type Mutation {
@@ -160,68 +165,3 @@ type Mutation {
   ): CivicaCardData  @requireAuth
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# type ReaderKey {
-#   readerKey: String
-# }
-
-# type ReadCardSecondAuthToken {
-#   authToken: String
-# }
-
-# type ReadCardApduCommands {
-#   apduCommands: [String]
-# }
-
-# type CardData {
-#   id: String
-# }
-
-# type CardReloadInfo {
-#   cardReloadSaleToken: CardReloadSaleToken
-#   writeApduCommands: [String],
-#   readApduCommands: [String],
-#   receipt: String
-# }
-
-# type CardReloadSaleToken {
-#   state: String,
-#   token: String
-# }
-
-# type ReadWriteCardData {
-#   readCardData: [String],
-#   writeCardData: [String]
-# }
-
-# type AbortCardReloadResp {
-#   isAborted: Boolean
-# }
-
-
-
-# type Query {
-#   #getReadCardSeconduthToken(conversationId: String, cardUid: String, challengeKey: String): ReadCardSecondAuthToken @requireAuth
-#   # getReaderKey: ReaderKey @requireAuth
-#   # getReadCardApduCommands(conversationId: String, cardAuthConfirmationToken: String): ReadCardApduCommands @requireAuth
-#   # extractReadCardData(conversationId: String, apduResponses: [String]): CardData @requireAuth
-#   # getCardReloadInfo(conversationId: String, cardAuthConfirmationToken: String, reloadValue: Int): CardReloadInfo @requireAuth
-#   # extractReadWriteCardData(conversationId: String, readApduResp: [String], writeApduResp: [String]): ReadWriteCardData @requireAuth
-#   # getConversation(conversationId: String): Conversation @requireAuth
-
-# }

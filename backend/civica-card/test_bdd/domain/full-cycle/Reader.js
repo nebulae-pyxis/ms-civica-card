@@ -13,7 +13,8 @@ const {
     mapTo,
     mergeMap,
     concatMap,
-    timeout
+    timeout,
+    toArray
 } = require('rxjs/operators');
 
 class Reader {
@@ -104,11 +105,26 @@ class Reader {
         // 0x72 + 32 bytes del requestCardSecondStepAuth
         const apduBuffer = Buffer.concat([Buffer.from([0x72]), secondStepSamToken.slice(0, -2)]);
         const apduByteArray = Array.from(apduBuffer);
-        return this.sendApduCommandToCard$({ apdu: apduByteArray, resLen: 40 })
+        return this.sendApduCommandToCard$({ apdu: apduByteArray, resLen: 1024 })
             .pipe(
                 map(respBuffer => respBuffer.slice(1, respBuffer.length)),
                 map(respBuffer => respBuffer.toString('hex')),
             );
+    }
+
+    executeBinaryCommands$(binaryCommands) {
+        return Rx.from(binaryCommands).pipe(
+            concatMap(binaryCommand => {
+                const apduByteArray = Array.from(Buffer.from(binaryCommand.cmd, 'hex'));
+                return this.sendApduCommandToCard$({ apdu: apduByteArray, resLen: 1024 }).pipe(
+                    //map(respBuffer => respBuffer.slice(1, respBuffer.length)),
+                    map(respBuffer => respBuffer.toString('hex')),
+                    tap(readerResponse => binaryCommand.resp = readerResponse),
+                    mapTo(binaryCommand)
+                );
+            }),
+            toArray(),
+        );
     }
 
     sendApduCommandToCard$({ apdu, resLen }) {

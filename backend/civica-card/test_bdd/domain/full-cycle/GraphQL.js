@@ -82,14 +82,20 @@ class GraphQL {
                         return ` ${key}: [${val.map(v => `"${v}"`).join(',')}]`;
                     } else if (val[0] instanceof Number) {
                         return ` ${key}: [${val.map(v => `${v}`).join(',')}]`;
-                    } else {
+                    } else if(val[0] instanceof Object){
+                        return ` ${key}: [${val.map(v => `{ ${this.convertObjectToInputArgs(v)} }`).join(',')}]`;
+                    }else {
                         return ` ${key}: [${val.map(v => `${JSON.stringify(v)}`).join(',')}]`;
                     }
                 } else {
                     return ` ${key}: []`;
                 }
+            } else if (typeof val === 'number' || val instanceof Number) {
+                return ` ${key}: ${val}`;
             } else if (val instanceof Object) {
-                return ` ${key}: ${JSON.stringify(val)}`;
+                return ` ${key}: { ${this.convertObjectToInputArgs(val)} }`;
+            }else{
+                console.log(`[[[[[[[[[[[[[[[[${typeof val}]]]]]]]]]]]]]]]]`);
             }
         }).join(',');
 

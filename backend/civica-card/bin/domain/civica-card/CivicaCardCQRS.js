@@ -248,6 +248,17 @@ class CivicaCardCQRS {
     //#region TOOLS/OTHERS
 
     /**
+     * Gets the reader master key
+     */
+    getCivicaCardReloadReaderKey$() {
+        return Rx.of(
+            { key: process.env.READER_MASTER_KEY.toString() }
+        ).pipe(
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
+        );
+    }
+
+    /**
      * Verifies the Business unit is allowed to spend wallet money
      * @param {*} conversation
      * @returns {Rx.Observable}

@@ -44,8 +44,8 @@ class Compiler {
         switch (cardType) {
             case 'SL3':
                 switch (readerType) {
-                    case 'BLE_HIGH_LEVEL': return this.sl3HighLevel;
-                    default: throw new CustomError(`Invalid reader type`, 'Compiler.getSpecificImplementation', HW_READER_TYPE_INVALID, `invalid readerType${readerType}`);
+                    case 'ACR1252':case 'ACR1255': return this.sl3HighLevel;
+                    default: throw new CustomError(`Invalid reader type`, 'Compiler.getSpecificImplementation', HW_READER_TYPE_INVALID, `invalid readerType ${readerType}`);
                 }
             default: throw new CustomError(`Invalid card type`, 'Compiler.getSpecificImplementation', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);
         }

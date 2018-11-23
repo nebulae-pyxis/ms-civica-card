@@ -50,7 +50,7 @@ const logError = (error) => {
 
 const getRxDefaultSubscription = (evtText, done) => {
     return [
-        (evt) => console.log(`${evtText}: ${evt}`),
+        (evt) => console.log(`${evtText}: ${JSON.stringify(evt)}`),
         (error) => { done(error); logError(error) },
         () => done()
     ];
@@ -77,6 +77,17 @@ describe('Full Cycle Test', function () {
         });
     });
 
+
+    describe('Reader Master KEy', function () {
+        it('query master key', function (done) {
+            this.timeout(5000);
+            graphQL.executeQuery$('query{ CivicaCardReloadReaderKey{key} }').pipe(
+                tap(({CivicaCardReloadReaderKey})=> expect(CivicaCardReloadReaderKey.key).to.be.equal('65,67,82,49,50,53,53,85,45,74,49,32,65,117,116,104'))
+            ).subscribe(...getRxDefaultSubscription('Civica Card Reload Conversation:Create & retrieve conversation', done));
+        });
+    });
+
+
     describe('Civica Card Reload Conversation', function () {
         it('Create & retrieve conversation', function (done) {
             this.timeout(5000);
@@ -90,7 +101,7 @@ describe('Full Cycle Test', function () {
             ).subscribe(...getRxDefaultSubscription('Civica Card Reload Conversation:Create & retrieve conversation', done));
         });
         it('Retrieve fake conversation', function (done) {
-            this.timeout(5000);            
+            this.timeout(5000);
             conversation.queryConversation$('fake-id').pipe(
                 catchError(error => Rx.of(error.message.code)),
                 tap(errorCode => expect(errorCode).to.be.eq(18014))
@@ -101,11 +112,23 @@ describe('Full Cycle Test', function () {
     describe('Civica Card Reload', function () {
         it('Read Civica Card', function (done) {
             this.timeout(5000);
-            civicaReloader = new CivicaReloader(conversation,reader,graphQL);            
-            civicaReloader.readCivicaCard$().pipe(
-                tap(x => {})    
-            ).subscribe(...getRxDefaultSubscription('Civica Card Reload Conversation:Read Civica Card', done));
-        });        
+            civicaReloader = new CivicaReloader(conversation, reader, graphQL);
+            civicaReloader.readCivicaCard$()
+                .subscribe(...getRxDefaultSubscription('Civica Card Reload Conversation:Read Civica Card', done));
+        });
+
+        it('Purchase', function (done) {
+            this.timeout(5000);
+            civicaReloader.purchaseCivicaCardReload$(5000)
+                .subscribe(...getRxDefaultSubscription('Civica Card Reload Conversation:Purchase', done));
+        });
+
+        it('Write And Read Civica Card', function (done) {
+            this.timeout(5000);
+            civicaReloader.writeReadCivicaCard$()
+                .subscribe(...getRxDefaultSubscription('Civica Card Reload Conversation:Write And Read Civica Card', done));
+        });
+
     });
 
 

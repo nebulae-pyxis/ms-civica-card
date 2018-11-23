@@ -56,6 +56,11 @@ spec:
         #OTHER CONFIGS
         - name: SAM_CLUSTER_MQTT_CONN_STR
           value: tcp://rcswsyrt:wAQAois_Sqt5@m15.cloudmqtt.com:16858
+        - name: READER_MASTER_KEY
+          valueFrom:
+           secretKeyRef:
+             name: civica-card-reload
+             key: master_key_reader
         # RESET LOCK INITIALIZE BACKED
         - name: LOCKVERSION
           value: "initial_lock"

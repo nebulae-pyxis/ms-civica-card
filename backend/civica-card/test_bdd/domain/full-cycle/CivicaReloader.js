@@ -13,12 +13,15 @@ const {
     mapTo,
     mergeMap,
     concatMap,
-    catchError
+    catchError,
+    last
 } = require('rxjs/operators');
 
 const Reader = require('./Reader');
 const GraphQL = require('./GraphQL');
 const Conversation = require('./Conversation');
+
+const CivicaCardData_fields = "identificacionEmpresa,identificacionEmpleado,tipoNumeroDocumento,saldoTarjeta,saldoTarjetaBk,numeroTerminal,formaPagoUsoTransporte,fechaHoraTransaccion,rutaUtilizada,perfilUsuario,rutaAnterior,valorPagoUsoTransporte,secuenciaUsoTrayecto,_saldoTarjeta";
 
 class CivicaReloader {
 
@@ -36,18 +39,48 @@ class CivicaReloader {
 
     readCivicaCard$() {
         switch (this.reader.cardType) {
-            case 'SL1': return this.ReadCivicaCardSL1$();
-            case 'SL3': return this.ReadCivicaCardSL3$();
+            case 'SL1': return this.readCivicaCardSL1$();
+            case 'SL3': return this.readCivicaCardSL3$();
             default: throw new Error('Invalid cardType: ' + this.reader.cardType);
         }
     }
 
-    ReadCivicaCardSL3$() {
-        return this.authCivicaCardSL3([0x02, 0x40],'PUBLIC');
-        
+    writeReadCivicaCard$() {
+        switch (this.reader.cardType) {
+            case 'SL1': return this.writeReadCivicaCardSL1$();
+            case 'SL3': return this.writeReadCivicaCardSL3$();
+            default: throw new Error('Invalid cardType: ' + this.reader.cardType);
+        }
     }
 
-    authCivicaCardSL3(authRole,cardRole){
+
+
+    readCivicaCardSL3$() {
+        return Rx.concat(
+            this.authCivicaCardSL3([0x02, 0x40], 'PUBLIC').pipe(
+                mergeMap(cardSecondStepAutResponse => this.generateCivicaCardReloadReadApduCommands$(this.conversation.civicaCardReloadConversationId, cardSecondStepAutResponse, 'PUBLIC')),
+                mergeMap(binaryCommands => this.reader.executeBinaryCommands$(binaryCommands)),
+                mergeMap(binaryCommands => this.processCivicaCardReloadReadApduCommandRespones$(this.conversation.civicaCardReloadConversationId, binaryCommands))
+            ),
+            this.authCivicaCardSL3([0x04, 0x40], 'DEBIT').pipe(
+                mergeMap(cardSecondStepAutResponse => this.generateCivicaCardReloadReadApduCommands$(this.conversation.civicaCardReloadConversationId, cardSecondStepAutResponse, 'CIVICA')),
+                mergeMap(binaryCommands => this.reader.executeBinaryCommands$(binaryCommands)),
+                mergeMap(binaryCommands => this.processCivicaCardReloadReadApduCommandRespones$(this.conversation.civicaCardReloadConversationId, binaryCommands))
+            ),
+        ).pipe(
+            last()
+        );
+    }
+
+    writeReadCivicaCardSL3$() {
+        return this.authCivicaCardSL3([0x05, 0x40], 'CREDIT').pipe(
+            mergeMap(cardSecondStepAutResponse => this.generateCivicaCardReloadWriteAndReadApduCommands$(this.conversation.civicaCardReloadConversationId, cardSecondStepAutResponse, 'CIVICA')),
+            mergeMap(binaryCommands => this.reader.executeBinaryCommands$(binaryCommands)),
+            mergeMap(binaryCommands => this.processCivicaCardReloadWriteAndReadApduCommandResponses$(this.conversation.civicaCardReloadConversationId, binaryCommands))
+        );
+    }
+
+    authCivicaCardSL3(authRole, cardRole) {
         return this.reader.requestCardFirstStepAuth$(authRole).pipe(
             mergeMap(cardFirstSteptAuthChallenge => this.generateCivicaCardReloadSecondAuthToken$(this.conversation.civicaCardReloadConversationId, cardFirstSteptAuthChallenge, cardRole)),
             map(secondAuthToken => {
@@ -62,21 +95,81 @@ class CivicaReloader {
 
 
 
-
-
-
-
     generateCivicaCardReloadSecondAuthToken$(conversationId, cardChallenge, cardRole) {
         const query =
             `mutation {
             generateCivicaCardReloadSecondAuthToken(${this.graphQL.convertObjectToInputArgs({ conversationId, cardChallenge, cardRole })}){conversationId, token}
         }`;
         return this.graphQL.executeQuery$(query).pipe(
-            tap(({generateCivicaCardReloadSecondAuthToken}) => expect(generateCivicaCardReloadSecondAuthToken).to.not.be.undefined),
-            tap(({generateCivicaCardReloadSecondAuthToken}) => expect(generateCivicaCardReloadSecondAuthToken.token).to.not.be.undefined),            
-            map(({generateCivicaCardReloadSecondAuthToken}) => generateCivicaCardReloadSecondAuthToken.token),
+            tap(({ generateCivicaCardReloadSecondAuthToken }) => expect(generateCivicaCardReloadSecondAuthToken).to.not.be.undefined),
+            tap(({ generateCivicaCardReloadSecondAuthToken }) => expect(generateCivicaCardReloadSecondAuthToken.token).to.not.be.undefined),
+            map(({ generateCivicaCardReloadSecondAuthToken }) => generateCivicaCardReloadSecondAuthToken.token),
             tap(token => console.log(`generated CivicaCardReload SecondAuthToken => ${token}`))
         );
+    }
+
+
+
+
+    generateCivicaCardReloadReadApduCommands$(conversationId, cardAuthConfirmationToken, dataType) {
+        const query =
+            `mutation {
+                 generateCivicaCardReloadReadApduCommands(${this.graphQL.convertObjectToInputArgs({ conversationId, cardAuthConfirmationToken, dataType })}){ order, cmd, resp, cbc, rbc }
+            }`;
+        return this.graphQL.executeQuery$(query).pipe(
+            tap(({ generateCivicaCardReloadReadApduCommands }) => expect(generateCivicaCardReloadReadApduCommands).not.to.be.null),
+            map(({ generateCivicaCardReloadReadApduCommands }) => generateCivicaCardReloadReadApduCommands)
+        );
+    }
+
+    processCivicaCardReloadReadApduCommandRespones$(conversationId, commands) {
+        const mutation =
+            `mutation {
+                processCivicaCardReloadReadApduCommandRespones( ${this.graphQL.convertObjectToInputArgs({ conversationId, commands })} ){ ${CivicaCardData_fields} }
+            }`;
+
+        return this.graphQL.executeQuery$(mutation).pipe(
+            //tap(({processCivicaCardReloadReadApduCommandRespones}) => console.log(`processCivicaCardReloadReadApduCommandRespones: ${JSON.stringify(processCivicaCardReloadReadApduCommandRespones)}`)),
+            tap(({ processCivicaCardReloadReadApduCommandRespones }) => expect(processCivicaCardReloadReadApduCommandRespones).not.to.be.null),
+            map(({ processCivicaCardReloadReadApduCommandRespones }) => processCivicaCardReloadReadApduCommandRespones)
+        );
+    }
+
+    generateCivicaCardReloadWriteAndReadApduCommands$(conversationId, cardAuthConfirmationToken, dataType) {
+        const query =
+            `mutation {
+                 generateCivicaCardReloadWriteAndReadApduCommands(${this.graphQL.convertObjectToInputArgs({ conversationId, cardAuthConfirmationToken, dataType })}){ order, cmd, resp, cbc, rbc }
+            }`;
+        return this.graphQL.executeQuery$(query).pipe(
+            tap(({ generateCivicaCardReloadWriteAndReadApduCommands }) => expect(generateCivicaCardReloadWriteAndReadApduCommands).not.to.be.null),
+            map(({ generateCivicaCardReloadWriteAndReadApduCommands }) => generateCivicaCardReloadWriteAndReadApduCommands)
+        );
+    }
+
+    processCivicaCardReloadWriteAndReadApduCommandResponses$(conversationId, commands) {
+        const mutation =
+            `mutation {
+                processCivicaCardReloadWriteAndReadApduCommandResponses( ${this.graphQL.convertObjectToInputArgs({ conversationId, commands })} ){ ${CivicaCardData_fields} }
+            }`;
+
+        return this.graphQL.executeQuery$(mutation).pipe(
+            //tap(({processCivicaCardReloadWriteAndReadApduCommandResponses}) => console.log(`processCivicaCardReloadWriteAndReadApduCommandResponses: ${JSON.stringify(processCivicaCardReloadWriteAndReadApduCommandRespones)}`)),
+            tap(({ processCivicaCardReloadWriteAndReadApduCommandResponses }) => expect(processCivicaCardReloadWriteAndReadApduCommandResponses).not.to.be.null),
+            map(({ processCivicaCardReloadWriteAndReadApduCommandResponses }) => processCivicaCardReloadWriteAndReadApduCommandResponses)
+        );
+    }
+
+
+    purchaseCivicaCardReload$(value) {
+        const mutation =
+            `mutation {
+            purchaseCivicaCardReload(${this.graphQL.convertObjectToInputArgs({ conversationId: this.conversation.civicaCardReloadConversationId, value: value })}){granted,errorMsg,receipt{id,timestamp,reloadValue,cardInitialValue,cardFinalValue,businesId,posId,posUserName,posUserId,posTerminal}   }
+        }`;
+        return this.graphQL.executeQuery$(mutation).pipe(
+            tap(({ purchaseCivicaCardReload }) => console.log(`purchaseCivicaCardReload: ${JSON.stringify(purchaseCivicaCardReload)}`)),
+            tap(({ purchaseCivicaCardReload }) => expect(purchaseCivicaCardReload).not.to.be.null),
+            map(({ purchaseCivicaCardReload }) => purchaseCivicaCardReload)
+        )
     }
 
 

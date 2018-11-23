@@ -153,6 +153,10 @@ class GraphQlService {
       },
       {
         aggregateType: "CivicaCard",
+        messageType: "salesgateway.graphql.query.CivicaCardReloadReaderKey"
+      },
+      {
+        aggregateType: "CivicaCard",
         messageType: "salesgateway.graphql.mutation.startCivicaCardReloadConversation"
       },
       {
@@ -197,6 +201,10 @@ class GraphQlService {
 
       "salesgateway.graphql.query.CivicaCardReloadConversation": {
         fn: civicaCardCQRS.getCivicaCardReloadConversation$,
+        obj: civicaCardCQRS
+      },
+      "salesgateway.graphql.query.CivicaCardReloadReaderKey": {
+        fn: civicaCardCQRS.getCivicaCardReloadReaderKey$,
         obj: civicaCardCQRS
       },
       "salesgateway.graphql.mutation.startCivicaCardReloadConversation": {
