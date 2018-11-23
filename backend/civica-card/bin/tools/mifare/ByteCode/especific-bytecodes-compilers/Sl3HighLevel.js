@@ -10,22 +10,7 @@ const {
 const AesCypher = require('../../../AesCypher');
 const { SamClusterClient } = require('../../SamClusterClient');
 const CivicaCardReloadConversationDA = require('../../../../data/CivicaCardReloadConversationDA');
-const { CustomError,
-    DefaultError,
-    BUSINESS_NOT_FOUND,
-    BUSINESS_NOT_ACTIVE,
-    BUSINESS_WALLET_NOT_FOUND,
-    BUSINESS_WALLET_SPENDING_FORBIDDEN,
-    CONVERSATION_NOT_FOUND,
-    CIVICA_CARD_CORRUPTED_DATA,
-    CIVICA_CARD_READ_FAILED,
-    CIVICA_CARD_WRITE_FAILED,
-    CIVICA_CARD_DATA_EXTRACTION_FAILED,
-    BYTECODE_COMPILER_ERROR,
-    HW_CARD_TYPE_INVALID,
-    HW_CARD_ROLE_INVALID,
-    HW_CARD_DATA_TYPE_INVALID,
-    HW_READER_TYPE_INVALID, } = require('../../../../tools/customError');
+const { CustomError, BYTECODE_COMPILER_ERROR } = require('../../../../tools/customError');
 
 class Sl3HighLevel {
 

@@ -55,6 +55,7 @@ class CivicaReloader {
 
 
 
+    //#region SL3
     readCivicaCardSL3$() {
         return Rx.concat(
             this.authCivicaCardSL3([0x02, 0x40], 'PUBLIC').pipe(
@@ -101,22 +102,42 @@ class CivicaReloader {
             generateCivicaCardReloadSecondAuthToken(${this.graphQL.convertObjectToInputArgs({ conversationId, cardChallenge, cardRole })}){conversationId, token}
         }`;
         return this.graphQL.executeQuery$(query).pipe(
+            catchError(error => Rx.throwError(new Error(`Failed to generateCivicaCardReloadSecondAuthToken, error: ${JSON.stringify(error)}`))),
             tap(({ generateCivicaCardReloadSecondAuthToken }) => expect(generateCivicaCardReloadSecondAuthToken).to.not.be.undefined),
             tap(({ generateCivicaCardReloadSecondAuthToken }) => expect(generateCivicaCardReloadSecondAuthToken.token).to.not.be.undefined),
             map(({ generateCivicaCardReloadSecondAuthToken }) => generateCivicaCardReloadSecondAuthToken.token),
             tap(token => console.log(`generated CivicaCardReload SecondAuthToken => ${token}`))
         );
     }
+    //#endregion
+
+    //#region SL1
+
+    readCivicaCardSL1$() {
+        return this.generateCivicaCardReloadReadApduCommands$(this.conversation.civicaCardReloadConversationId, '', 'CIVICA').pipe(
+            mergeMap(binaryCommands => this.reader.executeBinaryCommands$(binaryCommands)),
+            mergeMap(binaryCommands => this.processCivicaCardReloadReadApduCommandRespones$(this.conversation.civicaCardReloadConversationId, binaryCommands))
+        );        
+    }
+
+    writeReadCivicaCardSL1$() {
+        return this.generateCivicaCardReloadWriteAndReadApduCommands$(this.conversation.civicaCardReloadConversationId, '', 'CIVICA').pipe(
+            mergeMap(binaryCommands => this.reader.executeBinaryCommands$(binaryCommands)),
+            mergeMap(binaryCommands => this.processCivicaCardReloadWriteAndReadApduCommandResponses$(this.conversation.civicaCardReloadConversationId, binaryCommands))
+        );
+    }
+
+    //#endregion
 
 
-
-
+    //#region APDUs GENERATION & PROCESSING
     generateCivicaCardReloadReadApduCommands$(conversationId, cardAuthConfirmationToken, dataType) {
         const query =
             `mutation {
                  generateCivicaCardReloadReadApduCommands(${this.graphQL.convertObjectToInputArgs({ conversationId, cardAuthConfirmationToken, dataType })}){ order, cmd, resp, cbc, rbc }
             }`;
         return this.graphQL.executeQuery$(query).pipe(
+            catchError(error => Rx.throwError(new Error(`Failed to generateCivicaCardReloadReadApduCommands, error: ${JSON.stringify(error)}`))),
             tap(({ generateCivicaCardReloadReadApduCommands }) => expect(generateCivicaCardReloadReadApduCommands).not.to.be.null),
             map(({ generateCivicaCardReloadReadApduCommands }) => generateCivicaCardReloadReadApduCommands)
         );
@@ -129,7 +150,7 @@ class CivicaReloader {
             }`;
 
         return this.graphQL.executeQuery$(mutation).pipe(
-            //tap(({processCivicaCardReloadReadApduCommandRespones}) => console.log(`processCivicaCardReloadReadApduCommandRespones: ${JSON.stringify(processCivicaCardReloadReadApduCommandRespones)}`)),
+            catchError(error => Rx.throwError(new Error(`Failed to processCivicaCardReloadReadApduCommandRespones, error: ${JSON.stringify(error)}`))),
             tap(({ processCivicaCardReloadReadApduCommandRespones }) => expect(processCivicaCardReloadReadApduCommandRespones).not.to.be.null),
             map(({ processCivicaCardReloadReadApduCommandRespones }) => processCivicaCardReloadReadApduCommandRespones)
         );
@@ -141,6 +162,7 @@ class CivicaReloader {
                  generateCivicaCardReloadWriteAndReadApduCommands(${this.graphQL.convertObjectToInputArgs({ conversationId, cardAuthConfirmationToken, dataType })}){ order, cmd, resp, cbc, rbc }
             }`;
         return this.graphQL.executeQuery$(query).pipe(
+            catchError(error => Rx.throwError(new Error(`Failed to generateCivicaCardReloadWriteAndReadApduCommands, error: ${JSON.stringify(error)}`))),
             tap(({ generateCivicaCardReloadWriteAndReadApduCommands }) => expect(generateCivicaCardReloadWriteAndReadApduCommands).not.to.be.null),
             map(({ generateCivicaCardReloadWriteAndReadApduCommands }) => generateCivicaCardReloadWriteAndReadApduCommands)
         );
@@ -153,11 +175,12 @@ class CivicaReloader {
             }`;
 
         return this.graphQL.executeQuery$(mutation).pipe(
-            //tap(({processCivicaCardReloadWriteAndReadApduCommandResponses}) => console.log(`processCivicaCardReloadWriteAndReadApduCommandResponses: ${JSON.stringify(processCivicaCardReloadWriteAndReadApduCommandRespones)}`)),
+            catchError(error => Rx.throwError(new Error(`Failed to processCivicaCardReloadWriteAndReadApduCommandResponses, error: ${JSON.stringify(error)}`))),
             tap(({ processCivicaCardReloadWriteAndReadApduCommandResponses }) => expect(processCivicaCardReloadWriteAndReadApduCommandResponses).not.to.be.null),
             map(({ processCivicaCardReloadWriteAndReadApduCommandResponses }) => processCivicaCardReloadWriteAndReadApduCommandResponses)
         );
     }
+    //#endregion
 
 
     purchaseCivicaCardReload$(value) {
@@ -166,6 +189,7 @@ class CivicaReloader {
             purchaseCivicaCardReload(${this.graphQL.convertObjectToInputArgs({ conversationId: this.conversation.civicaCardReloadConversationId, value: value })}){granted,errorMsg,receipt{id,timestamp,reloadValue,cardInitialValue,cardFinalValue,businesId,posId,posUserName,posUserId,posTerminal}   }
         }`;
         return this.graphQL.executeQuery$(mutation).pipe(
+            catchError(error => Rx.throwError(new Error(`Failed to purchaseCivicaCardReload, error: ${JSON.stringify(error)}`))),
             tap(({ purchaseCivicaCardReload }) => console.log(`purchaseCivicaCardReload: ${JSON.stringify(purchaseCivicaCardReload)}`)),
             tap(({ purchaseCivicaCardReload }) => expect(purchaseCivicaCardReload).not.to.be.null),
             map(({ purchaseCivicaCardReload }) => purchaseCivicaCardReload)

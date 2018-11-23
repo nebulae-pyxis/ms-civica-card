@@ -131,7 +131,7 @@ class CivicaCardCQRS {
                 map(conversation => (
                     {
                         conversation,
-                        bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole)
+                        bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole !== undefined ? conversation.currentCardAuth.cardRole : 'DEBIT')
                     }
                 )),
                 mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
@@ -207,7 +207,7 @@ class CivicaCardCQRS {
             map(({ conversation, bytecode }) => (
                 {
                     conversation,
-                    bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole, bytecode)
+                    bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole !== undefined ? conversation.currentCardAuth.cardRole : 'CREDIT', bytecode)
                 }
             )),
             mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),

@@ -24,6 +24,10 @@ const CIVB = 'CIVB';
  */
 const CDVB = 'CDVB';
 /**
+ * Command Auth Load Key
+ */
+const CALK = 'CALK';
+/**
  * Command Auth Sector
  */
 const CASE = 'CASE';
@@ -52,6 +56,10 @@ const RIVB = 'RIVB';
  */
 const RDVB = 'RDVB';
 /**
+ * Response Auth Load Key
+ */
+const RALK = 'RALK';
+/**
  * Response Auth Sector
  */
 const RASE = 'RASE';
@@ -62,12 +70,21 @@ const RASE = 'RASE';
  * 
  * @param [ {code : [arg]}] codeArgsList eg. [ {code:'CRDB', args:['1','2','3']}, {code:'CRDB', args:['1','2','3']} ]
  */
-const generateByteCode = (codeArgsList,  bytecode = '') => {
-    const byteCodeIndex = bytecode == '' ? 0 : 1 + Math.max(bytecode.split('\n').filter(l => l !== '').map(l => l.split(':')[0]).map(i => parseInt(i)));
+const generateByteCode = (codeArgsList, bytecode = '') => {
+    let byteCodeIndex = 0;
+    if (bytecode !== '') {
+        const indexList = bytecode
+            .split('\n')
+            .filter(l => l !== '')
+            .map(l => l.split(':')[0])
+            .map(i => parseInt(i));
+        byteCodeIndex = Math.max(...indexList);
+        byteCodeIndex++;
+    }
     let i;
     for (i = 0; i < codeArgsList.length; i++) {
         const { code, args } = codeArgsList[i];
-        bytecode += `${byteCodeIndex+i}: ${code} ${args.join(' ')}\n`;
+        bytecode += `${byteCodeIndex + i}: ${code} ${args.join(' ')}\n`;
     }
     return bytecode;
 }
@@ -78,12 +95,12 @@ const generateByteCode = (codeArgsList,  bytecode = '') => {
  * @param {*} args 
  */
 const codeArgs = (code, args) => {
-    return {code,args};
+    return { code, args };
 }
 
 module.exports = {
     generateByteCode,
     codeArgs,
-    CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
-    RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RASE
+    CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CALK, CASE,
+    RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RALK, RASE
 };

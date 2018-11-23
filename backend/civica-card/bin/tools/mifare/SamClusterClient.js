@@ -6,6 +6,7 @@ const {
     map,
 } = require('rxjs/operators');
 const SamClusterMqttBroker = require('./SamClusterMqttBroker');
+const { CustomError, BYTECODE_COMPILER_ERROR } = require('../customError');
 
 class SamClusterClient {
 
@@ -31,7 +32,7 @@ class SamClusterClient {
     requestSamFirstStepAuth$({ dataDiv = undefined, cardSecurityLevel = 3, key, cardFirstSteptAuthChallenge }, { transactionId }) {
         const apduLen = 18 + (dataDiv === undefined ? 0 : dataDiv.length / 2);
 
-        const apduBuffer = Buffer.alloc( 5 + apduLen + 1 );
+        const apduBuffer = Buffer.alloc(5 + apduLen + 1);
         const keyNo = key;
         const keyVer = 0x00;
         const data = cardFirstSteptAuthChallenge;
@@ -104,6 +105,60 @@ class SamClusterClient {
                 writeCount: 0// response.data.readUInt16BE(38)
             }))
         );
+    }
+
+    requestSL1OfflineAuthKey$(transactionId, samKey, cardUid) {
+        const uuid_buff = Buffer.from(cardUid, 'hex').slice(0, 4);
+        const uuid_reversed_buff = Buffer.from(uuid_buff).swap32();
+        const uuid_niblesFlip_buff = Buffer.from([
+            uuid_buff[0] >> 4 & 0x0F | uuid_buff[0] << 4 & 0xF0,
+            uuid_buff[1] >> 4 & 0x0F | uuid_buff[1] << 4 & 0xF0,
+            uuid_buff[2] >> 4 & 0x0F | uuid_buff[2] << 4 & 0xF0,
+            uuid_buff[3] >> 4 & 0x0F | uuid_buff[3] << 4 & 0xF0
+        ]);
+        const keyDiversifiedData_buff = Buffer.concat([uuid_reversed_buff, uuid_niblesFlip_buff]);
+
+        const apdu1 = this.getActivateOfflineKeyApdu(samKey, 0x00, undefined);
+        const apdu2 = this.getEncipherDataApdu(true, 0x00, keyDiversifiedData_buff);
+        const mergedApdu = Buffer.concat([apdu1, apdu2]);
+
+        return this.broker.sendAndGetReply$(this.appId, transactionId, undefined, mergedApdu).pipe(
+            tap(({ data }) => { if (data[data.length - 2] !== 0x90 || data[data.length - 1] !== 0x00) { throw new CustomError('SAM Error Response', 'SamClusterClient.requestOfflineAuthKey', BYTECODE_COMPILER_ERROR, 'SAM returned error response when trying to calculate Offline Auth Key for SL1'); } }),
+            map(response => ({ key: response.data.slice(0, 6), samId: response.samId })),
+        );
+
+    }
+
+
+    /**
+     * Calculates APDU for SAM_ActivateOfflineKey
+     * @param {number} keyNo 
+     * @param {number} keyVer 
+     * @param {Array} dataDiv 
+     */
+    getActivateOfflineKeyApdu(keyNo, keyVer, dataDiv) {
+        const p1 = dataDiv === undefined ? 0x00 : 0x01;
+        const aid = Buffer.concat([
+            Buffer.from([0x80, 0x01, p1, 0x00, (dataDiv === undefined ? 0 : dataDiv.length) + 2, keyNo, keyVer]),
+            Buffer.from(dataDiv === undefined ? [] : dataDiv)
+        ]);
+        return aid;
+    }
+
+    /**
+     * SAM_Encipher_Data command encrypts data received from any other system based on the given cipher text data andt the current valid cryptographic OfflineCrypto Key.
+     * @param {Boolean} last 
+     * @param {Number} offset 
+     * @param {Buffer} dataPlain 
+     */
+    getEncipherDataApdu(last, offset, dataPlain) {
+        const p1 = last ? 0x00 : 0xAF;
+        const aid = Buffer.concat([
+            Buffer.from([0x80, 0xED, p1, offset, dataPlain.length]),
+            dataPlain,
+            Buffer.from([0x00]),
+        ]);
+        return aid;
     }
 
 

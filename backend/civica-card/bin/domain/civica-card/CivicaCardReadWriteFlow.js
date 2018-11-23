@@ -1,7 +1,7 @@
 const {
     generateByteCode, codeArgs,
-    CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
-    RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RASE
+    CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CALK, CASE,
+    RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RALK, RASE
 } = require('../../tools/mifare/ByteCode/ByteCode');
 const { MAX_SALDO_CREDITO } = require('./CivicaCardTools');
 const { CustomError, HW_CARD_TYPE_INVALID, HW_CARD_ROLE_INVALID, HW_CARD_DATA_TYPE_INVALID } = require('../../tools/customError');
@@ -32,10 +32,60 @@ class CivicaCardReadWriteFlow {
                         break;
                     default: throw new CustomError(`Invalid data type`, 'CivicaCardReadWriteFlow.generateReadBytecode', HW_CARD_DATA_TYPE_INVALID, `invalid data type: ${dataType}`);
                 }
+                break;
+            case 'SL1':
+                switch (dataType) {
+                    //case 'PUBLIC': return this.getSl1PublicReadBytecode(bytecode);
+                    case 'CIVICA':
+                        switch (cardRole) {
+                            case 'DEBIT': return this.getSl1CivicaDebitReadBytecode(bytecode);
+                            case 'CREDIT': return this.getSl1CivicaCreditReadBytecode(bytecode);
+                            default: throw new CustomError(`Invalid card Role`, 'CivicaCardReadWriteFlow.generateReadBytecode', HW_CARD_ROLE_INVALID, `invalid card role: ${cardRole}`);
+                        }
+                        break;
+                    default: throw new CustomError(`Invalid data type`, 'CivicaCardReadWriteFlow.generateReadBytecode', HW_CARD_DATA_TYPE_INVALID, `invalid data type: ${dataType}`);
+                }
+                break;
             default: throw new CustomError(`Invalid card type`, 'CivicaCardReadWriteFlow.generateReadBytecode', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);
         }
     }
 
+    /**
+     * Generates the bytecode to write civica card changes
+     * @param {string} cardType Mifare SL level. eg: SL3 | SL2
+     * @param {string} dataType type of data to read. PUBLIC | CIVICA
+     */
+    static generateWriteBytecode(cardType, dataType, conversation, bytecode = '') {
+        const purchasedValue = conversation.purchase.value;
+        const consolidatedBalance = purchasedValue + conversation.initialCard.civicaData._saldoConsolidado;
+        const saldoTarjeta = (consolidatedBalance >= 0) ? consolidatedBalance : 0;
+        const saldoCredito = (consolidatedBalance >= 0) ? MAX_SALDO_CREDITO : (MAX_SALDO_CREDITO - consolidatedBalance);
+
+        const mods = {
+            saldoTarjeta,
+            saldoTarjetaBk: saldoTarjeta,
+            saldoCredito,
+            saldoCreditoBk: saldoCredito
+        };
+
+        switch (cardType) {
+            case 'SL3':
+                switch (dataType) {
+                    case 'CIVICA': return this.getSl3CivicaWriteBytecode(conversation.initialCard, mods, bytecode);
+                    default: throw new CustomError(`Invalid data type`, 'CivicaCardReadWriteFlow.generateWriteBytecode', HW_CARD_DATA_TYPE_INVALID, `invalid data type: ${dataType}`);
+                }
+                break;
+            case 'SL1':
+                switch (dataType) {
+                    case 'CIVICA': return this.getSl1CivicaWriteBytecode(conversation.initialCard, mods, bytecode);
+                    default: throw new CustomError(`Invalid data type`, 'CivicaCardReadWriteFlow.generateWriteBytecode', HW_CARD_DATA_TYPE_INVALID, `invalid data type: ${dataType}`);
+                }
+                break;
+            default: throw new CustomError(`Invalid card type`, 'CivicaCardReadWriteFlow.generateWriteBytecode', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);
+        }
+    }
+
+    //#region READ SL3
     /**
      * predefined bytecode to read the public sector on Civica card
      */
@@ -63,40 +113,53 @@ class CivicaCardReadWriteFlow {
             codeArgs(CRDB, ['16', '3']),
         ], bytecode);
     }
+    //#endregion
 
-
-
-
+    //#region READ SL1
     /**
-     * Generates the bytecode to write civica card changes
-     * @param {string} cardType Mifare SL level. eg: SL3 | SL2
-     * @param {string} dataType type of data to read. PUBLIC | CIVICA
+     * predefined bytecode to read the civica data on Civica card the DEBIT role
      */
-    static generateWriteBytecode(cardType, dataType, conversation, bytecode = '') {
-
-        const purchasedValue = conversation.purchase.value;
-        const consolidatedBalance = purchasedValue + conversation.initialCard.civicaData._saldoConsolidado;
-        const saldoTarjeta = (consolidatedBalance >= 0) ? consolidatedBalance : 0;
-        const saldoCredito = (consolidatedBalance >= 0) ? MAX_SALDO_CREDITO : (MAX_SALDO_CREDITO - consolidatedBalance);
-
-        const mods = {
-            saldoTarjeta,
-            saldoTarjetaBk: saldoTarjeta,
-            saldoCredito,
-            saldoCreditoBk: saldoCredito
-        };
-
-        switch (cardType) {
-            case 'SL3':
-                switch (dataType) {
-                    case 'CIVICA': return this.getSl3CivicaWriteBytecode(conversation.initialCard, mods, bytecode);
-                    //case 'PUBLIC': return this.getSl3PublicWriteBytecode(bytecode);                    
-                    default: throw new CustomError(`Invalid data type`, 'CivicaCardReadWriteFlow.generateWriteBytecode', HW_CARD_DATA_TYPE_INVALID, `invalid data type: ${dataType}`);
-                }
-            default: throw new CustomError(`Invalid card type`, 'CivicaCardReadWriteFlow.generateWriteBytecode', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);
-        }
+    static getSl1CivicaDebitReadBytecode(bytecode = '') {
+        return generateByteCode([
+            codeArgs(CALK, ['PUBLIC']),
+            codeArgs(CASE, ['1', 'A']),
+            codeArgs(CRDB, ['4', '3']),
+            codeArgs(CALK, ['DEBIT']),                        
+            codeArgs(CASE, ['2', 'A']),
+            codeArgs(CRDB, ['8', '3']),
+            codeArgs(CASE, ['3', 'A']),
+            codeArgs(CRDB, ['12', '3']),
+            codeArgs(CASE, ['4', 'A']),
+            codeArgs(CRDB, ['16', '3']),
+            codeArgs(CASE, ['6', 'A']),
+            codeArgs(CRDB, ['24', '3']),
+            codeArgs(CASE, ['7', 'A']),
+            codeArgs(CRDB, ['28', '3']),
+            codeArgs(CASE, ['8', 'A']),
+            codeArgs(CRDB, ['32', '3']),
+        ], bytecode);
     }
 
+    /**
+     * predefined bytecode to read the civica data on Civica card when using the CREDIT role
+     */
+    static getSl1CivicaCreditReadBytecode(bytecode = '') {
+        const codeArgsList = [
+            codeArgs(CALK, ['CREDIT']),
+            codeArgs(CASE, ['2', 'B']),
+            codeArgs(CRDB, ['8', '1']),
+            codeArgs(CRDB, ['9', '1']),
+            codeArgs(CRDB, ['10', '1']),
+            codeArgs(CASE, ['4', 'B']),
+            codeArgs(CRDB, ['16', '1']),
+            codeArgs(CRDB, ['17', '1']),
+            codeArgs(CRDB, ['19', '1']),
+        ];
+        return generateByteCode(codeArgsList, bytecode);
+    }
+    //#endregion
+
+    //#region WRITE SL3
     /**
      * predefined bytecode to wrte the civica data on Civica card
      */
@@ -112,7 +175,30 @@ class CivicaCardReadWriteFlow {
         }
         return generateByteCode(codeArgsList, bytecode);
     }
+    //#endregion
 
+    //#region WRITE SL1
+    /**
+     * predefined bytecode to wrte the civica data on Civica card
+     */
+    static getSl1CivicaWriteBytecode({ rawData, civicaData }, mods, bytecode = '') {
+        const codeArgsList = [];
+        if ((mods.saldoTarjeta !== civicaData.saldoTarjeta) || (mods.saldoTarjetaBk !== civicaData.saldoTarjetaBk)) {
+            const saldoTarjetaValueBlockHex = this.formatNumberToValueBlock(mods.saldoTarjeta);            
+            codeArgsList.push(codeArgs(CALK, ['CREDIT']));
+            codeArgsList.push(codeArgs(CASE, ['2', 'B']));
+            codeArgsList.push(codeArgs(CWDB, ['8', '2', saldoTarjetaValueBlockHex, saldoTarjetaValueBlockHex]));
+        }
+        if ((mods.saldoCredito !== civicaData.saldoCredito) || (mods.saldoCreditoBk !== civicaData.saldoCreditoBk)) {
+            const saldoCreditoValueBlockHex = this.formatNumberToValueBlock(mods.saldoCredito);
+            codeArgsList.push(codeArgs(CASE, ['4', 'B']));
+            codeArgsList.push(codeArgs(CWDB, ['16', '2', saldoCreditoValueBlockHex, saldoCreditoValueBlockHex]));
+        }
+        return generateByteCode(codeArgsList, bytecode);
+    }
+    //#endregion
+
+    //#region TOOLS
     static formatNumberToValueBlock(number) {
         const value = Buffer.alloc(4);
         value.writeUInt32LE(number, 0);
@@ -141,7 +227,7 @@ class CivicaCardReadWriteFlow {
 
         return valueBlock.toString('hex');
     }
-
+    //#endregion
 
 }
 

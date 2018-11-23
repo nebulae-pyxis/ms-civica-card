@@ -2,6 +2,7 @@
 
 const { CustomError, HW_CARD_TYPE_INVALID, HW_READER_TYPE_INVALID } = require('../../customError');
 const Sl3HighLevel = require('./especific-bytecodes-compilers/Sl3HighLevel');
+const Sl1ACR1255 = require('./especific-bytecodes-compilers/Sl1ACR1255');
 
 class Compiler {
 
@@ -11,6 +12,7 @@ class Compiler {
      */
     constructor(samClusterClient) {
         this.sl3HighLevel = new Sl3HighLevel(samClusterClient);
+        this.sl1ACR1255 = new Sl1ACR1255(samClusterClient);
     }
 
     /**
@@ -44,7 +46,12 @@ class Compiler {
         switch (cardType) {
             case 'SL3':
                 switch (readerType) {
-                    case 'ACR1252':case 'ACR1255': return this.sl3HighLevel;
+                    case 'ACR1252': case 'ACR1255': return this.sl3HighLevel;
+                    default: throw new CustomError(`Invalid reader type`, 'Compiler.getSpecificImplementation', HW_READER_TYPE_INVALID, `invalid readerType ${readerType}`);
+                }
+            case 'SL1':
+                switch (readerType) {
+                    case 'ACR1252': case 'ACR1255': return this.sl1ACR1255;
                     default: throw new CustomError(`Invalid reader type`, 'Compiler.getSpecificImplementation', HW_READER_TYPE_INVALID, `invalid readerType ${readerType}`);
                 }
             default: throw new CustomError(`Invalid card type`, 'Compiler.getSpecificImplementation', HW_CARD_TYPE_INVALID, `invalid card type: ${cardType}`);

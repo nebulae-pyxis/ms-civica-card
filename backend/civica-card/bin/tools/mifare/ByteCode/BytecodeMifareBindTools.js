@@ -5,10 +5,10 @@ const Rx = require("rxjs");
 const { tap, filter, toArray, concatMap, mapTo, map, reduce } = require('rxjs/operators');
 const {
     codeArgs, generateByteCode,
-    CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
-    RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RASE
+    CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CALK,CASE,
+    RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RALK,RASE
 } = require('./ByteCode');
-const { CustomError, CIVICA_CARD_READ_FAILED, CIVICA_CARD_WRITE_FAILED, BYTECODE_COMPILER_ERROR } = require('../../customError');
+const { CustomError, CIVICA_CARD_READ_FAILED, CIVICA_CARD_WRITE_FAILED, BYTECODE_COMPILER_ERROR,CIVICA_CARD_AUTH_FAILED } = require('../../customError');
 
 class BytecodeMifareBindTools {
 
@@ -35,8 +35,10 @@ class BytecodeMifareBindTools {
         const [order, codeArgs] = bytecodeLine.split(':');
         const [code, ...args] = codeArgs.trim().split(' ');
         switch (code) {
+            case RALK: return this.applyRALK(order, args, mifareCard);
+            case RASE: return this.applyRASE(order, args, mifareCard);
             case RRDB: return this.applyRRDB(order, args, mifareCard);
-            case RWDB: return this.applyRWDB(order, args, mifareCard);
+            case RWDB: return this.applyRWDB(order, args, mifareCard);            
             default: throw new CustomError(`Invalid bytecode line code`, 'BytecodeMifareBindTools.applyBytecodeLine', BYTECODE_COMPILER_ERROR, `Invalid bytecode line code(${code})`);
         }
     }
@@ -77,6 +79,26 @@ class BytecodeMifareBindTools {
     applyRWDB(order, [resultCode, resultDesc, block, blockCount, ...blockDataList], mifareCard) {
         if (resultCode !== '00') {
             throw new CustomError(`Write data block failed`, 'BytecodeMifareBindTools.applyRWDB', CIVICA_CARD_WRITE_FAILED, 'Command Response with ERROR, original command no executed');
+        }
+        return mifareCard;
+    }
+
+    /**
+     * Applies a Response of Auth Load Key
+     */
+    applyRALK(order, [resultCode, resultDesc], mifareCard) {
+        if (resultCode !== '00') {
+            throw new CustomError(`Auth load key failed`, 'BytecodeMifareBindTools.applyRALK', CIVICA_CARD_AUTH_FAILED, 'Command Response with ERROR, original command no executed');
+        }
+        return mifareCard;
+    }
+
+    /**
+     * Applies a Response of Auth Sector
+     */
+    applyRASE(order, [resultCode, resultDesc], mifareCard) {
+        if (resultCode !== '00') {
+            throw new CustomError(`Auth Sector failed`, 'BytecodeMifareBindTools.applyRASE', CIVICA_CARD_AUTH_FAILED, 'Command Response with ERROR, original command no executed');
         }
         return mifareCard;
     }
