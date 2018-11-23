@@ -36,6 +36,28 @@ class BusinessDA {
 
 
   /**
+   * updates business active flag
+   * @param {String} businessId 
+   * @param {boolean} active 
+   */
+  static updateBusinessActive$(businessId, active) {
+    const collection = mongoDB.db.collection(CollectionName);
+    const updateQuery = [
+      { '_id': businessId },
+      {
+        '$set': {
+          'active':active
+        }
+      },
+      { 'multi': false, upsert: true }
+    ];
+
+    return Rx.defer(() => collection.update(...updateQuery)).pipe(
+      tap(x => { if (x.result.ok !== 1) throw (new Error(`Business(id:${id}) updated failed`)); }),
+    );
+  }
+
+  /**
    * updates business wallet status
    * @param {String} businessId 
    * @param {{main,bonus}} pockets wallet pockets

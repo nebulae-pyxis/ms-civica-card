@@ -16,6 +16,22 @@ class WalletES {
     }
 
     /**
+     * updates business active flag
+     * @param {Event} event 
+     */
+    handleBusinessActivatedEvent$(event) {
+        return BusinessDA.updateBusinessActive$(event.aid,true);
+    }
+
+    /**
+     * updates business active flag
+     * @param {Event} event 
+     */
+    handleBusinessDeactivatedEvent$(event) {
+        return BusinessDA.updateBusinessActive$(event.aid,false);
+    }
+
+    /**
      * updates business state
      * @param {Event} event 
      */

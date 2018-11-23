@@ -79,7 +79,7 @@ class CivicaCardCQRS {
      */
     getCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
         return CivicaCardReloadConversationDA.find$(args.id)
-            .pipe(                
+            .pipe(
                 map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
                 catchError(error => {
@@ -254,9 +254,9 @@ class CivicaCardCQRS {
      */
     verifyBusiness$(businessId, returnObject) {
         return BusinessDA.find$(businessId).pipe(
-            tap(business => { if (business === null) throw new CustomError('Unidad de negocio no encontrada', `verifique que el ID de su negocio sea el correcto`, BUSINESS_NOT_FOUND) }),
+            tap(business => { if (business === undefined || business === null) throw new CustomError('Unidad de negocio no encontrada', `verifique que el ID de su negocio sea el correcto`, BUSINESS_NOT_FOUND) }),
             tap(business => { if (!business.active) throw new CustomError('Unidad de negocio no activa', `comuniquese con el adminsitrador para activar su negocio `, BUSINESS_NOT_ACTIVE) }),
-            tap(business => { if (business.wallet === null) throw new CustomError('Bolsas no encontradas', `comuniquese con el adminsitrador para activar su bolsas de saldo `, BUSINESS_WALLET_NOT_FOUND) }),
+            tap(business => { if (business.wallet === undefined || business.wallet === null) throw new CustomError('Bolsas no encontradas', `comuniquese con el adminsitrador para activar su bolsas de saldo `, BUSINESS_WALLET_NOT_FOUND) }),
             tap(business => { if (!business.wallet.spendingAllowed) throw new CustomError('Venta no autorizada', `verifique su saldo`, BUSINESS_WALLET_SPENDING_FORBIDDEN) }),
             mapTo(returnObject)
         );

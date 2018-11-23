@@ -121,6 +121,14 @@ class EventStoreService {
 
   generateFunctionMap() {
     return {      
+      BusinessActivated: {
+        fn: businessES.handleBusinessActivatedEvent$,
+        obj: businessES
+      },
+      BusinessDeactivated: {
+        fn: businessES.handleBusinessDeactivatedEvent$,
+        obj: businessES
+      },
       WalletSpendingForbidden: {
         fn: businessES.handleWalletSpendingForbiddenEvent$,
         obj: businessES
@@ -137,8 +145,15 @@ class EventStoreService {
   */
   generateAggregateEventsArray() {
     return [
-
-      
+    
+      {
+        aggregateType: "Business",
+        eventType: "BusinessActivated"
+      },
+      {
+        aggregateType: "Business",
+        eventType: "BusinessDeactivated"
+      },
       {
         aggregateType: "Wallet",
         eventType: "WalletSpendingForbidden"

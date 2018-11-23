@@ -8,7 +8,7 @@ const {
     CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CASE,
     RRDB, RWDB, RRVB, RWVB, RIVB, RDVB, RASE
 } = require('./ByteCode');
-const { CustomError, CIVICA_CARD_READ_FAILED, BYTECODE_COMPILER_ERROR } = require('../../customError');
+const { CustomError, CIVICA_CARD_READ_FAILED, CIVICA_CARD_WRITE_FAILED, BYTECODE_COMPILER_ERROR } = require('../../customError');
 
 class BytecodeMifareBindTools {
 
@@ -49,7 +49,8 @@ class BytecodeMifareBindTools {
      */
     applyRRDB(order, [resultCode, resultDesc, block, blockCount, ...blockDataList], mifareCard) {
         if (resultCode !== '00') {
-            return mifareCard;
+            throw new CustomError(`Read data block failed`, 'BytecodeMifareBindTools.applyRWDB', CIVICA_CARD_READ_FAILED, 'Command Response with ERROR');
+            //return mifareCard; //if the idea is to ignore error an keep applying all succesess then comment above and let this line
         }
 
         const aclBlocks = [0, 3, 7, 11, 15, 19, 23, 27, 31, 35, 39];
@@ -75,7 +76,7 @@ class BytecodeMifareBindTools {
      */
     applyRWDB(order, [resultCode, resultDesc, block, blockCount, ...blockDataList], mifareCard) {
         if (resultCode !== '00') {
-            throw new CustomError(`Write data block failed`, 'BytecodeMifareBindTools.applyRWDB', CIVICA_CARD_READ_FAILED, 'Command Response with ERROR, original command no executed');
+            throw new CustomError(`Write data block failed`, 'BytecodeMifareBindTools.applyRWDB', CIVICA_CARD_WRITE_FAILED, 'Command Response with ERROR, original command no executed');
         }
         return mifareCard;
     }
