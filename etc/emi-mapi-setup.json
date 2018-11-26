@@ -1,0 +1,8 @@
+[
+    {
+        "name": "civica-card",
+        "type": "graphql",        
+        "src": "api/emi-gateway/graphql/civica-card",
+        "preBuildCommands": []
+    }
+]
