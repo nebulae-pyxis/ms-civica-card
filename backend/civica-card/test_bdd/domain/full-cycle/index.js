@@ -58,7 +58,6 @@ const getRxDefaultSubscription = (evtText, done) => {
 
 
 describe('Full Cycle Test', function () {
-
     describe('Prepare', function () {
         it('connect hardware and servers', function (done) {
             this.timeout(5000);
