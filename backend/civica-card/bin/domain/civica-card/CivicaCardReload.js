@@ -136,7 +136,7 @@ class CivicaCardReload {
             mergeMap(event => eventSourcing.eventStore.emitEvent$(event)),
             map(emitResult => emitResult.storeResult.event)
         );
-    }
+    } 
 
 }
 
