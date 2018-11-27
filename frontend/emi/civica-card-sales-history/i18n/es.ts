@@ -15,7 +15,7 @@ export const locale = {
       VALUE_REQUIRED: 'Valor requerido',
       NOTES_REQUIRED: 'Notas requeridas',
       BUSINESS_REQUIRED: 'Debe seleccionar el agente al cual desea aplicar el ajuste de saldo',
-      SALES_HISTORY: 'Historial de transacciones',
+      SALES_HISTORY: 'Historial de ventas',
       BUSINESS: 'Agente:',
       SELECT_BUSINESS: 'Seleccione unidad de negocio',
       FILTER: 'Filtro',
@@ -42,17 +42,6 @@ export const locale = {
       BALANCE: 'Saldo',
       BONUS: 'Comisión',
       RESET_FILTER: 'Limpiar filtro',
-      TYPES: {
-        SALE: 'Venta',
-        MOVEMENT: 'Movimiento',
-        undefined: ''
-      },
-      CONCEPTS: {
-        RECARGA_CIVICA: 'Recarga cívica',
-        WITHDRAWAL: 'Retiro',
-        DEPOSIT: 'Deposito',
-        undefined: ''
-      },
       TRANSACTION_HISTORY_DETAIL: 'Detalle de transacción',
       INFO: 'Información',
       TERMINAL: 'Terminal',

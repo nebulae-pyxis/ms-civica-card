@@ -54,8 +54,8 @@ import { locale as spanish } from "../i18n/es";
 
 //////////// Services ////////////
 import { KeycloakService } from "keycloak-angular";
-import { WalletService } from "./../wallet.service";
-import { TransactionHistoryService } from "./sale-history.service";
+import { CivicaCardSalesHistoryService } from "./../civica-card-sales-history.service";
+import { SaleHistoryService } from "./sale-history.service";
 import { MAT_MOMENT_DATE_FORMATS } from "./my-date-format";
 
 import {
@@ -112,20 +112,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
 
   businessQueryFiltered$: Observable<any[]>;
 
-  walletData: any = {
-    spendingState: "",
-    pockets: {
-      main: 0,
-      bonus: 0,
-      credit: 0
-    }
-  };
-
-  //terminalIdInput: any;
-  //terminalUserId: any;
-  //terminalUsername: any;
-  //transactionType: any;
-
   maxEndDate: any = null;
   minEndDate: any = null;
 
@@ -155,8 +141,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRouter: ActivatedRoute,
     private keycloakService: KeycloakService,
-    private walletService: WalletService,
-    private transactionHistoryService: TransactionHistoryService,
+    private civicaCardSalesHistoryService: CivicaCardSalesHistoryService,
+    private saleHistoryService: SaleHistoryService,
     private adapter: DateAdapter<any>
   ) {
     this.translationLoader.loadTranslations(english, spanish);
@@ -166,13 +152,10 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.buildFilterForm();
     this.onLangChange();
-    this.loadTypesAndConcepts();
     this.loadBusinessFilter();
     this.detectFilterAndPaginatorChanges();
     this.loadDataInForm();
     this.loadRoleData();
-    // this.loadBusinessData();
-    this.loadWalletData();
     this.refreshTransactionHistoryTable();
   }
 
@@ -213,8 +196,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
 
   loadDataInForm() {
     Rx.Observable.combineLatest(
-      this.transactionHistoryService.filterAndPaginator$,
-      this.transactionHistoryService.selectedBusinessEvent$
+      this.saleHistoryService.filterAndPaginator$,
+      this.saleHistoryService.selectedBusinessEvent$
     )
       .pipe(take(1))
       .subscribe(([filterAndPaginator, selectedBusiness]) => {
@@ -274,76 +257,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  loadTypesAndConcepts() {
-    this.transactionHistoryService
-      .getTypesAndConcepts$()
-      .pipe(
-        map(result => result.data.typeAndConcepts),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe(data => {
-        this.typesAndConceptsList = data;
-      });
-  }
-
-  /**
-   * Subscribes to wallet subscription
-   */
-  subscribeWalletUpdated(){
-    this.transactionHistoryService.selectedBusinessEvent$
-    .pipe(
-      filter(selectedBusiness => selectedBusiness != null),
-      switchMap((selectedBusiness: any) =>
-        this.walletService.getWalletUpdatedSubscription$(selectedBusiness._id)
-      )
-    );
-  }
-
-  /**
-   * get the wallet data according to the selected business
-   */
-  loadWalletData() {
-    this.transactionHistoryService.selectedBusinessEvent$
-      .pipe(
-        filter(selectedBusiness => selectedBusiness != null),
-        switchMap((selectedBusiness: any) => concat(
-          this.walletService.getWallet$(selectedBusiness._id)
-          .pipe(
-            mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
-            filter((resp: any) => !resp.errors || resp.errors.length === 0),
-            map(result => result.data.getWallet)
-          ),
-          this.walletService.getWalletUpdatedSubscription$(selectedBusiness._id)
-          .pipe(
-            tap(wallet => this.outdatedData = true)
-          )
-        )),
-        map(wallet => {
-          let credit = 0;
-          if (wallet.pockets.main < 0) {
-            credit += wallet.pockets.main;
-          }
-
-          if (wallet.pockets.bonus < 0) {
-            credit += wallet.pockets.bonus;
-          }
-          const walletCopy = {
-            ...wallet,
-            pockets: {
-              main: wallet.pockets.main < 0 ? 0 : wallet.pockets.main,
-              bonus: wallet.pockets.bonus < 0 ? 0 : wallet.pockets.bonus,
-              credit: credit
-            }
-          };
-          return walletCopy;
-        }),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe(wallet => {
-        console.log('new Wallet => ', wallet);
-        this.walletData = wallet;
-      });
-  }
 
   /**
    *
@@ -443,7 +356,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
         takeUntil(this.ngUnsubscribe)
       )
       .subscribe(filterAndPagination => {
-        this.transactionHistoryService.addFilterAndPaginatorData(
+        this.saleHistoryService.addFilterAndPaginatorData(
           filterAndPagination
         );
       });
@@ -454,8 +367,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
    */
   refreshTransactionHistoryTable() {
     Rx.Observable.combineLatest(
-      this.transactionHistoryService.filterAndPaginator$,
-      this.transactionHistoryService.selectedBusinessEvent$
+      this.saleHistoryService.filterAndPaginator$,
+      this.saleHistoryService.selectedBusinessEvent$
     )
       .pipe(
         filter(([filterAndPagination, selectedBusiness]) => {
@@ -463,7 +376,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
           return filterAndPagination != null && selectedBusiness != null;
         }),
         map(([filterAndPagination, selectedBusiness]) => {
-          const filterInput: any = {
+          const CivicaSaleFilterInput: any = {
             businessId: selectedBusiness._id,
             initDate: filterAndPagination.filter.initDate
               ? filterAndPagination.filter.initDate.valueOf()
@@ -478,16 +391,16 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
             terminal: filterAndPagination.filter.terminal
           };
 
-          const paginationInput = filterAndPagination.pagination;
-          return [filterInput, paginationInput];
+          const CivicaSalePaginationInput = filterAndPagination.pagination;
+          return [CivicaSaleFilterInput, CivicaSalePaginationInput];
         }),
-        mergeMap(([filterInput, paginationInput]) => {
+        mergeMap(([CivicaSaleFilterInput, CivicaSalePaginationInput]) => {
           return forkJoin(
-            this.transactionHistoryService
-              .getTransactionsHistory$(filterInput, paginationInput)
+            this.saleHistoryService
+              .getSalesHistory$(CivicaSaleFilterInput, CivicaSalePaginationInput)
               .pipe(mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp))),
-            this.transactionHistoryService
-              .getTransactionsHistoryAmount$(filterInput)
+            this.saleHistoryService
+              .getSalesHistoryAmount$(CivicaSaleFilterInput)
               .pipe(mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)))
           );
         }),
@@ -570,7 +483,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   getBusinessFiltered(filterText: String, limit: number): Observable<any[]> {
-    return this.walletService.getBusinessByFilter(filterText, limit).pipe(
+    return this.civicaCardSalesHistoryService.getBusinessByFilter(filterText, limit).pipe(
       mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
       filter(resp => !resp.errors),
       mergeMap(result => Observable.from(result.data.getBusinessByFilter)),
@@ -582,7 +495,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
    * get the business which the user belongs
    */
   getBusiness$() {
-    return this.walletService
+    return this.civicaCardSalesHistoryService
       .getBusiness$()
       .pipe(map(res => res.data.getWalletBusiness));
   }
@@ -591,7 +504,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
    * Creates an observable of business
    */
   getAllBusiness$() {
-    return this.walletService.getBusinesses$().pipe(
+    return this.civicaCardSalesHistoryService.getBusinesses$().pipe(
       mergeMap(res => {
         return Rx.Observable.from(res.data.getWalletBusinesses);
       }),
@@ -619,7 +532,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
    */
   onSelectBusinessEvent(business) {
     // console.log('onSelectBusinessEvent => ', business);
-    this.transactionHistoryService.selectBusiness(business);
+    this.saleHistoryService.selectBusiness(business);
   }
 
   graphQlAlarmsErrorHandler$(response) {

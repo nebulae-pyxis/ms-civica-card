@@ -1,0 +1,108 @@
+type CivicaCardReload {
+  _id: String!
+  timestamp: BigInt
+  businessId: String
+  value: BigInt
+  receipt: CivicaCardReloadPurchaseReceipt
+  initialCard: CivicaCardData
+  finalCard: CivicaCardData
+  location: Location
+  conversationId: String!
+  user: String
+}
+
+type Location {
+  type: String
+  coordinates: [Float]!
+}
+
+type CivicaCardData {
+  numeroTarjetaPublico: Int,
+  identificacionEmpresa: Int,
+  identificacionEmpleado: String,
+  tipoNumeroDocumento: String,
+  saldoTarjeta: BigInt,
+  saldoTarjetaBk: BigInt,
+  numeroTerminal: Int,
+  formaPagoUsoTransporte: Int,
+  fechaHoraTransaccion: Int,
+  rutaUtilizada: Int,
+  
+  rutaAnterior: Int,
+  valorPagoUsoTransporte: Int,
+  secuenciaUsoTrayecto: Int,
+  _saldoTarjeta: BigInt,
+  _saldoCredito: BigInt,
+  _saldoConsolidado: BigInt,
+  numeroTarjetaDebito: Int,
+  fechaUltimoDesbloqueoTarjeta: Int,
+  fechaValidez: Int,
+  fechaValidezVajeBeneficio: Int,
+  perfilUsuario: Int,
+  grupoPerfil: Int,
+  numeroAcompannantes: Int,
+  valorPagoSaldoCredito: BigInt,
+  limiteUsoDiario: Int,
+  codigoUltimaRecarga: Int,
+  VersionMapping: Int,
+  indicadorTarjetaBloqueada: Int,
+  fechaHoraRecarga: Int,
+  numeroSequenciaTransaccion: Int,
+  pinStatus: Int,
+  pinUsuario: Int,
+  cantidadIntentosErroneos: Int,
+  saldoCreditoBk: BigInt,
+  saldoCredito: BigInt,
+  saldoBeneficio: BigInt
+}
+
+type CivicaCardReloadPurchaseReceipt {
+  id: String,
+  timestamp: BigInt,
+  reloadValue: BigInt,
+  cardInitialValue: BigInt,
+  cardFinalValue: BigInt,
+  businesId: String,
+  posId: String,
+  posUserName: String,
+  posUserId: String,
+  posTerminal: String  
+}
+
+input CivicaSaleFilterInput {
+  "ID of the business with which the information will be filter"
+  businessId: String!
+  "Init date"
+  initDate: BigInt!
+  "End date"
+  endDate: BigInt!
+  "Terminal"
+  terminal: TerminalInput
+}
+
+input CivicaSalePaginationInput {
+  "Page"
+  page: Int!
+  "Count"
+  count: Int!
+  "Sort, default: ASC"
+  sort: Int
+}
+
+input TerminalInput {
+  "Terminal ID"
+  id: String
+  "Terminal User ID"
+  userId: String
+  "Terminal username"
+  username: String
+}
+
+type Query {
+  "Gets the sales history of civica card reload according to the filter and pagination data passed by arguments"
+  civicaCardSalesHistory(civicaSaleFilterInput: CivicaSaleFilterInput!, civicaSalePaginationInput: CivicaSalePaginationInput!): [CivicaCardReload]
+  "Gets the amount of sales of Cívica card reload according to the filter data passed by arguments."
+  civicaCardSalesHistoryAmount(civicaSaleFilterInput: CivicaSaleFilterInput!): Int!
+  "Gets the civica card reload by its ID"
+  civicaCardSaleHistory(id: ID!): CivicaCardReload  
+}

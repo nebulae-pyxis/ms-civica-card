@@ -6,8 +6,8 @@ import {
 import { GatewayService } from "../../../../api/gateway.service";
 import * as moment from "moment";
 import {
-  getWalletTransactionsHistory,
-  getWalletTransactionsHistoryAmount,
+  civicaCardSalesHistory,
+  civicaCardSalesHistoryAmount,
 } from "../gql/civicaCardSales";
 
 @Injectable()
@@ -54,15 +54,15 @@ export class SaleHistoryService {
   }
 
   /**
-   * Gets the transactions history according to the filter data and pagination.
+   * Gets the sales history according to the filter data and pagination.
    *
    * @param filterInput
    * @param paginationInput
    * @returns {Observable}
    */
-  getTransactionsHistory$(filterInput, paginationInput) {
+  getSalesHistory$(filterInput, paginationInput) {
     return this.gateway.apollo.query<any>({
-      query: getWalletTransactionsHistory,
+      query: civicaCardSalesHistory,
       variables: {
         filterInput: filterInput,
         paginationInput: paginationInput
@@ -72,31 +72,18 @@ export class SaleHistoryService {
     });
   }
 
-    /**
-   * Gets the transactions history amount according to the filter data.
+  /**
+   * Gets the sales history amount according to the filter data.
    *
    * @param filterInput
    * @returns {Observable}
    */
-  getTransactionsHistoryAmount$(filterInput) {
+  getSalesHistoryAmount$(filterInput) {
     return this.gateway.apollo.query<any>({
-      query: getWalletTransactionsHistoryAmount,
+      query: civicaCardSalesHistoryAmount,
       variables: {
         filterInput: filterInput
       },
-      fetchPolicy: "network-only",
-      errorPolicy: "all"
-    });
-  }
-
-  /**
-   * Gets the transactions types and concepts
-   *
-   * @returns {Observable}
-   */
-  getTypesAndConcepts$() {
-    return this.gateway.apollo.query<any>({
-      query: getTypesAndConcepts,
       fetchPolicy: "network-only",
       errorPolicy: "all"
     });
