@@ -24,7 +24,7 @@ export class GatewayService {
     //   uri: environment.api.gateway.graphql.httpEndPoint
     // });
     const http = this.httpLink.create({
-      uri: environment.api.gateway.graphql.salesHttpEndPoint
+      uri: environment.salesHttpEndPoint
     });
     //#region keycloakEvents$ subscription
     //#endregion
@@ -43,7 +43,7 @@ export class GatewayService {
 
     // Create a WebSocket link:
     const ws = new WebSocketLink({
-      uri: environment.api.gateway.graphql.salesWsEndPoint,
+      uri: environment.salesWsEndPoint,
       options: {
         reconnect: true,
         connectionParams: {
