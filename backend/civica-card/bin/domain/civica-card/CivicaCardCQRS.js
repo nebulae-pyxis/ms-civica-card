@@ -1,7 +1,8 @@
 'use strict'
 
 const Rx = require("rxjs");
-const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
+const { of } = require('rxjs');
+const { tap, mergeMap, catchError, map, mapTo, toArray } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
 const RoleValidator = require("../../tools/RoleValidator");
 const { CustomError, PERMISSION_DENIED, CONVERSATION_NOT_FOUND, BUSINESS_NOT_FOUND, BUSINESS_NOT_ACTIVE, BUSINESS_WALLET_NOT_FOUND, BUSINESS_WALLET_SPENDING_FORBIDDEN } = require('../../tools/customError');
@@ -324,6 +325,7 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSalesHistory$({ args }, authToken) {
+    console.log('getCivicaCardSalesHistory');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",
@@ -334,7 +336,7 @@ class CivicaCardCQRS {
       mergeMap(roles => {
         const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
         //If an user does not have the role to get the civica card sales history from other business, we must return an error
-          if (!isAdmin && authToken.businessId != args.filterInput.businessId) {
+          if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
             return this.createCustomError$(
                 PERMISSION_DENIED,
               'getCivicaCardSalesHistory'
@@ -356,6 +358,7 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSalesHistoryAmount$({ args }, authToken) {
+    console.log('getCivicaCardSalesHistoryAmount');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",
@@ -387,6 +390,7 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSaleHistoryById$({ args }, authToken) {
+    console.log('getCivicaCardSaleHistoryById');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",

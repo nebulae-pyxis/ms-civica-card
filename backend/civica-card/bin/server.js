@@ -10,7 +10,8 @@ const mongoDB = require('./data/MongoDB').singleton();
 const CivicaCardReloadConversationDA = require('./data/CivicaCardReloadConversationDA');
 const CivicaCardReloadDA = require('./data/CivicaCardReloadDA');
 const BusinessDA = require('./data/BusinessDA');
-const graphQlService = require('./services/sales-gateway/GraphQlService')();
+const salesGraphQlService = require('./services/sales-gateway/GraphQlService')();
+const emiGraphQlService = require('./services/emi-gateway/GraphQlService')();
 const {civicaCardCQRS} = require('./domain/civica-card/');
 const Rx = require('rxjs');
 
@@ -22,7 +23,8 @@ const start = () => {
         CivicaCardReloadConversationDA.start$(),
         CivicaCardReloadDA.start$(),
         BusinessDA.start$(),
-        graphQlService.start$(),
+        salesGraphQlService.start$(),
+        emiGraphQlService.start$(),
         civicaCardCQRS.start$()
     ).subscribe(
         (evt) => {
