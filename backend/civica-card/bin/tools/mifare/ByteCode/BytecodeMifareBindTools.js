@@ -2,7 +2,7 @@
 
 
 const Rx = require("rxjs");
-const { tap, filter, toArray, concatMap, mapTo, map, reduce } = require('rxjs/operators');
+const { tap, filter, toArray, concatMap, mapTo, map, reduce, catchError } = require('rxjs/operators');
 const {
     codeArgs, generateByteCode,
     CRDB, CWDB, CRVB, CWVB, CIVB, CDVB, CALK,CASE,
@@ -22,7 +22,8 @@ class BytecodeMifareBindTools {
             filter(ln => ln.trim() !== ''),
             reduce((modifiedMifareCard, bytecodeLine) => {
                 return this.applyBytecodeLine(bytecodeLine, modifiedMifareCard);
-            }, mifareCard)
+            }, mifareCard),
+            catchError(err => {console.log(bytecode); throw err})
         );
     }
 
@@ -51,7 +52,7 @@ class BytecodeMifareBindTools {
      */
     applyRRDB(order, [resultCode, resultDesc, block, blockCount, ...blockDataList], mifareCard) {
         if (resultCode !== '00') {
-            throw new CustomError(`Read data block failed`, 'BytecodeMifareBindTools.applyRWDB', CIVICA_CARD_READ_FAILED, 'Command Response with ERROR');
+            throw new CustomError(`Read data block failed`, 'BytecodeMifareBindTools.applyRWDB', CIVICA_CARD_READ_FAILED, 'Command Response with ERROR: ');
             //return mifareCard; //if the idea is to ignore error an keep applying all succesess then comment above and let this line
         }
 

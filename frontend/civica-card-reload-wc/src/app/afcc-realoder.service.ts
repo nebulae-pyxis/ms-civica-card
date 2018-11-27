@@ -25,6 +25,7 @@ import {
   CivicaCardReloadConversation
 } from './api/gql/afcc-reloader.js';
 import { v4 as uuid } from 'uuid';
+import { CardPowerOnResp } from './utils/communication_profile/messages/response/card-power-on-resp';
 
 @Injectable({
   providedIn: 'root'
@@ -149,7 +150,7 @@ export class AfccRealoderService {
    * change the reader key to the session key and change the state to connected
    */
   onConnectionSuccessful$(sessionKey) {
-    this.readerType = 'BLE_HIGH_LEVEL';
+    this.readerType = 'ACR1255';
     return Rx.defer(() => {
       this.changeCypherMasterKey(Array.from(sessionKey));
       this.deviceConnectionStatus$.next(ConnectionStatus.CONNECTED);
@@ -157,30 +158,33 @@ export class AfccRealoderService {
       return Rx.of('connection succeful');
     }).pipe(
       mergeMap(() => {
-        return this.gateway.apollo.query<any>({
-          query: CivicaCardReloadConversation,
-          variables: {
-            id: localStorage.conversationId
-          },
-          errorPolicy: 'all',
-          fetchPolicy: 'network-only'
-        }).pipe(
-          catchError(error => {
-          return Rx.of(undefined);
+        return this.gateway.apollo
+          .query<any>({
+            query: CivicaCardReloadConversation,
+            variables: {
+              id: localStorage.conversationId
+            },
+            errorPolicy: 'all',
+            fetchPolicy: 'network-only'
           })
-        );
+          .pipe(
+            catchError(error => {
+              return Rx.of(undefined);
+            })
+          );
       }),
       map(rawData => {
         if (rawData) {
-          return JSON.parse(JSON.stringify(rawData.data.CivicaCardReloadConversation));
+          return JSON.parse(
+            JSON.stringify(rawData.data.CivicaCardReloadConversation)
+          );
         }
-      }
-      ),
+      }),
       tap(result => {
         if (
           result &&
           ((result as any).uiState === OperabilityState.RELOADING_CARD ||
-          (result as any).uiState === OperabilityState.RELOADING_CARD_ERROR)
+            (result as any).uiState === OperabilityState.RELOADING_CARD_ERROR)
         ) {
           this.conversation = result;
           this.operabilityState$.next(OperabilityState.RELOADING_CARD);
@@ -251,34 +255,87 @@ export class AfccRealoderService {
       this.conversation.id = uuid();
       localStorage.conversationId = this.conversation.id;
       return this.myfarePlusSl3
-        .readCurrentCard$(
+        .cardPowerOn$(
           this.bluetoothService,
           this.readerAcr1255,
-          this.sessionKey,
           this.cypherAesService,
-          this.conversation,
-          this.gateway,
-          'PUBLIC'
+          this.sessionKey
         )
         .pipe(
-          delay(500),
-          mergeMap(cardNumberResult => {
-            return this.myfarePlusSl3
-              .readCurrentCard$(
+          mergeMap(cardPowerOnResult => {
+          const cardPowerOnResp = new CardPowerOnResp(cardPowerOnResult);
+            if (
+              this.cypherAesService.bytesTohex(
+                cardPowerOnResp.data.slice(3, 5)
+              ) === '01c1'
+            ) {
+              return this.myfarePlusSl3
+                .readCurrentCard$(
+                  this.bluetoothService,
+                  this.readerAcr1255,
+                  this.sessionKey,
+                  this.cypherAesService,
+                  this.conversation,
+                  this.gateway,
+                  'PUBLIC',
+                  'SL3'
+                )
+                .pipe(
+                  delay(500),
+                  mergeMap(cardNumberResult => {
+                    return this.myfarePlusSl3
+                      .cardPowerOn$(
+                        this.bluetoothService,
+                        this.readerAcr1255,
+                        this.cypherAesService,
+                        this.sessionKey
+                      )
+                      .pipe(
+                        mergeMap(() => {
+                          return this.myfarePlusSl3.readCurrentCard$(
+                            this.bluetoothService,
+                            this.readerAcr1255,
+                            this.sessionKey,
+                            this.cypherAesService,
+                            this.conversation,
+                            this.gateway,
+                            'CIVICA',
+                            'SL3'
+                          );
+                        }),
+                        map(result => {
+                          (result as any).result.numeroTarjetaPublico = (cardNumberResult as any).result.numeroTarjetaPublico;
+                          return result;
+                        })
+                      );
+                  })
+                );
+            } else if (
+              this.cypherAesService.bytesTohex(
+                cardPowerOnResp.data.slice(13, 15)
+              ) === '0001' || this.cypherAesService.bytesTohex(
+                cardPowerOnResp.data.slice(13, 15)
+              ) === 'FF88'
+            ) {
+              return this.myfarePlusSl3.readCurrentCard$(
                 this.bluetoothService,
                 this.readerAcr1255,
                 this.sessionKey,
                 this.cypherAesService,
                 this.conversation,
                 this.gateway,
-                'CIVICA'
-              )
-              .pipe(
-                map(result => {
-                  (result as any).result.numeroTarjetaPublico = (cardNumberResult as any).result.numeroTarjetaPublico;
-                  return result;
-                })
+                'CIVICA',
+                'SL1'
               );
+            } else if (
+              !this.cypherAesService.bytesTohex(
+                cardPowerOnResp.data.slice(3, 5)
+              )
+            ) {
+              throw new Error('CARD_NOT_FOUND');
+            } else {
+              throw new Error('CARD_NOT_SUPPORTED');
+            }
           })
         );
     }
@@ -309,14 +366,15 @@ export class AfccRealoderService {
         errorPolicy: 'all'
       })
       .pipe(
-      map(rawData => {
-        if (rawData.errors) {
-          throw new Error(rawData.errors[0].message.method);
-        } else {
-          return JSON.parse(JSON.stringify(rawData.data.purchaseCivicaCardReload));
-         }
-      }
-        )
+        map(rawData => {
+          if (rawData.errors) {
+            throw new Error(rawData.errors[0].message.method);
+          } else {
+            return JSON.parse(
+              JSON.stringify(rawData.data.purchaseCivicaCardReload)
+            );
+          }
+        })
       );
   }
 
