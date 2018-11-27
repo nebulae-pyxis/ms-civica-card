@@ -12,10 +12,23 @@
               },
               "priority": 1000
             }
-          ],
+        ],
+        "subgroups": [
+            {
+                "groupId": "SYSTEM",
+                "id": "civica-recharge",
+                "icon": "credit_card",
+                "translate": {
+                    "en": "Cívica recharge",
+                    "es": "Recarga cívica"
+                },
+                "priority": 2000
+            }
+        ],
         "contents": [
             {
                 "groupId": "POS",
+                "subgroupId": "civica-recharge",
                 "id": "civica-card-reload-pos",
                 "icon": "credit_card",
                 "translate": {
@@ -27,8 +40,8 @@
                 "loadChildren": "./main/content/civica-card-reload-pos/civica-card-reload-pos.module#CivicaCardReloadPosModule",
                 "priority": 1000,
                 "roles" : ["POS"],
-                "default" : true
-            }            
+                "default" : false
+            }           
         ],
         "preBuildCommands": [],
         "environmentVars": {
@@ -36,5 +49,53 @@
         "indexHeadAmends" : [ 
          ],
          "assets" :"frontend/emi/assets/civica-card-reload-pos"
+    },
+    {
+        "name": "civica-card-reload-pos",
+        "src": "frontend/emi/civica-card-sales-history",
+        "groups": [
+            {
+              "id": "POS",
+              "icon": "store",
+              "translate": {
+                "en": "POS",
+                "es": "POS"
+              },
+              "priority": 1000
+            }
+        ],
+        "subgroups": [
+            {
+                "groupId": "SYSTEM",
+                "id": "civica-recharge",
+                "icon": "credit_card",
+                "translate": {
+                    "en": "Cívica recharge",
+                    "es": "Recarga cívica"
+                },
+                "priority": 2000
+            }
+        ],
+        "contents": [
+            {
+                "groupId": "POS",
+                "subgroupId": "civica-recharge",
+                "id": "civica-card-sales-history",
+                "icon": "history",
+                "translate": {
+                    "en": "Sales history",
+                    "es": "Historial de ventas"
+                },
+                "navURL": "/civica-card-sales-history",
+                "path": "civica-card-sales-history",
+                "loadChildren": "./main/content/civica-card-sales-history/civica-card-sales-history.module#CivicaCardSalesHistoryModule",
+                "priority": 1000,
+                "roles" : ["SYSADMIN", "platform-admin", "business-owner" , "POS"],
+                "default" : false
+            }           
+        ],
+        "preBuildCommands": [],
+        "environmentVars": {
+        }
     }
 ]
