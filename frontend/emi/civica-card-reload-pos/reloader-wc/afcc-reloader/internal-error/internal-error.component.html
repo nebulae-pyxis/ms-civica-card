@@ -3,16 +3,16 @@
       </b>
   </div>
   <div style="margin-top: 20px;" class="horizontal-container">
-    <svg-icon src="assets/civica-card-reload-pos/assets/check.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#F59100'}"></svg-icon>
+    <svg-icon src="assets/civica-card-reload-pos/check.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#F59100'}"></svg-icon>
     <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
       <mat-list>
         <mat-list-item  *ngIf="errorType === 'INVALID_SESSION'">
-          <svg-icon src="assets/civica-card-reload-pos/assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+          <svg-icon src="assets/civica-card-reload-pos/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
           Sesión de usuario inválida, por favor comuniquese con soporte para
         verificar y solucionar este error
         </mat-list-item>
         <mat-list-item *ngIf="errorType === 'DEFAULT'">
-            <svg-icon src="assets/civica-card-reload-pos/assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+            <svg-icon src="assets/civica-card-reload-pos/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
             No fue posible conectarse con el API
           </mat-list-item>
       </mat-list>

@@ -2,7 +2,7 @@
   <mat-card-header>
     <div *ngIf="!(showBackButton() | async)" mat-card-avatar>
       <svg-icon
-        src="assets/civica-card-reload-pos/assets/bluetooth.svg"
+        src="assets/civica-card-reload-pos/bluetooth.svg"
         [svgStyle]="{ width: 40, height: 40, fill: '#3f51b5' }"
       ></svg-icon>
     </div>
@@ -13,7 +13,7 @@
       color="primary"
       mat-mini-fab
     >
-      <svg-icon src="assets/civica-card-reload-pos/assets/back.svg" [svgStyle]="{ fill: '#fff' }"></svg-icon>
+      <svg-icon src="assets/civica-card-reload-pos/back.svg" [svgStyle]="{ fill: '#fff' }"></svg-icon>
     </button>
     <button
       *ngIf="(showDisconnectDevice() | async)"

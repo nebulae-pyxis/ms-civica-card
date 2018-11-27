@@ -14,6 +14,7 @@ import { OperabilityState } from '../utils/operability-sate';
 import { BackButtonDialogComponent } from './back-button-dialog/back-button-dialog.component';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { ConnectionStatus } from '../utils/connection-status';
+import { KeycloakService } from 'keycloak-angular';
 @Component({
   selector: 'afcc-reloader',
   templateUrl: './afcc-reloader.component.html',
@@ -124,9 +125,12 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   constructor(
     private afccRealoderService: AfccRealoderService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private keycloakService: KeycloakService
   ) {}
-  ngOnInit() {
+  async ngOnInit() {
+    this.afccRealoderService.gateway.initService();
+    this.afccRealoderService.gateway.token = await this.keycloakService.getToken();
     if (this.position) {
       const arrPosition = this.position.split(',');
       this.afccRealoderService.conversation.position = {

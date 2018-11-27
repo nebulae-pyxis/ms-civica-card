@@ -14,7 +14,6 @@ import { getRndAAuthCard } from '../../api/gql/afcc-reloader.js';
 import { BluetoothService } from '@nebulae/angular-ble';
 import { ReaderAcr1255 } from '../readers/reader-acr1255';
 import { CypherAes } from '../cypher-aes';
-import { GatewayService } from '../../../../../../api/gateway.service';
 import { DeviceUiidReq } from '../communication_profile/messages/request/device-uiid-req';
 import { AuthCardFirstStep } from '../communication_profile/card-messages/request/auth-card-first-step';
 import { DeviceUiidResp } from '../communication_profile/messages/response/device-uiid-resp';
@@ -38,6 +37,7 @@ import { ApduCommandReq } from '../communication_profile/messages/request/apdu-c
 import { ApduCommandResp } from '../communication_profile/messages/response/apdu-command-resp';
 import { ApduReadWriteCardData } from '../communication_profile/card-messages/request/apdu-read-write-card-data';
 import { ApduReadWriteCardDataResp } from '../communication_profile/card-messages/response/apdu-read-write-card-data-resp';
+import { GatewayService } from '../../api/gql/gateway.service';
 
 export class MyfarePlusSl3 {
   /**
@@ -301,7 +301,7 @@ export class MyfarePlusSl3 {
     conversation,
     dataType
   ): Observable<number> {
-    return gateway.apollo
+    return gateway.apollo.use('sales-gateway')
       .mutate<any>({
         mutation: generateCivicaCardReloadSecondAuthToken,
         variables: {
@@ -462,7 +462,7 @@ export class MyfarePlusSl3 {
       }),
       toArray(),
       mergeMap(apduCommands => {
-        return gateway.apollo
+        return gateway.apollo.use('sales-gateway')
           .mutate<any>({
             mutation: processCivicaCardReloadReadApduCommandRespones,
             variables: {
@@ -514,7 +514,7 @@ export class MyfarePlusSl3 {
       conversation.position.longitude
     ];
     conversation.cardUid = uid;
-    return gateway.apollo
+    return gateway.apollo.use('sales-gateway')
       .mutate<any>({
         mutation: startCivicaCardReloadConversation,
         variables: {
@@ -567,7 +567,7 @@ export class MyfarePlusSl3 {
     conversation,
     dataType
   ): Observable<number> {
-    return gateway.apollo
+    return gateway.apollo.use('sales-gateway')
       .mutate<any>({
         mutation: generateCivicaCardReloadReadApduCommands,
         variables: {
@@ -656,7 +656,7 @@ export class MyfarePlusSl3 {
       }),
       toArray(),
       mergeMap(apduCommands => {
-        return gateway.apollo
+        return gateway.apollo.use('sales-gateway')
           .mutate<any>({
             mutation: processCivicaCardReloadWriteAndReadApduCommandResponses,
             variables: {
@@ -691,7 +691,7 @@ export class MyfarePlusSl3 {
     cardAuthConfirmationToken,
     conversation
   ): Observable<number> {
-    return gateway.apollo
+    return gateway.apollo.use('sales-gateway')
       .mutate<any>({
         mutation: generateCivicaCardReloadWriteAndReadApduCommands,
         variables: {

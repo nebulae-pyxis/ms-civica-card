@@ -24,6 +24,7 @@ import { AfccIdleComponent } from './reloader-wc/afcc-reloader/afcc-idle/afcc-id
 import { UnknownPositionComponent } from './reloader-wc/afcc-reloader/unknown-position/unknown-position.component';
 import { CurrencyMaskModule } from 'ng2-currency-mask';
 import { AngularBleModule } from '@nebulae/angular-ble';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 const routes: Routes = [
   {
@@ -40,6 +41,7 @@ const routes: Routes = [
     AngularBleModule.forRoot({
       enableTracing: false
     }),
+    AngularSvgIconModule,
     CurrencyMaskModule,
   ],
   declarations: [
@@ -63,6 +65,7 @@ const routes: Routes = [
   providers: [CivicaCardReloadPosService, DatePipe, AfccRealoderService],
   entryComponents: [
     ReloadConfirmationDialogComponent,
+    BackButtonDialogComponent
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })

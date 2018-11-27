@@ -17,7 +17,6 @@ import {
   mapTo,
   catchError
 } from 'rxjs/operators';
-import { GatewayService } from '../../../../api/gateway.service';
 import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 import {
   purchaseCivicaCardReload,
@@ -26,6 +25,7 @@ import {
 } from './api/gql/afcc-reloader.js';
 import { v4 as uuid } from 'uuid';
 import { CardPowerOnResp } from './utils/communication_profile/messages/response/card-power-on-resp';
+import { GatewayService } from './api/gql/gateway.service';
 
 @Injectable({
   providedIn: 'root'
@@ -158,7 +158,7 @@ export class AfccRealoderService {
       return Rx.of('connection succeful');
     }).pipe(
       mergeMap(() => {
-        return this.gateway.apollo
+        return this.gateway.apollo.use('sales-gateway')
           .query<any>({
             query: CivicaCardReloadConversation,
             variables: {
@@ -356,7 +356,7 @@ export class AfccRealoderService {
   // #endregion
 
   purchaseCivicaCardReload$(reloadValue) {
-    return this.gateway.apollo
+    return this.gateway.apollo.use('sales-gateway')
       .mutate<any>({
         mutation: purchaseCivicaCardReload,
         variables: {
@@ -379,7 +379,7 @@ export class AfccRealoderService {
   }
 
   changeOperationState$(uiState) {
-    return this.gateway.apollo
+    return this.gateway.apollo.use('sales-gateway')
       .mutate<any>({
         mutation: setCivicaCardReloadConversationUiState,
         variables: {
