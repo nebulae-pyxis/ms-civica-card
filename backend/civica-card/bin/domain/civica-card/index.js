@@ -1,7 +1,15 @@
-'use strict'
+"use strict";
 
-const civicaCardCQRS = require('./CivicaCardCQRS')();
+const civicaCardCQRS = require("./CivicaCardCQRS")();
+const civicaCardES = require("./CivicaCardES")();
 
 module.exports = {
-    civicaCardCQRS
-}
+  /**
+   * @returns {CivicaCardCQRS}
+   */
+  civicaCardCQRS,
+  /**
+   * @returns {CivicaCardES}
+   */
+  civicaCardES
+};

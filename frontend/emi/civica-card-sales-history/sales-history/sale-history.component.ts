@@ -89,25 +89,24 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   filterForm: FormGroup;
   // Table data
   dataSource = new MatTableDataSource();
+  
   // Columns to show in the table
   displayedColumns = [
     "timestamp",
-    "type",
-    "concept",
     "value",
-    "pocket",
-    "user"
+    "consolidatedBalance",
+    "posTerminal",
+    "posId",
+    "posUserId",
+    "posUsername"
   ];
 
-  transactionTypes: any = [];
-  transactionConcepts: any = [];
-  typesAndConceptsList: any = [];
 
   myBusiness: any = null;
   allBusiness: any = [];
   selectedBusinessData: any = null;
   selectedBusinessName: any = "";
-  selectedTransactionHistory: any = null;
+  selectedSaleHistory: any = null;
   isSystemAdmin: Boolean = false;
 
   businessQueryFiltered$: Observable<any[]>;
@@ -150,6 +149,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    console.log('sale history => onInit1');
     this.buildFilterForm();
     this.onLangChange();
     this.loadBusinessFilter();
@@ -169,10 +169,9 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       initDate: [startOfMonth],
       endDate: [endOfMonth],
       terminalId: [""],
+      terminalPosId: [""],
       terminalUserId: [""],
       terminalUsername: [""],
-      transactionType: [null],
-      transactionConcept: [null]
     });
     this.filterForm.disable({
       onlySelf: true,
@@ -191,7 +190,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   displayFn(business) {
-    return (business || {}).name;
+    return ((business || {}).generalInfo || {}).name;
   }
 
   loadDataInForm() {
@@ -201,8 +200,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     )
       .pipe(take(1))
       .subscribe(([filterAndPaginator, selectedBusiness]) => {
-        // console.log(`filterAndPaginator => ${JSON.stringify(filterAndPaginator)}`);
-        // console.log('selectedBusiness ==>>> ', selectedBusiness);
         if (filterAndPaginator) {
           if (filterAndPaginator.filter) {
             const filterData: any = filterAndPaginator.filter;
@@ -214,8 +211,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
               terminalId: terminal.id,
               terminalUserId: terminal.userId,
               terminalUsername: terminal.username,
-              transactionType: filterData.transactionTypeData,
-              transactionConcept: filterData.transactionConcept
+              terminalPosId: terminal.posId
             });
           }
 
@@ -340,7 +336,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
               terminal: {
                 id: formChanges.terminalId,
                 userId: formChanges.terminalUserId,
-                username: formChanges.terminalUsername
+                username: formChanges.terminalUsername,
+                posId: formChanges.terminalPosId
               }
             },
             pagination: {
@@ -372,7 +369,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     )
       .pipe(
         filter(([filterAndPagination, selectedBusiness]) => {
-          // console.log('refreshTable => ', ([filterAndPagination, selectedBusiness]));
+          console.log('refreshTable => ', ([filterAndPagination, selectedBusiness]));
           return filterAndPagination != null && selectedBusiness != null;
         }),
         map(([filterAndPagination, selectedBusiness]) => {
@@ -406,19 +403,13 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this.ngUnsubscribe)
       )
-      .subscribe(([transactionsHistory, transactionsHistoryAmount]) => {
+      .subscribe(([salesHistory, salesHistoryAmount]) => {
         this.outdatedData = false;
-        if(transactionsHistory.data.getWalletTransactionsHistory){
-          transactionsHistory.data.getWalletTransactionsHistory
-          .sort(function (transactionsHistory1, transactionsHistory2) {   
-            return transactionsHistory2.timestamp - transactionsHistory1.timestamp || (transactionsHistory2.pocket < transactionsHistory1.pocket ? -1: 1);
-          });
-        }
-
         
-        this.dataSource.data = transactionsHistory.data.getWalletTransactionsHistory;
-        this.tableSize =
-          transactionsHistoryAmount.data.getWalletTransactionsHistoryAmount;
+        console.log('salesHistory.data.civicaCardSalesHistory => ', salesHistory.data.civicaCardSalesHistory);
+
+        this.dataSource.data = salesHistory.data.civicaCardSalesHistory;
+        this.tableSize = salesHistoryAmount.data.civicaCardSalesHistoryAmount;
       });
   }
 
@@ -445,7 +436,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
    */
   checkIfUserIsAdmin$() {
     return Rx.Observable.of(this.keycloakService.getUserRoles(true)).pipe(
-      map(userRoles => userRoles.some(role => role === "SYSADMIN")),
+      map(userRoles => userRoles.some(role => role === "SYSADMIN" || role === "platform-admin")),
       tap(isAdmin => {
         this.isSystemAdmin = isAdmin;
       })
@@ -453,6 +444,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   loadBusinessFilter() {
+    console.log('loadBusinessFilter');
     this.businessQueryFiltered$ = this.checkIfUserIsAdmin$().pipe(
       mergeMap(isAdmin => {
         console.log("loadBusinessFilter1 => ", isAdmin);
@@ -462,15 +454,17 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
             debounceTime(500),
             distinctUntilChanged(),
             mergeMap((filterText: String) => {
-              return this.getBusinessFiltered(filterText, 10);
+              return this.getBusinessFiltered(filterText, 20);
             })
           );
         } else {
           return this.getBusiness$().pipe(
             tap(business => {
               // this.myBusiness = business;
+              console.log(' -------------- business ', business);
+              
               this.selectedBusinessData = business;
-              this.selectedBusinessName = this.selectedBusinessData.name;
+              this.selectedBusinessName = this.selectedBusinessData.generalInfo.name;
               this.onSelectBusinessEvent(this.selectedBusinessData);
             }),
             filter(business => business != null),
@@ -486,7 +480,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     return this.civicaCardSalesHistoryService.getBusinessByFilter(filterText, limit).pipe(
       mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
       filter(resp => !resp.errors),
-      mergeMap(result => Observable.from(result.data.getBusinessByFilter)),
+      mergeMap(result => Observable.from(result.data.getBusinessByFilterText)),
       toArray()
     );
   }
@@ -496,34 +490,16 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
    */
   getBusiness$() {
     return this.civicaCardSalesHistoryService
-      .getBusiness$()
-      .pipe(map(res => res.data.getWalletBusiness));
+      .getMyBusiness$()
+      .pipe(map(res => res.data.myBusiness));
   }
 
   /**
-   * Creates an observable of business
+   * Receives the selected sale history
+   * @param saleHistory selected sale history
    */
-  getAllBusiness$() {
-    return this.civicaCardSalesHistoryService.getBusinesses$().pipe(
-      mergeMap(res => {
-        return Rx.Observable.from(res.data.getWalletBusinesses);
-      }),
-      map((business: any) => {
-        return {
-          _id: business._id,
-          name: business.name
-        };
-      }),
-      toArray()
-    );
-  }
-
-  /**
-   * Receives the selected transaction history
-   * @param transactionHistory selected transaction history
-   */
-  selectTransactionHistoryRow(transactionHistory) {
-    this.selectedTransactionHistory = transactionHistory;
+  selectSaleHistoryRow(saleHistory) {
+    this.selectedSaleHistory = saleHistory;
   }
 
   /**

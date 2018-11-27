@@ -3,6 +3,7 @@ const Rx = require("rxjs");
 const eventSourcing = require("../../tools/EventSourcing")();
 const { map, switchMap, filter, mergeMap, concatMap } = require('rxjs/operators');
 const { businessES } = require('../../domain/business');
+const { civicaCardES } = require('../../domain/civica-card');
 /**
  * Singleton instance
  */
@@ -137,6 +138,10 @@ class EventStoreService {
         fn: businessES.handleWalletSpendingAllowedEvent$,
         obj: businessES
       },
+      CivicaCardReload: {
+        fn: civicaCardES.handleCivicaCardReload$,
+        obj: civicaCardES
+      },
     };
   }
 
@@ -162,7 +167,10 @@ class EventStoreService {
         aggregateType: "Wallet",
         eventType: "WalletSpendingAllowed"
       },
-
+      {
+        aggregateType: "CivicaCard",
+        eventType: "CivicaCardReload"
+      },
     ]
   }
 }

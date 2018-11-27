@@ -62,7 +62,7 @@ type CivicaCardReloadPurchaseReceipt {
   reloadValue: BigInt,
   cardInitialValue: BigInt,
   cardFinalValue: BigInt,
-  businesId: String,
+  businessId: String,
   posId: String,
   posUserName: String,
   posUserId: String,
@@ -92,6 +92,8 @@ input CivicaSalePaginationInput {
 input TerminalInput {
   "Terminal ID"
   id: String
+  "Terminal POS ID"
+  posId: String
   "Terminal User ID"
   userId: String
   "Terminal username"

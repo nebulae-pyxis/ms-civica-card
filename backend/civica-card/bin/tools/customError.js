@@ -1,6 +1,7 @@
 //Every single error code
 // please use the prefix assigned to this micorservice
 const INTERNAL_SERVER_ERROR_CODE = 1;
+const PERMISSION_DENIED = 2;
 
 
 const BUSINESS_NOT_FOUND = 18010;
@@ -66,6 +67,7 @@ class DefaultError extends Error {
 module.exports = {
   CustomError,
   DefaultError,
+  PERMISSION_DENIED,
   BUSINESS_NOT_FOUND,
   BUSINESS_NOT_ACTIVE,
   BUSINESS_WALLET_NOT_FOUND,

@@ -3,15 +3,16 @@
 const Rx = require("rxjs");
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const GraphqlResponseTools = require('../../tools/GraphqlResponseTools');
-const { CustomError, CONVERSATION_NOT_FOUND, BUSINESS_NOT_FOUND, BUSINESS_NOT_ACTIVE, BUSINESS_WALLET_NOT_FOUND, BUSINESS_WALLET_SPENDING_FORBIDDEN } = require('../../tools/customError');
+const RoleValidator = require("../../tools/RoleValidator");
+const { CustomError, PERMISSION_DENIED, CONVERSATION_NOT_FOUND, BUSINESS_NOT_FOUND, BUSINESS_NOT_ACTIVE, BUSINESS_WALLET_NOT_FOUND, BUSINESS_WALLET_SPENDING_FORBIDDEN } = require('../../tools/customError');
 const { SamClusterClient, Compiler, BytecodeMifareBindTools } = require('../../tools/mifare/');
 const CivicaCardReadWriteFlow = require('./CivicaCardReadWriteFlow');
 const { getSamAuthKeyAndDiversifiedKey } = require('./CivicaCardTools');
 const CivicaCardDataExtractor = require('./CivicaCardDataExtractor');
 const CivicaCardReload = require('./CivicaCardReload');
+const CivicaCardReloadDA = require("../../data/CivicaCardReloadDA");
 const CivicaCardReloadConversationDA = require("../../data/CivicaCardReloadConversationDA");
 const BusinessDA = require("../../data/BusinessDA");
-
 
 /**
  * Singleton instance
@@ -315,6 +316,97 @@ class CivicaCardCQRS {
 
     //#endregion
 
+    //#region QUERIES
+
+  /**  
+   * Gets the civica card sales history according to the filter and pagination data
+   *
+   * @param {*} args args
+   */
+  getCivicaCardSalesHistory$({ args }, authToken) {
+    return RoleValidator.checkPermissions$(
+      authToken.realm_access.roles,
+      "Civica-Card",
+      "getCivicaCardSalesHistory",
+      PERMISSION_DENIED,
+      ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+    ).pipe(
+      mergeMap(roles => {
+        const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+        //If an user does not have the role to get the civica card sales history from other business, we must return an error
+          if (!isAdmin && authToken.businessId != args.filterInput.businessId) {
+            return this.createCustomError$(
+                PERMISSION_DENIED,
+              'getCivicaCardSalesHistory'
+            );
+          }
+          return of(roles);
+      }),
+      mergeMap(roles => CivicaCardReloadDA.getCivicaCardReloadsHistory$(args.civicaSaleFilterInput, args.civicaSalePaginationInput)),
+      toArray(),
+      mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+      catchError(err => GraphqlResponseTools.handleError$(err))
+    );
+  }
+
+
+   /**
+   * Gets the amount of civica card reload of a business
+   *
+   * @param {*} args args
+   */
+  getCivicaCardSalesHistoryAmount$({ args }, authToken) {
+    return RoleValidator.checkPermissions$(
+      authToken.realm_access.roles,
+      "Civica-Card",
+      "getCivicaCardSalesHistoryAmount",
+      PERMISSION_DENIED,
+      ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+    ).pipe(
+      mergeMap(roles => {
+        const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+        //If an user does not have the role to get the transaction history from other business, we must return an error
+          if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
+            return this.createCustomError$(
+                PERMISSION_DENIED,
+              'getCivicaCardSalesHistoryAmount'
+            );
+          }
+          return of(roles);
+      }),
+      mergeMap(val => CivicaCardReloadDA.getCivicaCardReloadAmount$(args.civicaSaleFilterInput)),
+      toArray(),
+      mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+      catchError(err => GraphqlResponseTools.handleError$(err))
+    );
+  }
+
+  /**
+   * Gets the civica card reload history by ID
+   *
+   * @param {*} args args
+   */
+  getCivicaCardSaleHistoryById$({ args }, authToken) {
+    return RoleValidator.checkPermissions$(
+      authToken.realm_access.roles,
+      "Civica-Card",
+      "getCivicaCardSaleHistoryById",
+      PERMISSION_DENIED,
+      ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+    ).pipe(
+      mergeMap(roles => {
+        const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+        //If an user does not have the role to get the transaction history from other business, the query must be filtered with the businessId of the user
+        const businessId = !isAdmin? (authToken.businessId || ''): null;
+        return CivicaCardReloadDA.getCivicaCardReloadHistoryById$(businessId, args.id);
+      }),
+      mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+      catchError(err => GraphqlResponseTools.handleError$(err))
+    );
+  }
+
+    //#endregion
+    
 }
 
 

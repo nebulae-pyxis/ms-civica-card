@@ -60,12 +60,13 @@ export class SaleHistoryService {
    * @param paginationInput
    * @returns {Observable}
    */
-  getSalesHistory$(filterInput, paginationInput) {
+  getSalesHistory$(civicaSaleFilterInput, civicaSalePaginationInput) {
+    console.log('getSalesHistory => ', civicaSaleFilterInput);
     return this.gateway.apollo.query<any>({
       query: civicaCardSalesHistory,
       variables: {
-        filterInput: filterInput,
-        paginationInput: paginationInput
+        civicaSaleFilterInput: civicaSaleFilterInput,
+        civicaSalePaginationInput: civicaSalePaginationInput
       },
       fetchPolicy: "network-only",
       errorPolicy: "all"
@@ -78,11 +79,11 @@ export class SaleHistoryService {
    * @param filterInput
    * @returns {Observable}
    */
-  getSalesHistoryAmount$(filterInput) {
+  getSalesHistoryAmount$(civicaSaleFilterInput) {
     return this.gateway.apollo.query<any>({
       query: civicaCardSalesHistoryAmount,
       variables: {
-        filterInput: filterInput
+        civicaSaleFilterInput: civicaSaleFilterInput
       },
       fetchPolicy: "network-only",
       errorPolicy: "all"
