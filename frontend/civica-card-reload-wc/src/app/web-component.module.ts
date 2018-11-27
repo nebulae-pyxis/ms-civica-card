@@ -67,10 +67,11 @@ import { ReloadCardRefusedComponent } from './afcc-reloader/reload-card-refused/
 })
 export class WebComponentModule {
   constructor(private injector: Injector) {
-    const strategyFactory = new ElementZoneStrategyFactory(AfccReloaderComponent, this.injector);
-    const afccReloader = createCustomElement(AfccReloaderComponent, { injector: this.injector, strategyFactory });
-    customElements.define('afcc-reloader', afccReloader);
   }
 
-  ngDoBootstrap() {}
+  ngDoBootstrap() {
+    // const strategyFactory = new ElementZoneStrategyFactory(AfccReloaderComponent, this.injector);
+    const afccReloader = createCustomElement(AfccReloaderComponent, { injector: this.injector });
+    customElements.define('afcc-reloader', afccReloader);
+  }
  }

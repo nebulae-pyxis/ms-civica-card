@@ -1,0 +1,21 @@
+<div style="margin-top: 20px;">
+    <b style="font-size: 16px; color: #444">Lectora en reposo, presionar botón lateral para activar</b>
+</div>
+<div style="margin-top: 20px;" class="horizontal-container">
+  <svg-icon src="assets/civica-card-reload-pos/assets/bluetooth_connected.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#838583'}"></svg-icon>
+  <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
+      <b style="font-size: 16px; color: #444">Lectora conectada:</b>
+      <p style="font-size: 16px; ">{{deviceName}}</p>
+  </div>
+</div>
+<b style="font-size: 16px; color: #444">Tips</b>
+<mat-list>
+    <mat-list-item>
+      <svg-icon src="assets/civica-card-reload-pos/assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+      Verifique regularmente el estado de la bateria
+    </mat-list-item>
+    <mat-list-item>
+      <svg-icon src="assets/civica-card-reload-pos/assets/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+      Si el dispositivo va a estar sin uso en largos periodos de tiempo por favor apaguelo para optimizar la bateria
+    </mat-list-item>
+  </mat-list>

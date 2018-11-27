@@ -1,0 +1,33 @@
+<div style="margin-top: 20px;">
+  <b style="font-size: 16px; color: #444">Presente la tarjeta en el lector sin retirarla hasta finalizar la transaccion</b>
+</div>
+<div style="margin-top: 20px;" class="horizontal-container">
+  <svg-icon src="assets/civica-card-reload-pos/assets/card.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#838583'}"></svg-icon>
+  <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
+    <mat-form-field class="example-full-width">
+      <input matInput name="balance" [(ngModel)]="balance" currencyMask [options]="{ prefix: '$ ', thousands: '.', precision: '0' }" placeholder="Saldo" >
+    </mat-form-field>
+    <mat-form-field class="example-full-width">
+      <input matInput [(ngModel)]="state" placeholder="Estado">
+    </mat-form-field>
+    <mat-form-field *ngIf="operationState === 'CARD_READED'" class="example-full-width">
+      <input matInput placeholder="Valor recarga"  [(ngModel)]="value" currencyMask [options]="{ prefix: '$ ', thousands: '.', precision: '0' }">
+    </mat-form-field>
+    <div *ngIf="operationState === 'CARD_READED'" class="button-container">
+      <button style="margin-right: 10px" (click)="reloadCard()" mat-stroked-button color="primary">realizar recarga</button>
+      <button mat-stroked-button (click)="cancelReloadCard()" color="warn">Cancelar</button>
+    </div>
+  </div>
+</div>
+<div *ngIf="operationState === 'CARD_READED'" style="margin-top: 20px">
+  <div class="sale-button-container">
+    <button class="pos-button" (click)="reloadCardShortCut(2000)" mat-raised-button color="primary">2.000$</button>
+    <button class="pos-button" (click)="reloadCardShortCut(5000)" mat-raised-button color="primary">5.000$</button>
+    <button class="pos-button" (click)="reloadCardShortCut(10000)" mat-raised-button color="primary">10.000$</button>
+  </div>
+  <div class="sale-button-container">
+    <button class="pos-button" (click)="reloadCardShortCut(15000)" mat-raised-button color="primary">15.000$</button>
+    <button class="pos-button" (click)="reloadCardShortCut(20000)" mat-raised-button color="primary">20.000$</button>
+    <button class="pos-button" (click)="reloadCardShortCut(50000)" mat-raised-button color="primary">50.000$</button>
+  </div>
+</div>
