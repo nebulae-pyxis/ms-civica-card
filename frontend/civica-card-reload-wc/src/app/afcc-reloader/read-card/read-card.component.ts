@@ -34,54 +34,13 @@ export class ReadCardComponent implements OnInit, OnDestroy {
       position: this.afccReloadService.posPosition
     };
     this.afccReloadService.conversation = newConversation;
+    this.readCard();
     interval(2000)
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(
         () => {
           if (!this.afccReloadService.readingCard) {
-            this.afccReloadService
-              .readCard$()
-              .pipe(
-                catchError(error => {
-                  this.afccReloadService.readingCard = false;
-                if (error.toString().indexOf('CARD_NOT_SUPPORTED') !== -1) {
-                  this.afccReloadService.conversation.error = 'CARD_READED_NOT_SUPPORTED';
-                  this.afccReloadService.operabilityState$.next(
-                    OperabilityState.READING_CARD_ERROR
-                  );
-                } else if (error.toString().indexOf('INVALID_SESSION') !== -1) {
-                  this.afccReloadService.conversation.error = 'INVALID_SESSION';
-                  this.afccReloadService.operabilityState$.next(
-                    OperabilityState.INTERNAL_ERROR
-                  );
-                } else if (error.toString().indexOf('NO_BALANCE') !== -1) {
-                  this.afccReloadService.conversation.error = 'NO_BALANCE';
-                  this.afccReloadService.operabilityState$.next(
-                    OperabilityState.READING_CARD_ERROR
-                  );
-                }
-                  return of('Error reading the card: ', error);
-                })
-              )
-              .subscribe(data => {
-                if ((data as any).status === 'COMPLETED') {
-                  this.afccReloadService.readingCard = false;
-                  this.afccReloadService.readCardAttempts = 0;
-                  this.ngUnsubscribe.next();
-                  this.balance = data.result._saldoConsolidado;
-                  // TODO: Se debe cambiar por el estado real de la tarjeta
-                  this.state = 'OK';
-                  this.afccReloadService.currentCardReaded$.next(data.result);
-                  this.afccReloadService.operabilityState$.next(
-                    OperabilityState.CARD_READED
-                  );
-                } else if ((data as any).status === 'TIMEOUT') {
-                  this.afccReloadService.readingCard = false;
-                  this.afccReloadService.readCardAttempts = 0;
-                  this.ngUnsubscribe.next();
-                  this.readCardError();
-                }
-              });
+            this.readCard();
           }
         },
         error => {},
@@ -94,6 +53,78 @@ export class ReadCardComponent implements OnInit, OnDestroy {
       this.operationState = state;
     });
     this.afccReloadService.cardRead$.next('Here card readed info');
+  }
+
+  readCard() {
+    this.afccReloadService
+      .readCard$()
+      .pipe(
+        catchError(error => {
+          this.afccReloadService.readingCard = false;
+          if (error.toString().indexOf('CARD_NOT_SUPPORTED') !== -1) {
+            this.afccReloadService.conversation.error =
+              'CARD_READED_NOT_SUPPORTED';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.READING_CARD_ERROR
+            );
+          } else if (error.toString().indexOf('INVALID_SESSION') !== -1) {
+            this.afccReloadService.conversation.error = 'INVALID_SESSION';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.INTERNAL_ERROR
+            );
+          } else if (error.toString().indexOf('BUSINESS_NOT_FOUND') !== -1) {
+            this.afccReloadService.conversation.error = 'BUSINESS_NOT_FOUND';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.READING_CARD_ERROR
+            );
+          } else if (error.toString().indexOf('CIVICA_CARD_CORRUPTED_DATA') !== -1) {
+            this.afccReloadService.conversation.error = 'CIVICA_CARD_CORRUPTED_DATA';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.READING_CARD_ERROR
+            );
+          } else if (error.toString().indexOf('CIVICA_CARD_CORRUPTED_DATA') !== -1) {
+            this.afccReloadService.conversation.error = 'CIVICA_CARD_CORRUPTED_DATA';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.READING_CARD_ERROR
+            );
+          } else if (error.toString().indexOf('CIVICA_CARD_WRITE_FAILED') !== -1) {
+            this.afccReloadService.conversation.error = 'CIVICA_CARD_WRITE_FAILED';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.READING_CARD_ERROR
+            );
+          } else if (error.toString().indexOf('CIVICA_CARD_AUTH_FAILED') !== -1) {
+            this.afccReloadService.conversation.error = 'CIVICA_CARD_AUTH_FAILED';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.READING_CARD_ERROR
+            );
+          } else if (error.toString().indexOf('BUSINESS_WALLET_SPENDING_FORBIDDEN') !== -1) {
+            this.afccReloadService.conversation.error = 'BUSINESS_NOT_FOUND';
+            this.afccReloadService.operabilityState$.next(
+              OperabilityState.READING_CARD_ERROR
+            );
+          }
+          return of('Error reading the card: ', error);
+        })
+      )
+      .subscribe(data => {
+        if ((data as any).status === 'COMPLETED') {
+          this.afccReloadService.readingCard = false;
+          this.afccReloadService.readCardAttempts = 0;
+          this.ngUnsubscribe.next();
+          this.balance = data.result._saldoConsolidado;
+          // TODO: Se debe cambiar por el estado real de la tarjeta
+          this.state = 'OK';
+          this.afccReloadService.currentCardReaded$.next(data.result);
+          this.afccReloadService.operabilityState$.next(
+            OperabilityState.CARD_READED
+          );
+        } else if ((data as any).status === 'TIMEOUT') {
+          this.afccReloadService.readingCard = false;
+          this.afccReloadService.readCardAttempts = 0;
+          this.ngUnsubscribe.next();
+          this.readCardError();
+        }
+      });
   }
 
   ngOnDestroy() {

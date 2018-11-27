@@ -162,67 +162,81 @@ export class MyfarePlusSl3 {
     cypherAesService,
     sessionKey,
     conversation,
-    dataType
+    dataType,
+    cardType
   ) {
-    return this.cardPowerOn$(
-      bluetoothService,
-      readerAcr1255,
-      cypherAesService,
-      sessionKey
-    ).pipe(
-      mergeMap(result => {
-        const cardPowerOnResp = new CardPowerOnResp(result);
-        let cardType;
-        if (
-          cypherAesService.bytesTohex(cardPowerOnResp.data.slice(3, 5)) ===
-          '01c1'
-        ) {
-          cardType = 'SL3';
-        } else if (!cypherAesService.bytesTohex(cardPowerOnResp.data.slice(3, 5))) {
-          throw new Error('CARD_NOT_FOUND');
-        } else {
-          throw new Error('CARD_NOT_SUPPORTED');
-        }
-        conversation.cardType = cardType;
-        return this.cardAuthenticationFirstStep$(
-          bluetoothService,
-          readerAcr1255,
-          cypherAesService,
-          sessionKey,
-          dataType === 'CIVICA' ? '0440' : '0240',
-          conversation,
-          gateway
-        );
-      }),
-      mergeMap(authToken => {
-        return this.getReadCardSecondAuthToken(
-          gateway,
-          authToken,
-          conversation,
-          dataType === 'CIVICA' ? 'DEBIT' : 'PUBLIC'
-        );
-      }),
-      mergeMap(serverResp => {
-        return this.cardAuthenticationSecondStep$(
-          bluetoothService,
-          readerAcr1255,
-          cypherAesService,
-          sessionKey,
-          serverResp
-        );
-      }),
-      mergeMap(authCardConfirmation => {
-        const authCardSecondStep = new AuthCardSecondStepResp(
-          authCardConfirmation
-        );
-        return this.getReadCardApduCommands(
-          gateway,
-          cypherAesService.bytesTohex(authCardSecondStep.data.slice(1)),
-          conversation,
-          dataType
-        );
-      })
-    );
+    if (cardType === 'SL3') {
+      conversation.cardType = cardType;
+      return this.cardAuthenticationFirstStep$(
+        bluetoothService,
+        readerAcr1255,
+        cypherAesService,
+        sessionKey,
+        dataType === 'CIVICA' ? '0440' : '0240',
+        conversation,
+        gateway
+      ).pipe(
+        mergeMap(authToken => {
+          return this.getReadCardSecondAuthToken(
+            gateway,
+            authToken,
+            conversation,
+            dataType === 'CIVICA' ? 'DEBIT' : 'PUBLIC'
+          );
+        }),
+        mergeMap(serverResp => {
+          return this.cardAuthenticationSecondStep$(
+            bluetoothService,
+            readerAcr1255,
+            cypherAesService,
+            sessionKey,
+            serverResp
+          );
+        }),
+        mergeMap(authCardConfirmation => {
+          const authCardSecondStep = new AuthCardSecondStepResp(
+            authCardConfirmation
+          );
+          return this.getReadCardApduCommands(
+            gateway,
+            cypherAesService.bytesTohex(authCardSecondStep.data.slice(1)),
+            conversation,
+            dataType
+          );
+        })
+      );
+    } else if (cardType === 'SL1') {
+      conversation.cardType = cardType;
+      return this.getUid$(
+        bluetoothService,
+        readerAcr1255,
+        cypherAesService,
+        sessionKey
+      ).pipe(
+        map(resultUid => {
+          const resp = new DeviceUiidResp(resultUid);
+          // get the last 4 bytes of the uid and remove the las 2 bytes
+          // of the data(this bytes is onle to verify if is a correct answer)
+          const uid = cypherAesService.bytesTohex(resp.data.slice(-6, -2));
+          return uid;
+        }),
+        mergeMap(uid => {
+          return this.startReloadConversation(gateway, conversation, uid);
+        }),
+        mergeMap(conversationResult => {
+          conversation = conversationResult;
+          return this.getReadCardApduCommands(
+            gateway,
+            '',
+            conversation,
+            dataType
+          );
+        }),
+        tap(apdus => console.log('APDU!!!!!: ', apdus))
+      );
+    } else {
+      throw new Error('CARD_NOT_SUPPORTED');
+    }
   }
 
   /**
@@ -323,7 +337,8 @@ export class MyfarePlusSl3 {
     cypherAesService: CypherAes,
     conversation,
     gateway,
-    dataType
+    dataType,
+    cardType
   ) {
     return this.authWithCardAndGetReadApduCommands$(
       bluetoothService,
@@ -332,8 +347,12 @@ export class MyfarePlusSl3 {
       cypherAesService,
       sessionKey,
       conversation,
-      dataType
+      dataType,
+      cardType
     ).pipe(
+      tap(resp => {
+        console.log('Llegan apdu de lectura: ', resp);
+      }),
       mergeMap(apduCommands => {
         return this.sendApduCommandsCard(
           apduCommands,
@@ -416,8 +435,7 @@ export class MyfarePlusSl3 {
                     apduResp.data
                   );
                   return apduCommand;
-                }),
-                delay(100)
+                })
               );
           }),
           toArray()
@@ -454,12 +472,27 @@ export class MyfarePlusSl3 {
             errorPolicy: 'all'
           })
           .pipe(
-            map(rawData =>
-              JSON.parse(
+          map(rawData => {
+            if (rawData.errors) {
+              const error = rawData.errors[0];
+              switch (error.message.code) {
+                case 18020:
+                  throw new Error('CIVICA_CARD_CORRUPTED_DATA');
+                case 18021:
+                  throw new Error('CIVICA_CARD_READ_FAILED');
+                case 18023:
+                  throw new Error('CIVICA_CARD_DATA_EXTRACTION_FAILED');
+                case 18024:
+                  throw new Error('CIVICA_CARD_AUTH_FAILED');
+              }
+            } else {
+              return JSON.parse(
                 JSON.stringify(
                   rawData.data.processCivicaCardReloadReadApduCommandRespones
                 )
-              )
+              );
+            }
+          }
             )
           );
       })
@@ -499,13 +532,18 @@ export class MyfarePlusSl3 {
       })
       .pipe(
         map(rawData => {
-        if (rawData.errors) {
+          console.log('Inicio de conversacion: ', rawData);
+          if (rawData.errors) {
             const error = rawData.errors[0];
             switch (error.message.code) {
-              case 9:
-                // TODO: aqui el error por falta de saldo
-                throw new Error('NO_BALANCE');
-              // TODO: error por sesion caducada
+              case 18010:
+                throw new Error('BUSINESS_NOT_FOUND');
+              case 18011:
+                throw new Error('BUSINESS_NOT_ACTIVE');
+              case 18012:
+                throw new Error('BUSINESS_WALLET_NOT_FOUND');
+              case 18013:
+                throw new Error('BUSINESS_WALLET_SPENDING_FORBIDDEN');
               case 2001:
                 throw new Error('INVALID_SESSION');
             }
@@ -697,52 +735,49 @@ export class MyfarePlusSl3 {
     ).pipe(
       mergeMap(result => {
         const cardPowerOnResp = new CardPowerOnResp(result);
-        let cardType;
-        if (
-          cypherAesService.bytesTohex(cardPowerOnResp.data.slice(3, 5)) ===
-          '01c1'
-        ) {
-          cardType = 'SL3';
+        if (conversation.cardType === 'SL3') {
+          return this.cardAuthenticationFirstStep$(
+            bluetoothService,
+            readerAcr1255,
+            cypherAesService,
+            sessionKey,
+            '0540',
+            conversation,
+            gateway
+          ).pipe(
+            mergeMap(authToken => {
+              return this.getReadCardSecondAuthToken(
+                gateway,
+                authToken,
+                conversation,
+                'CREDIT'
+              );
+            }),
+            mergeMap(serverResp => {
+              return this.cardAuthenticationSecondStep$(
+                bluetoothService,
+                readerAcr1255,
+                cypherAesService,
+                sessionKey,
+                serverResp
+              );
+            }),
+            mergeMap(authCardConfirmation => {
+              const authCardSecondStep = new AuthCardSecondStepResp(
+                authCardConfirmation
+              );
+              return this.getWriteCardApduCommands(
+                gateway,
+                cypherAesService.bytesTohex(authCardSecondStep.data.slice(1)),
+                conversation
+              );
+            })
+          );
+        } else if (conversation.cardType === 'SL1') {
+          return this.getWriteCardApduCommands(gateway, '', conversation);
         } else {
           throw new Error('CARD_NOT_SUPPORTED');
         }
-        conversation.cardType = cardType;
-        return this.cardAuthenticationFirstStep$(
-          bluetoothService,
-          readerAcr1255,
-          cypherAesService,
-          sessionKey,
-          '0540',
-          conversation,
-          gateway
-        );
-      }),
-      mergeMap(authToken => {
-        return this.getReadCardSecondAuthToken(
-          gateway,
-          authToken,
-          conversation,
-          'CREDIT'
-        );
-      }),
-      mergeMap(serverResp => {
-        return this.cardAuthenticationSecondStep$(
-          bluetoothService,
-          readerAcr1255,
-          cypherAesService,
-          sessionKey,
-          serverResp
-        );
-      }),
-      mergeMap(authCardConfirmation => {
-        const authCardSecondStep = new AuthCardSecondStepResp(
-          authCardConfirmation
-        );
-        return this.getWriteCardApduCommands(
-          gateway,
-          cypherAesService.bytesTohex(authCardSecondStep.data.slice(1)),
-          conversation
-        );
       })
     );
   }
