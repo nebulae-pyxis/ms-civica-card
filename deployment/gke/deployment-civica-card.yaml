@@ -13,7 +13,7 @@ spec:
         app: civica-card
     spec:      
       containers:
-      - image: nebulaepyxis/civica-card.backend.civica-card:0.0.12
+      - image: nebulaepyxis/civica-card.backend.civica-card:1.0.0
         name: civica-card
         volumeMounts:
         - name: google-application-credentials
@@ -61,6 +61,21 @@ spec:
            secretKeyRef:
              name: civica-card-reload
              key: master_key_reader
+        - name: CARD_AUTH_SL1_MAD
+          valueFrom:
+           secretKeyRef:
+             name: civica-card-reload
+             key: CARD_AUTH_SL1_MAD
+        - name: CARD_AUTH_SL1_ADM
+          valueFrom:
+           secretKeyRef:
+             name: civica-card-reload
+             key: CARD_AUTH_SL1_ADM
+        - name: CARD_AUTH_SL1_PUBLIC
+          valueFrom:
+           secretKeyRef:
+             name: civica-card-reload
+             key: CARD_AUTH_SL1_PUBLIC
         # RESET LOCK INITIALIZE BACKED
         - name: LOCKVERSION
           value: "initial_lock"

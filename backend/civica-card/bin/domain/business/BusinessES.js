@@ -10,7 +10,7 @@ const BusinessDA = require('../../data/BusinessDA');
  */
 let instance;
 
-class WalletES {
+class BusinessES {
 
     constructor() {
     }
@@ -52,12 +52,13 @@ class WalletES {
 }
 
 
+
 /**
- * @returns {WalletES}
+ * @returns {BusinessES}
  */
 module.exports = () => {
     if (!instance) {
-        instance = new WalletES();
+        instance = new BusinessES();
         console.log(`${instance.constructor.name} Singleton created`);
     }
     return instance;
