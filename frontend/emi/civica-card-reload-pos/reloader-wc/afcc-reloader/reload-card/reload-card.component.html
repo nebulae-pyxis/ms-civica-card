@@ -1,0 +1,24 @@
+<div style="margin-top: 20px;">
+  <b style="font-size: 16px; color: #444">Presente la tarjeta en el lector sin retirarla hasta finalizar la transaccion</b>
+</div>
+<div style="margin-top: 20px;" class="horizontal-container">
+  <svg-icon src="assets/civica-card-reload-pos/card.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#838583'}"></svg-icon>
+  <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
+    <div style="margin-top: 20px;" class="horizontal-container">
+      <label><b>Saldo inicial:</b></label>
+      <label>{{receipt.cardInitialValue | currency:'USD':'$':'4.0-0'}}</label>
+    </div>
+    <div style="margin-top: 20px;" class="horizontal-container">
+      <label><b>Valor carga:</b></label>
+      <label>{{receipt.reloadValue | currency:'USD':'$':'4.0-0'}}</label>
+    </div>
+    <div style="margin-top: 20px;" class="horizontal-container">
+      <label><b>Saldo Final:</b></label>
+      <label>{{receipt.cardFinalValue | currency:'USD':'$':'4.0-0'}}</label>
+    </div>
+    <div style="margin-top: 20px;" class="horizontal-container">
+      <label><b>Estado:</b></label>
+      <label>Escribiendo</label>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+
+<div style="margin-top: 20px;" class="horizontal-container">
+  <svg-icon src="assets/civica-card-reload-pos/bluetooth_connected.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#3f51b5'}"></svg-icon>
+  <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
+      <b style="font-size: 16px; color: #444">Lectora conectada:</b>
+      <p style="font-size: 16px; ">{{deviceName}}</p>
+      <button (click)="readCard()" mat-stroked-button color="primary">realizar recarga</button>
+  </div>
+  <div class="vertical-container">
+      <svg-icon *ngIf="isBatteryLoaded" src="assets/civica-card-reload-pos/{{getBatteryIcon() | async}}.svg" [svgStyle]="{'width':40, 'height': 40,'fill': getBatteryColor() | async }"></svg-icon>
+      <p style="margin-top: -7px; margin-left: 10px">{{batteryLevel$ | async}}%</p>
+  </div>
+</div>
+<mat-divider></mat-divider>
+<div style="margin-top: 10px">
+    <b style="font-size: 16px; color: #444">Info de POS({{posId}})</b>
+    <mat-list>
+        <mat-list-item>
+          <svg-icon src="assets/civica-card-reload-pos/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+          <b style="font-size: 16px; color: #444">ID negocio: </b> {{businessId}}
+        </mat-list-item>
+        <mat-list-item>
+          <svg-icon src="assets/civica-card-reload-pos/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+          <b style="font-size: 16px; color: #444">Nombre Usuario: </b> {{posUserName}}
+        </mat-list-item>
+        <mat-list-item>
+          <svg-icon src="assets/civica-card-reload-pos/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
+          <b style="font-size: 16px; color: #444">Nombre POS:  </b> {{jwtName}}
+        </mat-list-item>
+      </mat-list>
+</div>

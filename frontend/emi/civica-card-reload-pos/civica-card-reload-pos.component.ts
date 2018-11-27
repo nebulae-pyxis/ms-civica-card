@@ -16,7 +16,6 @@ import * as Rx from 'rxjs/Rx';
 export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
 
   userDetails: KeycloakProfile = {};
-  @ViewChild('webcomponent') webComponent;
 
   constructor(private civicaCardReloadPosService: CivicaCardReloadPosService, private keycloakService: KeycloakService) {
 
@@ -24,7 +23,6 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.userDetails = await this.keycloakService.loadUserProfile();
-    this.webComponent.nativeElement.jwt = await this.keycloakService.getToken();
   }
 
   ngOnDestroy() {

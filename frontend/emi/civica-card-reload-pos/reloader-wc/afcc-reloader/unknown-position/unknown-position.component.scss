@@ -1,0 +1,11 @@
+@import '../afcc-reloader.component.scss';
+.vertical-container{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
+  .horizontal-container{
+    display: flex;
+    flex-direction: row;
+  }
