@@ -1,9 +1,9 @@
-<mat-card [ngStyle]="{ width: width, height: height }" class="example-card">
-  <mat-card-header>
+<mat-card style="min-height: 500px; height: auto; max-width: 500px;">
+  <mat-card-header >
     <div *ngIf="!(showBackButton() | async)" mat-card-avatar>
       <svg-icon
-        src="assets/civica-card-reload-pos/bluetooth.svg"
-        [svgStyle]="{ width: 40, height: 40, fill: '#3f51b5' }"
+        src="assets/civica-card-reload-pos/{{getHeaderIcon$() | async}}"
+        [svgStyle]="{ width: 40, height: 40, fill: getHeaderIconColor$() | async }"
       ></svg-icon>
     </div>
     <button

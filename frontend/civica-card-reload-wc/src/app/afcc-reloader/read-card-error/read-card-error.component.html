@@ -2,10 +2,6 @@
   <b style="font-size: 16px; color: #444">Fallo tratando de leer la tarjeta</b>
 </div>
 <div style="margin-top: 20px;" class="horizontal-container">
-  <svg-icon
-    src="assets/civica-card-reload-pos/assets/check.svg"
-    [svgStyle]="{ width: 150, height: 150, fill: '#F59100' }"
-  ></svg-icon>
   <div
     style=" margin:auto; margin-left: 0px; color: #444;"
     class="vertical-container"
@@ -13,7 +9,7 @@
     <mat-list>
       <mat-list-item *ngIf="operationState === 'READING_CARD_ERROR'">
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -22,7 +18,7 @@
       </mat-list-item>
       <mat-list-item *ngIf="operationState === 'CARD_READED_NOT_SUPPORTED'">
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -30,7 +26,7 @@
       </mat-list-item>
       <mat-list-item *ngIf="operationState === 'NO_BALANCE'">
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -38,7 +34,7 @@
       </mat-list-item>
       <mat-list-item *ngIf="operationState === 'BUSINESS_NOT_ACTIVE'">
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -47,7 +43,7 @@
       </mat-list-item>
       <mat-list-item *ngIf="operationState === 'BUSINESS_WALLET_NOT_FOUND'">
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -58,7 +54,7 @@
         *ngIf="operationState === 'BUSINESS_WALLET_SPENDING_FORBIDDEN'"
       >
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -68,19 +64,19 @@
         *ngIf="operationState === 'CIVICA_CARD_CORRUPTED_DATA'"
       >
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
         Información de la tarjeta corrupta
       </mat-list-item>
-      
+
 
       <mat-list-item
         *ngIf="operationState === 'CIVICA_CARD_READ_FAILED'"
       >
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -91,7 +87,7 @@
         *ngIf="operationState === 'CIVICA_CARD_AUTH_FAILED'"
       >
         <svg-icon
-          src="assets/civica-card-reload-pos/assets/arrow_right.svg"
+          src="assets/civica-card-reload-pos/arrow_right.svg"
           style="margin-right: 10px"
           [svgStyle]="{ fill: '#3f51b5' }"
         ></svg-icon>
@@ -100,7 +96,7 @@
     </mat-list>
   </div>
 </div>
-<div style="justify-content: flex-end" class="horizontal-container">
+<div style="justify-content: flex-end; margin-top: 50px" class="horizontal-container">
   <button
     style="margin-right: 20px"
     mat-stroked-button

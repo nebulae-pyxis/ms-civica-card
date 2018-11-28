@@ -114,6 +114,9 @@ export class MyfarePlusSl3 {
         return uid;
       }),
       mergeMap(uid => {
+        if (conversation.cardUid && conversation.cardUid !== uid) {
+          throw new Error('INVALID_CARD_TO_RELOAD');
+        }
         return this.startReloadConversation(gateway, conversation, uid);
       }),
       mergeMap(conversationResult => {
@@ -703,8 +706,12 @@ export class MyfarePlusSl3 {
       })
       .pipe(
         map(
-          rawData =>
-          (rawData as any).data.generateCivicaCardReloadWriteAndReadApduCommands
+        rawData => {
+          if ((rawData as any).errors) {
+            throw new Error('ERROR_REQUESTING_APDUS');
+          }
+          return (rawData as any).data.generateCivicaCardReloadWriteAndReadApduCommands;
+        }
         )
       );
   }
@@ -734,7 +741,10 @@ export class MyfarePlusSl3 {
       sessionKey
     ).pipe(
       mergeMap(result => {
-        const cardPowerOnResp = new CardPowerOnResp(result);
+      const cardPowerOnResp = new CardPowerOnResp(result);
+      if (cardPowerOnResp.data.byteLength < 1) {
+        throw new Error('CARD_NOT_FOUND');
+      }
         if (conversation.cardType === 'SL3') {
           return this.cardAuthenticationFirstStep$(
             bluetoothService,

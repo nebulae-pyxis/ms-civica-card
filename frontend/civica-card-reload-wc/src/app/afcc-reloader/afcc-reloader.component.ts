@@ -211,6 +211,61 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     this.connectionSub.unsubscribe();
   }
 
+  getHeaderIcon$() {
+    return this.operabilityState$.pipe(
+      map(state => {
+        switch (state) {
+          case 'CONNECTED':
+          case 'IDLE':
+            return 'bluetooth_connected.svg';
+          case 'DISCONNECTED':
+          case 'CONNECTING':
+            return 'bluetooth_disabled.svg';
+          case 'READING_CARD_ERROR':
+          case 'CARD_READED':
+          case 'INTERNAL_ERROR':
+            return 'check.svg';
+          case 'RELOADING_CARD_ERROR':
+          case 'RELOAD_CARD_ABORTED':
+          case 'RELOAD_CARD_REFUSED':
+            return 'warn.svg';
+          case 'UNKNOWN_POSITION':
+            return 'unknown_position.svg';
+          case 'READING_CARD':
+          case 'RELOADING_CARD':
+            return 'card.svg';
+          default:
+            return 'bluetooth_connected.svg';
+        }
+      })
+    );
+  }
+
+  getHeaderIconColor$() {
+    return this.operabilityState$.pipe(
+      map(state => {
+        switch (state) {
+          case 'CONNECTED':
+          case 'READING_CARD':
+          case 'RELOADING_CARD':
+            return '#3f51b5';
+          case 'DISCONNECTED':
+          case 'CONNECTING':
+          case 'RELOAD_CARD_ABORTED':
+          case 'RELOAD_CARD_REFUSED':
+          case 'RELOADING_CARD_ERROR':
+          case 'UNKNOWN_POSITION':
+            return '#F44336';
+          case 'READING_CARD_ERROR':
+          case 'INTERNAL_ERROR':
+            return '#F59100';
+          case 'IDLE':
+            return '#838583';
+        }
+      })
+    );
+  }
+
   initConversationValues() {
     this.afccRealoderService.posTerminal = this.pos_terminal;
     this.afccRealoderService.posUserName = this.pos_user_name;
@@ -271,16 +326,13 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
       map(state => {
         this.afccRealoderService.operation$.next(state);
         return (
-          state === OperabilityState.READING_CARD ||
           state === OperabilityState.CARD_READED ||
-          state === OperabilityState.READING_CARD_ERROR ||
-          state === OperabilityState.INTERNAL_ERROR ||
-          state === OperabilityState.RELOAD_CARD_SUCCESS ||
-          state === OperabilityState.RELOAD_CARD_ABORTED
+          state === OperabilityState.RELOAD_CARD_SUCCESS
         );
       })
     );
   }
+
 
   showDisconnectDevice() {
     return this.operabilityState$.pipe(
@@ -308,7 +360,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
       .afterClosed()
       .subscribe(result => {
         if (result) {
-          this.operabilityState$.next(OperabilityState.CONNECTED);
+          this.afccRealoderService.operabilityState$.next(OperabilityState.CONNECTED);
         }
       });
   }
