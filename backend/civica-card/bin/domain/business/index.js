@@ -1,6 +1,6 @@
 'use strict'
 
-const businessES = require('./businessES')();
+const businessES = require('./BusinessES')();
 
 module.exports = {
     businessES
