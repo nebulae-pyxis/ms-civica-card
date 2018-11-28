@@ -204,7 +204,9 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.connectionSub.unsubscribe();
+    if (this.connectionSub) {
+      this.connectionSub.unsubscribe();
+    }
   }
 
   getHeaderIcon$() {
