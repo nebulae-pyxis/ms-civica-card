@@ -4,8 +4,8 @@ const pubsub = new PubSub();
 const Rx = require("rxjs");
 const broker = require("../../broker/BrokerFactory")();
 const RoleValidator = require("../../tools/RoleValidator");
-const INTERNAL_SERVER_ERROR_CODE = 18001;
-const PERMISSION_DENIED_ERROR_CODE = 18002;
+const INTERNAL_SERVER_ERROR_CODE = 1;
+const PERMISSION_DENIED_ERROR_CODE = 2;
 
 function getResponseFromBackEnd$(response) {
   return Rx.Observable.of(response).map(resp => {
@@ -27,28 +27,29 @@ module.exports = {
     civicaCardSalesHistory(root, args, context) {
         return RoleValidator.checkPermissions$(
           context.authToken.realm_access.roles,
-          CONTEXT_NAME,
+          'ms-civica-card',
           "civicaCardSalesHistory",
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
           ["SYSADMIN", "platform-admin", "business-owner", "POS"]
         )
           .mergeMap(response => {
+            console.log('civicaCardSalesHistory => ',args);
             return broker.forwardAndGetReply$(
-              "Wallet",
+              "CivicaCard",
               "emigateway.graphql.query.civicaCardSalesHistory",
               { root, args, jwt: context.encodedToken },
               2000
             );
           })
-          .catch(err => handleError$(err, "civicaCardSalesHistory"))
+          //.catch(err => handleError$(err, "civicaCardSalesHistory"))
           .mergeMap(response => getResponseFromBackEnd$(response))
           .toPromise();
       },
       civicaCardSalesHistoryAmount(root, args, context) {
         return RoleValidator.checkPermissions$(
           context.authToken.realm_access.roles,
-          CONTEXT_NAME,
+          'ms-civica-card',
           "civicaCardSalesHistoryAmount",
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
@@ -56,13 +57,13 @@ module.exports = {
         )
           .mergeMap(response => {
             return broker.forwardAndGetReply$(
-              "Wallet",
+              "CivicaCard",
               "emigateway.graphql.query.civicaCardSalesHistoryAmount",
               { root, args, jwt: context.encodedToken },
               2000
             );
           })
-          .catch(err => handleError$(err, "civicaCardSalesHistoryAmount"))
+          //.catch(err => handleError$(err, "civicaCardSalesHistoryAmount"))
           .mergeMap(response => getResponseFromBackEnd$(response))
           .toPromise();
       },
@@ -70,7 +71,7 @@ module.exports = {
         console.log('civicaCardSaleHistory *** ', args);
         return RoleValidator.checkPermissions$(
           context.authToken.realm_access.roles,
-          CONTEXT_NAME,
+          'ms-civica-card',
           "civicaCardSaleHistory",
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
@@ -78,13 +79,13 @@ module.exports = {
         )
           .mergeMap(response => {
             return broker.forwardAndGetReply$(
-              "Wallet",
+              "CivicaCard",
               "emigateway.graphql.query.civicaCardSaleHistory",
               { root, args, jwt: context.encodedToken },
               2000
             );
           })
-          .catch(err => handleError$(err, "civicaCardSaleHistory"))
+          //.catch(err => handleError$(err, "civicaCardSaleHistory"))
           .mergeMap(response => getResponseFromBackEnd$(response))
           .toPromise();
       },

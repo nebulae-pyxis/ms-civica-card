@@ -129,7 +129,8 @@ class CivicaCardReload {
                 receipt,
                 initialCard: conversation.initialCard,
                 finalCard: conversation.finalCard,
-                location: conversation.pos.location
+                location: conversation.pos.location,
+                conversationId: conversation.id
             },
             user: conversation.user.name
         })).pipe(

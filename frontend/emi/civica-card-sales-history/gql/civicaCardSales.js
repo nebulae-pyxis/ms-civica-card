@@ -46,52 +46,26 @@ export const civicaCardDataFragment = gql`
 
 // QUERIES
 
-export const getBusinessByFilter = gql`
-  query getBusinessByFilter($filterText: String, $limit: Int) {
-    getBusinessByFilter(filterText: $filterText, limit: $limit) {
+export const getBusinessByFilterText = gql`
+  query getBusinessByFilterText($filterText: String, $limit: Int) {
+    getBusinessByFilterText(filterText: $filterText, limit: $limit) {
       _id
-      name
-    }
-  }
-`;
-
-export const getWalletBusiness = gql`
-  query getWalletBusiness {
-    getWalletBusiness {
-      _id
-      name
-    }
-  }
-`;
-
-export const getWalletBusinesses = gql`
-  query getWalletBusinesses {
-    getWalletBusinesses {
-      _id
-      name
-    }
-  }
-`;
-
-export const getWalletBusinessById = gql`
-  query getWalletBusinessById($id: ID!) {
-    getWalletBusinessById(id: $id) {
-      _id
-      name
-    }
-  }
-`;
-
-export const getWallet = gql`
-  query getWallet($businessId: String!) {
-    getWallet(businessId: $businessId) {
-      _id
-      pockets {
-        main
-        bonus
+      generalInfo{
+        name
       }
-      spendingState
-      businessId
+      state
+    }
+  }
+`;
+
+export const getMyBusiness = gql`
+  query myBusiness {
+    myBusiness {
+      _id
+      generalInfo{
+        name
+      }
+      state
     }
   }
 `;
@@ -102,6 +76,7 @@ export const civicaCardSalesHistory = gql`
       _id
       timestamp
       businessId
+      value
       receipt {
         id
         timestamp
