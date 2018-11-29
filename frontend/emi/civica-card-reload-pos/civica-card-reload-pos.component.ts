@@ -28,6 +28,7 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
   userDetails: KeycloakProfile = {};
   private ngUnsubscribe = new Subject();
   walletData;
+  outdatedData = true;
   constructor(
     private civicaCardReloadPosService: CivicaCardReloadPosService,
     private keycloakService: KeycloakService,
