@@ -98,7 +98,8 @@
       "npm install jwt-decode",
       "npm install aes-js",
       "npm install @types/web-bluetooth",
-      "npm install angular-svg-icon"
+      "npm install angular-svg-icon",
+      "npm install ngx-json-viewer"
     ],
     "environmentVars": {
       "prod": {

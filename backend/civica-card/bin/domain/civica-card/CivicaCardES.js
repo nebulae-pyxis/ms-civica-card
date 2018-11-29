@@ -27,6 +27,19 @@ class CivicaCardES {
             })
         );
     }
+
+    /**
+     * Persist final civica card updated
+     */
+    handleFinalCivicaCardUpdated$(finalCivicaCardUpdatedEvent){
+        console.log('handleFinalCivicaCardUpdated => ', finalCivicaCardUpdatedEvent);
+        return of(finalCivicaCardUpdatedEvent)
+        .pipe(
+            mergeMap(event => {
+                return CivicaCardReloadDA.saveCivicaCardReloadHistory$(event)
+            })
+        );
+    }
 }
 
 

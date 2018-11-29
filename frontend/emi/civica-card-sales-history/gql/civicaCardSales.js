@@ -58,6 +58,18 @@ export const getBusinessByFilterText = gql`
   }
 `;
 
+export const getBusinessById = gql`
+  query getBusiness($id: String!) {
+    getBusiness(id: $id) {
+      _id
+      generalInfo{
+        name
+      }
+      state
+    }
+  }
+`;
+
 export const getMyBusiness = gql`
   query myBusiness {
     myBusiness {
@@ -119,6 +131,7 @@ export const civicaCardSalesHistoryById = gql`
       _id
       timestamp
       businessId
+      value
       receipt {
         id
         timestamp
@@ -145,4 +158,10 @@ export const civicaCardSalesHistoryById = gql`
     }
   }
   ${civicaCardDataFragment}
+`;
+
+export const civicaCardReloadConversation = gql`
+  query civicaCardReloadConversation($id: ID!) {
+    civicaCardReloadConversation(id: $id)
+  }
 `;

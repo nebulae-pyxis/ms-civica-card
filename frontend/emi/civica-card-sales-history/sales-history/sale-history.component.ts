@@ -98,7 +98,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     "posTerminal",
     "posId",
     "posUserId",
-    "posUsername"
+    "posUsername",
+    "user"
   ];
 
 
@@ -172,6 +173,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       terminalPosId: [""],
       terminalUserId: [""],
       terminalUsername: [""],
+      user: [""]
     });
     this.filterForm.disable({
       onlySelf: true,
@@ -211,7 +213,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
               terminalId: terminal.id,
               terminalUserId: terminal.userId,
               terminalUsername: terminal.username,
-              terminalPosId: terminal.posId
+              terminalPosId: terminal.posId,
+              user: filterData.user
             });
           }
 
@@ -491,7 +494,11 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   getBusiness$() {
     return this.civicaCardSalesHistoryService
       .getMyBusiness$()
-      .pipe(map(res => res.data.myBusiness));
+      .pipe(
+        mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
+        filter(resp => !resp.errors),
+        map(res => res.data.myBusiness)
+      );
   }
 
   /**

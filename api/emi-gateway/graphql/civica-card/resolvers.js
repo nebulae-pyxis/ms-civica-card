@@ -89,6 +89,28 @@ module.exports = {
           .mergeMap(response => getResponseFromBackEnd$(response))
           .toPromise();
       },
+      civicaCardReloadConversation(root, args, context) {
+        console.log('civicaCardReloadConversation *** ', args);
+        return RoleValidator.checkPermissions$(
+          context.authToken.realm_access.roles,
+          'ms-civica-card',
+          "civicaCardReloadConversation",
+          PERMISSION_DENIED_ERROR_CODE,
+          "Permission denied",
+          ["SYSADMIN"]
+        )
+          .mergeMap(response => {
+            return broker.forwardAndGetReply$(
+              "CivicaCard",
+              "emigateway.graphql.query.civicaCardReloadConversation",
+              { root, args, jwt: context.encodedToken },
+              2000
+            );
+          })
+          //.catch(err => handleError$(err, "civicaCardSaleHistory"))
+          .mergeMap(response => getResponseFromBackEnd$(response))
+          .toPromise();
+      },
   },
 
   //// MUTATIONS ///////

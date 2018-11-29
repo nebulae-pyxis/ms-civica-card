@@ -325,7 +325,6 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSalesHistory$({ args }, authToken) {
-    console.log('getCivicaCardSalesHistory');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",
@@ -336,13 +335,23 @@ class CivicaCardCQRS {
       mergeMap(roles => {
         const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
         //If an user does not have the role to get the civica card sales history from other business, we must return an error
-          if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
+        if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
+            return this.createCustomError$(
+                PERMISSION_DENIED,
+                'getCivicaCardSalesHistory'
+            );
+        }
+
+        //Users with POS role can only search the sales that they have performed
+        const isPOS = roles['POS'];
+        if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
             return this.createCustomError$(
                 PERMISSION_DENIED,
               'getCivicaCardSalesHistory'
             );
-          }
-          return of(roles);
+        }
+
+        return of(roles);
       }),
       mergeMap(roles => CivicaCardReloadDA.getCivicaCardReloadsHistory$(args.civicaSaleFilterInput, args.civicaSalePaginationInput)),
       toArray(),
@@ -369,13 +378,23 @@ class CivicaCardCQRS {
       mergeMap(roles => {
         const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
         //If an user does not have the role to get the transaction history from other business, we must return an error
-          if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
+        if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
             return this.createCustomError$(
                 PERMISSION_DENIED,
-              'getCivicaCardSalesHistoryAmount'
+                'getCivicaCardSalesHistoryAmount'
             );
-          }
-          return of(roles);
+        }
+
+        //Users with POS role can only search the sales that they have performed
+        const isPOS = roles['POS'];
+        if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
+            return this.createCustomError$(
+                PERMISSION_DENIED,
+                'getCivicaCardSalesHistoryAmount'
+            );
+        }
+
+        return of(roles);
       }),
       mergeMap(val => CivicaCardReloadDA.getCivicaCardReloadAmount$(args.civicaSaleFilterInput)),
       toArray(),
@@ -402,12 +421,40 @@ class CivicaCardCQRS {
         const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
         //If an user does not have the role to get the transaction history from other business, the query must be filtered with the businessId of the user
         const businessId = !isAdmin? (authToken.businessId || ''): null;
-        return CivicaCardReloadDA.getCivicaCardReloadHistoryById$(businessId, args.id);
+
+        let user = null;
+        const isPOS = roles['POS'];
+        if(isPOS){
+            user = authToken.preferred_username;
+        }
+
+        return CivicaCardReloadDA.getCivicaCardReloadHistoryById$(businessId, args.id, user);
       }),
       mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
       catchError(err => GraphqlResponseTools.handleError$(err))
     );
   }
+
+      /**
+     * Finds a CivicaCardReloadConversation by its ID, format it to the graphql schema and returns it
+     */
+    getCivicaCardReloadConversationDetailed$({ root, args, jwt }, authToken) {
+        return RoleValidator.checkPermissions$(
+            authToken.realm_access.roles,
+            "Civica-Card",
+            "getCivicaCardReloadConversationDetailed",
+            PERMISSION_DENIED,
+            ["SYSADMIN"]
+        ).pipe(            
+            mergeMap(roles => CivicaCardReloadConversationDA.find$(args.id)),
+            map(conversation => JSON.stringify(conversation)),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(error => {
+                this.logError(error);
+                return GraphqlResponseTools.handleError$(error);
+            })
+        );
+    }
 
     //#endregion
     

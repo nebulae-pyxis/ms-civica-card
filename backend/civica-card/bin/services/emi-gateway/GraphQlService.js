@@ -158,6 +158,10 @@ class GraphQlService {
         aggregateType: "CivicaCard",
         messageType: "emigateway.graphql.query.civicaCardSaleHistory"
       },
+      {
+        aggregateType: "CivicaCard",
+        messageType: "emigateway.graphql.query.civicaCardReloadConversation"
+      },
     ];
   }
 
@@ -177,6 +181,10 @@ class GraphQlService {
       },
       "emigateway.graphql.query.civicaCardSaleHistory": {
         fn: civicaCardCQRS.getCivicaCardSaleHistoryById$,
+        obj: civicaCardCQRS
+      },
+      "emigateway.graphql.query.civicaCardReloadConversation": {
+        fn: civicaCardCQRS.getCivicaCardReloadConversationDetailed$,
         obj: civicaCardCQRS
       },
     };

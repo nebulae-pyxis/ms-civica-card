@@ -4,7 +4,7 @@ let mongoDB = undefined;
 const Rx = require('rxjs');
 const { CustomError } = require('../tools/customError');
 const { Observable, defer, of } = require('rxjs');
-const { map, tap, mapTo } = require('rxjs/operators');
+const { map, tap, mapTo, mergeMap } = require('rxjs/operators');
 const Crosscutting = require("../tools/Crosscutting");
 
 const COLLECTION_NAME = `CivicaCardReloadHistory_`;
@@ -40,12 +40,12 @@ class CivicaCardReloadDA {
     const civicaCardReload = {
       _id: Crosscutting.generateHistoricalUuid(new Date(civicaCardReloadEvent.timestamp)),
       timestamp: civicaCardReloadEvent.timestamp,
+      user: civicaCardReloadEvent.user,
       ...civicaCardReloadEvent.data
     };    
 
     const monthYear = civicaCardReload._id.substr(civicaCardReload._id.length - 4);
     const collection = mongoDB.db.collection(`${COLLECTION_NAME}${monthYear}`);    
-    console.log('****** persist **** ', civicaCardReload);
     return defer(() => collection.insertOne(civicaCardReload));
   }
 
@@ -54,21 +54,44 @@ class CivicaCardReloadDA {
    * @param {*} businessId ID of the business to filter
    * @param {*} civicaCardReloadHistoryId ID of the civica card reload history
    */
-  static getCivicaCardReloadHistoryById$(businessId, civicaCardReloadHistoryId) {
+  static getCivicaCardReloadHistoryById$(businessId, civicaCardReloadHistoryId, user) {
     const monthYear = civicaCardReloadHistoryId.substr(civicaCardReloadHistoryId.length - 4);
     const collection = mongoDB.db.collection(`${COLLECTION_NAME}${monthYear}`);
-    return of({businessId, transactionHistoryId})
+    return of({businessId, civicaCardReloadHistoryId})
     .pipe(
       map(filter => {
         let query = {
-          _id: transactionHistoryId
+          _id: civicaCardReloadHistoryId
         };
+
+        if(user){
+          query.user = user;
+        }
+
         if(filter.businessId){
           query.businessId = filter.businessId;
         }
         return query;
       }),
-      mergeMap(query => defer(() => collection.findOne(query)))
+      mergeMap(query => defer(() => collection.findOne(query))),
+      map(civicaCardReload => {
+        const data = {
+          ...civicaCardReload
+        };
+
+        if(civicaCardReload.initialCard){
+          data.initialCard = {
+            ...civicaCardReload.initialCard.civicaData
+          }
+        }
+
+        if(civicaCardReload.finalCard){
+          data.finalCard = {
+            ...civicaCardReload.finalCard.civicaData
+          }
+        }
+        return data;
+      })
     );
   }
 
@@ -148,7 +171,7 @@ class CivicaCardReloadDA {
         query['user'] = filter.user;
       }
 
-      console.log('Query => ', query);
+      //console.log('Query => ', query);
 
       const cursor = collection.find(query).skip(pagination.count * pagination.page).limit(pagination.count).sort({timestamp: pagination.sort});
       let obj = await this.extractNextFromMongoCursor(cursor);

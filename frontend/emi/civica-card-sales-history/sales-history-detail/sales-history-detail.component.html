@@ -1,0 +1,418 @@
+<div id="user" class="page-layout carded fullwidth" fusePerfectScrollbar>
+
+  <!-- TOP BACKGROUND -->
+  <div class="top-bg mat-accent-bg"></div>
+  <!-- / TOP BACKGROUND -->
+
+  <!-- CENTER -->
+  <div class="center">
+    <!-- HEADER BUSINESS -->
+    <div
+      class="header white-fg"
+      fxLayout="row"
+      fxLayoutAlign="space-between center"
+    >
+      <!-- APP TITLE -->
+      <div fxLayout="row" fxLayoutAlign="start center">
+        <button
+          class="mr-0 mr-sm-16"
+          mat-icon-button
+          [routerLink]="'/civica-card-sales-history'"
+        >
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+
+        <div fxLayout="column" fxLayoutAlign="start start" *fuseIfOnDom>
+          <label for="search" style="margin-bottom: 10px" class="mr-20">
+            <span class="mat-title">{{
+              "SALES_HISTORY.SALE_HISTORY_DETAIL" | translate
+            }}</span>
+          </label>
+          <div class="subtitle" *ngIf="selectedBusiness">
+            {{ selectedBusiness.name }}
+          </div>
+        </div>
+      </div>
+      <!-- / APP TITLE -->
+    </div>
+    <!-- / HEADER BUSINESS -->
+
+    <!-- CONTENT CARD -->
+    <div class="content-card mat-white-bg">
+      <mat-tab-group>
+        <mat-tab label="{{'SALES_HISTORY.GENERAL' | translate}}">
+
+            <div class="tab-content p-24" fxLayout="column" *ngIf="selectedSaleHistory" fusePerfectScrollbar>
+
+                <div class="pb-16" fxLayout="row" fxLayoutAlign="start center">
+                    <mat-icon class="m-0 mr-16">attach_money</mat-icon>
+                    <div class="h2 secondary-text">{{'SALES_HISTORY.SALE' | translate}}(ID: {{selectedSaleHistory._id}})</div>
+                </div>
+
+                <div class="w-100-p" fxLayout="column" class="mat-white-bg p-24 mr-24">
+
+                  <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                      <span class="title">{{'SALES_HISTORY.TIMESTAMP' | translate}}</span>
+                      <span class="value">{{selectedSaleHistory.timestamp | date: "dd/MM/y HH:mm:ss"}}</span>
+                  </div>
+
+                  <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                      <span class="title">{{'SALES_HISTORY.RELOAD_VALUE' | translate}}:</span>
+                      <span class="value">{{selectedSaleHistory.value | currency}}</span>
+                  </div>
+
+                  <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                    <span class="title">{{'SALES_HISTORY.CONSOLIDATED_BALANCE' | translate}}:</span>
+                    <span class="value" [ngClass]="{'green-fg':selectedSaleHistory.value > 0, 'red-fg':selectedSaleHistory.value < 0}">{{selectedSaleHistory.finalCard.value | currency}}</span>
+                  </div>
+
+
+                </div>           
+
+
+                <mat-expansion-panel [expanded]="true">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title> 
+                      <div fxLayout="row" fxLayoutAlign="start center">
+                          <mat-icon class="mr-8">credit_card</mat-icon>                     
+                          <span class="h2 secondary-text">{{'SALES_HISTORY.CARD_BEFORE_AFTER' | translate}}:</span>
+                      </div>
+                        
+                    </mat-panel-title>
+
+                  </mat-expansion-panel-header>
+                
+
+                  <div fxLayout="column">
+
+                  <div fxLayout="row" fxLayoutAlign="start center" fxLayout.lt-md="column" fxLayoutAlign.lt-md="center start">                    
+
+                    <div fxLayout="column" fxFlex="48">
+                        <span class="mat-title">{{'SALES_HISTORY.CARD_BEFORE' | translate}}</span>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_HORA_RECARGA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.fechaHoraRecarga * 1000 | date: "dd/MM/y HH:mm:ss"}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUMERO_TARJETA_UNICO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.numeroTarjetaPublico}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY._SALDO_TARJETA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard._saldoTarjeta | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY._SALDO_CONSOLIDADO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard._saldoConsolidado | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY._SALDO_CREDITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard._saldoCredito | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.IDENTIFICACION_EMPRESA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.identificacionEmpresa}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.IDENTIFICACION_EMPLEADO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.identificacionEmpleado}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.TIPO_NUMERO_DOCUMENTO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.tipoNumeroDocumento}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUMERO_TARJETA_DEBITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.numeroTarjetaDebito}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_ULTIMO_DESBLOQUEO_TARJETA' | translate}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta == 0">N/A</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta != 0">{{selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_VALIDEZ' | translate}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaValidez == 0">N/A</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaValidez != 0">{{selectedSaleHistory.initialCard.fechaValidez}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_VALIDEZ_VIAJE_BENEFICIO' | translate}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaValidezVajeBeneficio == 0">N/A</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaValidezVajeBeneficio != 0">{{selectedSaleHistory.initialCard.fechaValidezVajeBeneficio}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.PERFIL_USUARIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.perfilUsuario}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.GRUPO_PERFIL' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.grupoPerfil}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUMERO_ACOMPANNANTES' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.numeroAcompannantes}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.VALOR_PAGO_SALDO_CREDITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.valorPagoSaldoCredito | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.LIMITE_USO_DIARIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.limiteUsoDiario}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.CODIGO_ULTIMA_RECARGA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.codigoUltimaRecarga}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.VERSION_MAPPING' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.VersionMapping}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.INIDICADOR_TARJETA_BLOQUEADA' | translate}}</span>
+                            <span class="value green-fg" *ngIf="selectedSaleHistory.initialCard.indicadorTarjetaBloqueada == 0">{{'SALES_HISTORY.INDICATOR_OK' | translate}}</span>
+                            <span class="value red-fg" *ngIf="selectedSaleHistory.initialCard.indicadorTarjetaBloqueada == 1">{{'SALES_HISTORY.INDICATOR_BLOCKED' | translate}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUM_SEC_TRANSACCION' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.numeroSequenciaTransaccion}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.PIN_STATUS' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.pinStatus}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.PIN_USUARIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.pinUsuario}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.CANTIDAD_INTENTOS_ERRONEOS' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.cantidadIntentosErroneos}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_CREDITO_BK' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.saldoCreditoBk | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_CREDITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.saldoCredito | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_BENEFICIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.initialCard.saldoBeneficio}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                          <span class="title">{{'SALES_HISTORY.SALDO_TARJETA' | translate}}</span>
+                          <span class="value">{{selectedSaleHistory.initialCard.saldoTarjeta | currency}}</span>
+                      </div>
+
+                      <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                          <span class="title">{{'SALES_HISTORY.SALDO_TARJETA_BK' | translate}}</span>
+                          <span class="value">{{selectedSaleHistory.initialCard.saldoTarjetaBk | currency}}</span>
+                      </div>
+
+                    </div>
+
+                    <div fxLayout="column" fxFlex="48">
+                        <span class="mat-title">{{'SALES_HISTORY.CARD_AFTER' | translate}}</span>
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_HORA_RECARGA' | translate}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaHoraRecarga != null">{{selectedSaleHistory.finalCard.fechaHoraRecarga * 1000 | date: "dd/MM/y HH:mm:ss"}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUMERO_TARJETA_UNICO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.numeroTarjetaPublico}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY._SALDO_TARJETA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard._saldoTarjeta | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY._SALDO_CONSOLIDADO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard._saldoConsolidado | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY._SALDO_CREDITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard._saldoCredito | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.IDENTIFICACION_EMPRESA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.identificacionEmpresa}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.IDENTIFICACION_EMPLEADO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.identificacionEmpleado}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.TIPO_NUMERO_DOCUMENTO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.tipoNumeroDocumento}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUMERO_TARJETA_DEBITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.numeroTarjetaDebito}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_ULTIMO_DESBLOQUEO_TARJETA' | translate}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta == 0">N/A</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta != 0">{{selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_VALIDEZ' | translate}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidez == 0">N/A</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidez != 0">{{selectedSaleHistory.finalCard.fechaValidez}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.FECHA_VALIDEZ_VIAJE_BENEFICIO' | translate}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidezVajeBeneficio == 0">N/A</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidezVajeBeneficio != 0">{{selectedSaleHistory.finalCard.fechaValidezVajeBeneficio}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.PERFIL_USUARIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.perfilUsuario}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.GRUPO_PERFIL' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.grupoPerfil}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUMERO_ACOMPANNANTES' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.numeroAcompannantes}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.VALOR_PAGO_SALDO_CREDITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.valorPagoSaldoCredito | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.LIMITE_USO_DIARIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.limiteUsoDiario}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.CODIGO_ULTIMA_RECARGA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.codigoUltimaRecarga}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.VERSION_MAPPING' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.VersionMapping}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.INIDICADOR_TARJETA_BLOQUEADA' | translate}}</span>
+                            <span class="value green-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == 0">{{'SALES_HISTORY.INDICATOR_OK' | translate}}</span>
+                            <span class="value red-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == 1">{{'SALES_HISTORY.INDICATOR_BLOCKED' | translate}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.NUM_SEC_TRANSACCION' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.numeroSequenciaTransaccion}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.PIN_STATUS' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.pinStatus}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.PIN_USUARIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.pinUsuario}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="title">{{'SALES_HISTORY.CANTIDAD_INTENTOS_ERRONEOS' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.cantidadIntentosErroneos}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_CREDITO_BK' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.saldoCreditoBk | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_CREDITO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.saldoCredito | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_BENEFICIO' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.saldoBeneficio}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_TARJETA' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.saldoTarjeta | currency}}</span>
+                        </div>
+
+                        <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
+                            <span class="title">{{'SALES_HISTORY.SALDO_TARJETA_BK' | translate}}</span>
+                            <span class="value">{{selectedSaleHistory.finalCard.saldoTarjetaBk | currency}}</span>
+                        </div>
+                      
+                    </div>
+
+                  </div>
+
+                </div>
+                
+                </mat-expansion-panel>
+
+
+            </div>
+
+        </mat-tab>
+
+        <mat-tab label="{{'SALES_HISTORY.CONVERSATION' | translate}}" *ngIf="isAdmin">
+            <div class="tab-content p-24" fxLayout="column" *ngIf="selectedCivicaCardReloadConversation" fusePerfectScrollbar >
+                <ngx-json-viewer [json]="selectedCivicaCardReloadConversation"></ngx-json-viewer>
+            </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+    <!-- / CONTENT CARD -->
+  </div>
+  <!-- / CENTER -->
+</div>
