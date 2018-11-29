@@ -1,6 +1,5 @@
 
 <div style="margin-top: 20px;" class="horizontal-container">
-  <svg-icon src="assets/civica-card-reload-pos/bluetooth_connected.svg" [svgStyle]="{'width':150, 'height': 150,'fill':'#3f51b5'}"></svg-icon>
   <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
       <b style="font-size: 16px; color: #444">Lectora conectada:</b>
       <p style="font-size: 16px; ">{{deviceName}}</p>
@@ -11,7 +10,6 @@
       <p style="margin-top: -7px; margin-left: 10px">{{batteryLevel$ | async}}%</p>
   </div>
 </div>
-<mat-divider></mat-divider>
 <div style="margin-top: 10px">
     <b style="font-size: 16px; color: #444">Info de POS({{posId}})</b>
     <mat-list>
