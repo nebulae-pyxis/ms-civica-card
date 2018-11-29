@@ -164,6 +164,16 @@
                 />
               </mat-form-field>
 
+              <mat-form-field>
+                  <input
+                    matInput
+                    placeholder="{{'SALES_HISTORY.USER' | translate}}"
+                    formControlName="user"
+                    id="user"
+                    maxlength="20"
+                  />
+                </mat-form-field>
+
               <button
                 fxFlex
                 mat-raised-button
@@ -341,6 +351,15 @@
               {{"SALES_HISTORY.POS_USERNAME" | translate}}</mat-header-cell>
             <mat-cell *cdkCellDef="let civicaCardReload">
               <p class="text-truncate">{{  civicaCardReload.receipt.posUserName }}</p>
+            </mat-cell>
+          </ng-container>
+
+          <!-- user Column -->
+          <ng-container cdkColumnDef="user">
+            <mat-header-cell *cdkHeaderCellDef>
+              {{"SALES_HISTORY.USER" | translate}}</mat-header-cell>
+            <mat-cell *cdkCellDef="let civicaCardReload">
+              <p class="text-truncate">{{  civicaCardReload.user }}</p>
             </mat-cell>
           </ng-container>
 

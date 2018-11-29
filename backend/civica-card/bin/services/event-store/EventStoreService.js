@@ -142,6 +142,10 @@ class EventStoreService {
         fn: civicaCardES.handleCivicaCardReload$,
         obj: civicaCardES
       },
+      // FinalCardUpdated: {
+      //   fn: civicaCardES.handleFinalCivicaCardUpdated$,
+      //   obj: civicaCardES
+      // },
     };
   }
 
@@ -171,6 +175,10 @@ class EventStoreService {
         aggregateType: "CivicaCard",
         eventType: "CivicaCardReload"
       },
+      // {
+      //   aggregateType: "CivicaCard",
+      //   eventType: "FinalCardUpdated"
+      // },
     ]
   }
 }

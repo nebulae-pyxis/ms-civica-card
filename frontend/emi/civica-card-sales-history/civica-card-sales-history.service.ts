@@ -5,7 +5,8 @@ import { GatewayService } from '../../../api/gateway.service';
 
 import {
   getBusinessByFilterText,
-  getMyBusiness
+  getMyBusiness,
+  getBusinessById
 } from "./gql/civicaCardSales";
 
 @Injectable()
@@ -37,6 +38,23 @@ export class CivicaCardSalesHistoryService {
     return this.gateway.apollo
       .query<any>({
         query: getMyBusiness,
+        fetchPolicy: 'network-only',
+        errorPolicy: 'all'
+      });
+  }
+
+    /**
+   * get the business by id
+   *
+   * @returns {Observable}
+   */
+  getBusinessById$(id) {
+    return this.gateway.apollo
+      .query<any>({
+        query: getBusinessById,
+        variables: {
+          id: id
+        },
         fetchPolicy: 'network-only',
         errorPolicy: 'all'
       });
