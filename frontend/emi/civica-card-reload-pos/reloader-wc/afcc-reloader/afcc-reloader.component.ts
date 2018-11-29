@@ -259,6 +259,8 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
             return '#F59100';
           case 'IDLE':
             return '#838583';
+          default:
+            return '#3f51b5';
         }
       })
     );
