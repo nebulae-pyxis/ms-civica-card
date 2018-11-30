@@ -62,7 +62,7 @@ class CivicaCardReloadDA {
     };
 
     const update = {
-      finalCard: civicaCardReloadFinalCardEvent.data.finalCard,      
+      $set: {finalCard: civicaCardReloadFinalCardEvent.data.finalCard}      
     };
 
     const monthYear = Crosscutting.getMonthYear(new Date(civicaCardReloadFinalCardEvent.timestamp));

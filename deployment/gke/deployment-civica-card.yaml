@@ -13,7 +13,7 @@ spec:
         app: civica-card
     spec:      
       containers:
-      - image: nebulaepyxis/civica-card.backend.civica-card:1.0.9
+      - image: nebulaepyxis/civica-card.backend.civica-card:1.0.10
         name: civica-card
         volumeMounts:
         - name: google-application-credentials
