@@ -397,7 +397,7 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSaleHistoryById$({ args }, authToken) {
-    //console.log('getCivicaCardSaleHistoryById');
+    // console.log('getCivicaCardSaleHistoryById');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",

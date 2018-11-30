@@ -141,6 +141,6 @@ type Query {
   civicaCardSalesHistoryAmount(civicaSaleFilterInput: CivicaSaleFilterInput!): Int!
   "Gets the civica card reload by its ID"
   civicaCardSaleHistory(id: ID!): CivicaCardReload  
-  "Gets the civica card reload conversation by id."
+  "Gets the civica card reload conversation by id"
   civicaCardReloadConversation(id: ID!): String
 }
