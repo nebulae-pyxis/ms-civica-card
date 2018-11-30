@@ -67,7 +67,7 @@ class CivicaCardReloadDA {
 
     const monthYear = Crosscutting.getMonthYear(new Date(civicaCardReloadFinalCardEvent.timestamp));
     const collection = mongoDB.db.collection(`${COLLECTION_NAME}${monthYear}`);    
-    return defer(() => collection.update(filter, update));
+    return defer(() => collection.updateOne(filter, update));
   }
 
   /**
