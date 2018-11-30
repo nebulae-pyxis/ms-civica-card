@@ -2,9 +2,15 @@
   <mat-card-header >
     <div *ngIf="!(showBackButton() | async)" mat-card-avatar>
       <svg-icon
+        *ngIf="(operabilityState$ | async).valueOf() !== 'UNKNOWN_POSITION'"
         src="assets/civica-card-reload-pos/{{getHeaderIcon$() | async}}"
         [svgStyle]="{ width: 40, height: 40, fill: getHeaderIconColor$() | async }"
       ></svg-icon>
+      <svg-icon
+      *ngIf="(operabilityState$ | async).valueOf() === 'UNKNOWN_POSITION'"
+      src="assets/civica-card-reload-pos/unknown_position.svg"
+      [svgStyle]="{ width: 40, height: 40, fill: '#F44336' }"
+    ></svg-icon>
     </div>
     <button
       *ngIf="(showBackButton() | async)"
