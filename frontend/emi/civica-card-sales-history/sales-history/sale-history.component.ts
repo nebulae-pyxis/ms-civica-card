@@ -409,10 +409,15 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       .subscribe(([salesHistory, salesHistoryAmount]) => {
         this.outdatedData = false;
         
-        console.log('salesHistory.data.civicaCardSalesHistory => ', salesHistory.data.civicaCardSalesHistory);
+        console.log('salesHistory.data.civicaCardSalesHistory => ', salesHistoryAmount);
 
-        this.dataSource.data = salesHistory.data.civicaCardSalesHistory;
-        this.tableSize = salesHistoryAmount.data.civicaCardSalesHistoryAmount;
+        if(salesHistory.data && salesHistory.data.civicaCardSalesHistory){
+          this.dataSource.data = salesHistory.data.civicaCardSalesHistory;
+        }
+
+        if(salesHistoryAmount.data && salesHistoryAmount.data.civicaCardSalesHistoryAmount){
+          this.tableSize = salesHistoryAmount.data.civicaCardSalesHistoryAmount;
+        }              
       });
   }
 

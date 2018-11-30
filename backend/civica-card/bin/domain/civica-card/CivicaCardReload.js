@@ -87,7 +87,7 @@ class CivicaCardReload {
      */
     static sendSpendingCommitEvent$(conversation, receipt) {
         return Rx.of(new Event({
-            eventType: "BusinessSpendingCommited",
+            eventType: "WalletSpendingCommited",
             eventTypeVersion: 1,
             aggregateType: "Wallet",
             aggregateId: conversation.businessId,
