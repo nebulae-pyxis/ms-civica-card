@@ -39,7 +39,7 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
     this.userDetails = await this.keycloakService.loadUserProfile();
     this.loadWalletData();
     this.startWalletUpdatedSubscription$().subscribe(result => {
-      console.log('subscription result: ', result);
+      this.walletData = result;
     });
   }
 
