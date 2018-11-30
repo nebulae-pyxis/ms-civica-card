@@ -4,6 +4,7 @@ import * as Rx from 'rxjs';
 import { GatewayService } from '../../../api/gateway.service';
 import {
   getWallet,
+  walletUpdated
 } from './gql/wallet.js';
 
 @Injectable()
@@ -29,6 +30,24 @@ export class CivicaCardReloadPosService {
       fetchPolicy: 'network-only',
       errorPolicy: 'all'
     });
+  }
+
+   /**
+   * Receives an event with the last wallet state when a wallet has been updated.
+   * @param businessId
+   */
+  getWalletUpdatedSubscription$(businessId): Observable<any> {
+    return this.gateway.apollo
+      .subscribe({
+        query: walletUpdated,
+        variables: {
+          businessId: businessId
+        },
+      })
+      .map(resp => {
+        console.log('resp.data.walletUpdated => ', resp);
+        return resp.data.walletUpdated;
+      });
   }
 
 

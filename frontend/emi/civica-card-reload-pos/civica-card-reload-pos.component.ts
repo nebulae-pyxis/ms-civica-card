@@ -28,7 +28,6 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
   userDetails: KeycloakProfile = {};
   private ngUnsubscribe = new Subject();
   walletData;
-  outdatedData = true;
   constructor(
     private civicaCardReloadPosService: CivicaCardReloadPosService,
     private keycloakService: KeycloakService,
@@ -39,11 +38,18 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.userDetails = await this.keycloakService.loadUserProfile();
     this.loadWalletData();
+    this.startWalletUpdatedSubscription$().subscribe(result => {
+      console.log('subscription result: ', result);
+    });
   }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  startWalletUpdatedSubscription$() {
+    return this.civicaCardReloadPosService.getWalletUpdatedSubscription$((this.userDetails as any).attributes.businessId[0]);
   }
 
   /**

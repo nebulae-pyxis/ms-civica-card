@@ -14,3 +14,18 @@ export const getWallet = gql`
     }
   }
 `;
+
+export const walletUpdated = gql`
+  subscription walletUpdated($businessId: String!) {
+    walletUpdated(businessId: $businessId) {
+      _id
+      pockets {
+        main
+        bonus
+      }
+      spendingState
+      businessId
+    }
+  }
+`;
+

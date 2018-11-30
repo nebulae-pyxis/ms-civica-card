@@ -28,13 +28,6 @@
                 [@animate]="{ value: '*', params: { delay: '100ms', x: '-25px' } }"
                 >bolsas
               </span>
-
-              <button mat-mini-fab class="mb-8"
-              [ngClass]="{'blink-button': outdatedData}"
-              matTooltip="refrescar información">
-                <mat-icon aria-label="Icon with a refresh icon">refresh</mat-icon>
-              </button>
-
             </div>
 
           </div>
@@ -51,6 +44,7 @@
 
 
           <div
+              *ngIf="walletData"
               class="grey-300-bg p-4"
               fxLayout="column"
               fxLayoutAlign="start center"
@@ -90,7 +84,7 @@
                     <div class="pt-0 mat-title m-0 font-weight-300 text-nowrap" fxFlex="65">
                       <span
                         [ngStyle]="{
-                          color: 0 >= 0 ? 'green' : 'red'
+                          color: walletData.pockets.bonus >= 0 ? 'green' : 'red'
                         }"
                         >{{ walletData.pockets.bonus | currency }}</span
                       >
@@ -106,7 +100,7 @@
                     <div class="pt-0 mat-title m-0 font-weight-300 text-nowrap" fxFlex="65">
                       <span
                         [ngStyle]="{
-                          color: 0 >= 0 ? 'green' : 'red'
+                          color: walletData.pockets.credit >= 0 ? 'green' : 'red'
                         }"
                         >{{ walletData.pockets.credit | currency }}</span
                       >
