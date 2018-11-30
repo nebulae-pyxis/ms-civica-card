@@ -57,7 +57,7 @@ class CivicaCardReloadDA {
    */
   static updateCivicaCardReloadFinalCard$(civicaCardReloadFinalCardEvent) {
     const filter = {
-      "initialCard.civicaData.numeroTarjetaPublico": civicaCardReloadFinalCardEvent.aggregateId,
+      "initialCard.civicaData.numeroTarjetaPublico": civicaCardReloadFinalCardEvent.aid,
       conversationId: civicaCardReloadFinalCardEvent.data.conversationId
     };
 

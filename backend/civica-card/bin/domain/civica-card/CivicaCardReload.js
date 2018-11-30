@@ -153,7 +153,7 @@ class CivicaCardReload {
             data: {
                 businessId: conversation.businessId,                
                 finalCard: conversation.finalCard,                
-                conversationId: conversation.id,
+                conversationId: conversation._id,
                 timestamp : conversation.timestamp
             },
             user: conversation.user.name
