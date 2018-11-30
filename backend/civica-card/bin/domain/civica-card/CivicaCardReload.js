@@ -130,7 +130,8 @@ class CivicaCardReload {
                 initialCard: conversation.initialCard,
                 finalCard: conversation.finalCard,
                 location: conversation.pos.location,
-                conversationId: conversation._id
+                conversationId: conversation._id,
+                timestamp : conversation.timestamp
             },
             user: conversation.user.name
         })).pipe(
@@ -152,7 +153,8 @@ class CivicaCardReload {
             data: {
                 businessId: conversation.businessId,                
                 finalCard: conversation.finalCard,                
-                conversationId: conversation.id
+                conversationId: conversation.id,
+                timestamp : conversation.timestamp
             },
             user: conversation.user.name
         })).pipe(
