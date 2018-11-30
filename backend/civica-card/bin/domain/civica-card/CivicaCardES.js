@@ -31,7 +31,7 @@ class CivicaCardES {
     /**
      * Persist final civica card updated
      */
-    handleFinalCivicaCardUpdated$(finalCivicaCardUpdatedEvent){
+    handleCivicaCardReloadFinalCardUpdated$(finalCivicaCardUpdatedEvent){
         console.log('handleFinalCivicaCardUpdated => ', finalCivicaCardUpdatedEvent);
         return of(finalCivicaCardUpdatedEvent)
         .pipe(

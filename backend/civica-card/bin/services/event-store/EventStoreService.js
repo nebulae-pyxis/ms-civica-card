@@ -142,10 +142,10 @@ class EventStoreService {
         fn: civicaCardES.handleCivicaCardReload$,
         obj: civicaCardES
       },
-      // FinalCardUpdated: {
-      //   fn: civicaCardES.handleFinalCivicaCardUpdated$,
-      //   obj: civicaCardES
-      // },
+      CivicaCardReloadFinalCardUpdated: {
+        fn: civicaCardES.handleCivicaCardReloadFinalCardUpdated$,
+        obj: civicaCardES
+      },
     };
   }
 

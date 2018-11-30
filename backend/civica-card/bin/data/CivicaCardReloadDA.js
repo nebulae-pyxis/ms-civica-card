@@ -38,8 +38,7 @@ class CivicaCardReloadDA {
   static saveCivicaCardReloadHistory$(civicaCardReloadEvent) {
     //console.log('saveCivicaCardReloadHistory => ', civicaCardReloadEvent);
     const civicaCardReload = {
-      _id: Crosscutting.generateHistoricalUuid(new Date(civicaCardReloadEvent.timestamp)),
-      timestamp: civicaCardReloadEvent.timestamp,
+      _id: Crosscutting.generateHistoricalUuid(new Date(civicaCardReloadEvent.data.timestamp)),
       user: civicaCardReloadEvent.user,
       ...civicaCardReloadEvent.data
     };    
@@ -47,6 +46,28 @@ class CivicaCardReloadDA {
     const monthYear = civicaCardReload._id.substr(civicaCardReload._id.length - 4);
     const collection = mongoDB.db.collection(`${COLLECTION_NAME}${monthYear}`);    
     return defer(() => collection.insertOne(civicaCardReload));
+  }
+
+    /**
+   * Saves the sale in a Mongo collection. The collection where the transaction 
+   * will be stored is determined according to the last four (4) characters of the uuid.
+   * since these correspond to the month and year where the info will be persisted.
+   * 
+   * @param {*} civicaCardReloadData sale to create
+   */
+  static updateCivicaCardReloadFinalCard$(civicaCardReloadFinalCardEvent) {
+    const filter = {
+      "initialCard.civicaData.numeroTarjetaPublico": civicaCardReloadFinalCardEvent.aggregateId,
+      conversationId: civicaCardReloadFinalCardEvent.data.conversationId
+    };
+
+    const update = {
+      finalCard: civicaCardReloadFinalCardEvent.data.finalCard,      
+    };
+
+    const monthYear = Crosscutting.getMonthYear(new Date(civicaCardReloadFinalCardEvent.timestamp));
+    const collection = mongoDB.db.collection(`${COLLECTION_NAME}${monthYear}`);    
+    return defer(() => collection.update(filter, update));
   }
 
   /**
