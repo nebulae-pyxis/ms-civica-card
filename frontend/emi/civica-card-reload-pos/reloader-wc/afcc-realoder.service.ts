@@ -21,7 +21,8 @@ import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 import {
   purchaseCivicaCardReload,
   setCivicaCardReloadConversationUiState,
-  CivicaCardReloadConversation
+  CivicaCardReloadConversation,
+  getMasterKeyReloader
 } from './api/gql/afcc-reloader.js';
 import { v4 as uuid } from 'uuid';
 import { CardPowerOnResp } from './utils/communication_profile/messages/response/card-power-on-resp';
@@ -158,22 +159,24 @@ export class AfccRealoderService {
       return Rx.of('connection succeful');
     }).pipe(
       mergeMap(() => {
+      console.log('se consulta conversacion: ', localStorage.conversationId);
         return this.gateway.apollo.use('sales-gateway')
           .query<any>({
             query: CivicaCardReloadConversation,
             variables: {
               id: localStorage.conversationId
             },
-            errorPolicy: 'all',
-            fetchPolicy: 'network-only'
+            errorPolicy: 'all'
           })
           .pipe(
-            catchError(error => {
+          catchError(error => {
+            console.log('error consultando conversacion: ', error);
               return Rx.of(undefined);
             })
           );
       }),
       map(rawData => {
+        console.log('rawData:', rawData);
         if (rawData) {
           return JSON.parse(
             JSON.stringify(rawData.data.CivicaCardReloadConversation)
@@ -191,6 +194,18 @@ export class AfccRealoderService {
         }
       })
     );
+  }
+
+  getReaderKey() { 
+    return this.gateway.apollo.use('sales-gateway')
+    .query<any>({
+      query: CivicaCardReloadConversation,
+      variables: {
+        id: '9490d7dc-460d-4ea6-8a0b-e0320ebdc467'
+      },
+      errorPolicy: 'all',
+      fetchPolicy: 'network-only'
+    });
   }
 
   /**
@@ -264,6 +279,9 @@ export class AfccRealoderService {
         .pipe(
           mergeMap(cardPowerOnResult => {
           const cardPowerOnResp = new CardPowerOnResp(cardPowerOnResult);
+          console.log('tipo de tarjeta: ',this.cypherAesService.bytesTohex(
+            cardPowerOnResp.data.slice(13, 15)
+          ));
             if (
               this.cypherAesService.bytesTohex(
                 cardPowerOnResp.data.slice(3, 5)
@@ -315,7 +333,7 @@ export class AfccRealoderService {
                 cardPowerOnResp.data.slice(13, 15)
               ) === '0001' || this.cypherAesService.bytesTohex(
                 cardPowerOnResp.data.slice(13, 15)
-              ) === 'FF88'
+              ) === 'ff88'
             ) {
               return this.myfarePlusSl3.readCurrentCard$(
                 this.bluetoothService,

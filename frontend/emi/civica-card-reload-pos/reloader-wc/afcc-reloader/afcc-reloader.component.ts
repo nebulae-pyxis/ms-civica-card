@@ -132,6 +132,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.afccRealoderService.gateway.initService();
     this.afccRealoderService.gateway.token = await this.keycloakService.getToken();
+    console.log('navigator.geolocation: ', navigator.geolocation);
     if (this.position) {
       const arrPosition = this.position.split(',');
       this.afccRealoderService.conversation.position = {
@@ -144,6 +145,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     } else if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         position => {
+          console.log('toma ubicación: ', position);
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
           this.afccRealoderService.posPosition = {

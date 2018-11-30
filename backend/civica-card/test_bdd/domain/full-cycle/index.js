@@ -80,7 +80,7 @@ describe('Full Cycle Test', function () {
     describe('Reader Master KEy', function () {
         it('query master key', function (done) {
             this.timeout(5000);
-            graphQL.executeQuery$('query{ CivicaCardReloadReaderKey{key} }').pipe(
+            graphQL.executeQuery$('query{ getMasterKeyReloader{key} }').pipe(
                 tap(({ CivicaCardReloadReaderKey }) => expect(CivicaCardReloadReaderKey.key).to.be.equal('65,67,82,49,50,53,53,85,45,74,49,32,65,117,116,104'))
             ).subscribe(...getRxDefaultSubscription('Civica Card Reload Conversation:Create & retrieve conversation', done));
         });

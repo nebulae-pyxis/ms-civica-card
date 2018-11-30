@@ -33,10 +33,10 @@ module.exports = {
                         .mergeMap(response => getResponseFromBackEnd$(response))
                 ).toPromise();
         },
-        CivicaCardReloadReaderKey(root, args, context) {
+        getMasterKeyReloader(root, args, context) {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'CivicaCardReloadReaderKey', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])                
                 .switchMapTo(
-                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.query.CivicaCardReloadReaderKey", { root, args, jwt: context.encodedToken }, 500)
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.query.getMasterKeyReloader", { root, args, jwt: context.encodedToken }, 500)
                         .mergeMap(response => getResponseFromBackEnd$(response))
                 ).toPromise();
         },

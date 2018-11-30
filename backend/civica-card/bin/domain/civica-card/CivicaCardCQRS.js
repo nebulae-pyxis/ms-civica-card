@@ -254,7 +254,7 @@ class CivicaCardCQRS {
      */
     getCivicaCardReloadReaderKey$() {
         return Rx.of(
-            { key: process.env.READER_MASTER_KEY.toString() }
+            { key: JSON.parse('[' + process.env.READER_MASTER_KEY + ']') }
         ).pipe(
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
         );

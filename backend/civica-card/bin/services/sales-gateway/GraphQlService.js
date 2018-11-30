@@ -153,7 +153,7 @@ class GraphQlService {
       },
       {
         aggregateType: "CivicaCard",
-        messageType: "salesgateway.graphql.query.CivicaCardReloadReaderKey"
+        messageType: "salesgateway.graphql.query.getMasterKeyReloader"
       },
       {
         aggregateType: "CivicaCard",
@@ -203,7 +203,7 @@ class GraphQlService {
         fn: civicaCardCQRS.getCivicaCardReloadConversation$,
         obj: civicaCardCQRS
       },
-      "salesgateway.graphql.query.CivicaCardReloadReaderKey": {
+      "salesgateway.graphql.query.getMasterKeyReloader": {
         fn: civicaCardCQRS.getCivicaCardReloadReaderKey$,
         obj: civicaCardCQRS
       },

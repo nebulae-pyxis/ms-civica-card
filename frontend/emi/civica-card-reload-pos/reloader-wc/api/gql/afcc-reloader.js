@@ -178,6 +178,16 @@ export const CivicaCardReloadConversation = gql`
   }
 `;
 
+export const getMasterKeyReloader = gql`
+  query {
+    getMasterKeyReloader {
+      key
+    }
+  }
+`;
+
+
+
 export const setCivicaCardReloadConversationUiState = gql`
   mutation setCivicaCardReloadConversationUiState(
     $conversationId: String!
