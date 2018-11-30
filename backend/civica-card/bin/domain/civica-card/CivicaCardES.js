@@ -36,7 +36,7 @@ class CivicaCardES {
         return of(finalCivicaCardUpdatedEvent)
         .pipe(
             mergeMap(event => {
-                return CivicaCardReloadDA.saveCivicaCardReloadHistory$(event)
+                return CivicaCardReloadDA.updateCivicaCardReloadFinalCard$(event)
             })
         );
     }

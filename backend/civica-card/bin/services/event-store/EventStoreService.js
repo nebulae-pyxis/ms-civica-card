@@ -175,10 +175,10 @@ class EventStoreService {
         aggregateType: "CivicaCard",
         eventType: "CivicaCardReload"
       },
-      // {
-      //   aggregateType: "CivicaCard",
-      //   eventType: "FinalCardUpdated"
-      // },
+      {
+        aggregateType: "CivicaCard",
+        eventType: "CivicaCardReloadFinalCardUpdated"
+      },
     ]
   }
 }
