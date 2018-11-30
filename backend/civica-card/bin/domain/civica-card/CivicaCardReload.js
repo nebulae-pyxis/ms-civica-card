@@ -130,7 +130,7 @@ class CivicaCardReload {
                 initialCard: conversation.initialCard,
                 finalCard: conversation.finalCard,
                 location: conversation.pos.location,
-                conversationId: conversation.id
+                conversationId: conversation._id
             },
             user: conversation.user.name
         })).pipe(

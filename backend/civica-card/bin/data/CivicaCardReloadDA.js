@@ -36,7 +36,7 @@ class CivicaCardReloadDA {
    * @param {*} civicaCardReloadData sale to create
    */
   static saveCivicaCardReloadHistory$(civicaCardReloadEvent) {
-    console.log('saveCivicaCardReloadHistory => ', civicaCardReloadEvent);
+    //console.log('saveCivicaCardReloadHistory => ', civicaCardReloadEvent);
     const civicaCardReload = {
       _id: Crosscutting.generateHistoricalUuid(new Date(civicaCardReloadEvent.timestamp)),
       timestamp: civicaCardReloadEvent.timestamp,

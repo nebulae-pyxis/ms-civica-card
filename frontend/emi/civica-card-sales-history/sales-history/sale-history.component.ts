@@ -408,7 +408,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       )
       .subscribe(([salesHistory, salesHistoryAmount]) => {
         this.outdatedData = false;      
-        console.log('salesHistory.data.civicaCardSalesHistory => ', salesHistoryAmount);
+        console.log('salesHistory.data.civicaCardSalesHistory =>', salesHistoryAmount);
 
         if(salesHistory.data && salesHistory.data.civicaCardSalesHistory){
           this.dataSource.data = salesHistory.data.civicaCardSalesHistory;

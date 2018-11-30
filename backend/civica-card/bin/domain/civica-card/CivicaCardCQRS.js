@@ -180,11 +180,13 @@ class CivicaCardCQRS {
      * @param {*} authToken 
      */
     purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
+        console.log('purchaseCivicaCardReload => ', args);
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             mergeMap(conversation => this.verifyBusiness$(conversation.businessId, conversation)),
             mergeMap(conversation => CivicaCardReload.purchaseCivicaCardReload$(conversation, args.value)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
+                console.log('Error => ', error);
                 this.logError(error);
                 return GraphqlResponseTools.handleError$(error);
             })
@@ -397,7 +399,7 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSaleHistoryById$({ args }, authToken) {
-    //console.log('getCivicaCardSaleHistoryById');
+    // console.log('getCivicaCardSaleHistoryById');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",

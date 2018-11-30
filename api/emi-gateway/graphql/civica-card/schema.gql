@@ -6,17 +6,9 @@ type CivicaCardReload {
   receipt: CivicaCardReloadPurchaseReceipt
   initialCard: CivicaCardData
   finalCard: CivicaCardData
-  location: Location
+  location: CivicaCardReloadLocation
   conversationId: String!
   user: String
-}
-
-type Pos {
-  id: String,
-  userName: String,
-  userId: String,
-  terminal: String,
-  location: String
 }
 
 type UIStateHistory {
@@ -43,7 +35,7 @@ type CivicaCardReloadPurchaseReceipt {
   posTerminal: String  
 }
 
-type Location {
+type CivicaCardReloadLocation {
   type: String
   coordinates: [Float]!
 }
@@ -141,6 +133,6 @@ type Query {
   civicaCardSalesHistoryAmount(civicaSaleFilterInput: CivicaSaleFilterInput!): Int!
   "Gets the civica card reload by its ID"
   civicaCardSaleHistory(id: ID!): CivicaCardReload  
-  "Gets the civica card reload conversation by id."
+  "Gets the civica card reload conversation by id"
   civicaCardReloadConversation(id: ID!): String
 }
