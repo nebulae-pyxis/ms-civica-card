@@ -407,8 +407,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
         takeUntil(this.ngUnsubscribe)
       )
       .subscribe(([salesHistory, salesHistoryAmount]) => {
-        this.outdatedData = false;
-        
+        this.outdatedData = false;      
         console.log('salesHistory.data.civicaCardSalesHistory => ', salesHistoryAmount);
 
         if(salesHistory.data && salesHistory.data.civicaCardSalesHistory){
