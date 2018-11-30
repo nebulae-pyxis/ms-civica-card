@@ -336,19 +336,13 @@ class CivicaCardCQRS {
         const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
         //If an user does not have the role to get the civica card sales history from other business, we must return an error
         if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
-            return this.createCustomError$(
-                PERMISSION_DENIED,
-                'getCivicaCardSalesHistory'
-            );
+            throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
         }
 
         //Users with POS role can only search the sales that they have performed
         const isPOS = roles['POS'];
         if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
-            return this.createCustomError$(
-                PERMISSION_DENIED,
-              'getCivicaCardSalesHistory'
-            );
+            throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
         }
 
         return of(roles);
@@ -367,7 +361,7 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSalesHistoryAmount$({ args }, authToken) {
-    console.log('getCivicaCardSalesHistoryAmount');
+    //console.log('getCivicaCardSalesHistoryAmount');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",
@@ -379,19 +373,13 @@ class CivicaCardCQRS {
         const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
         //If an user does not have the role to get the transaction history from other business, we must return an error
         if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
-            return this.createCustomError$(
-                PERMISSION_DENIED,
-                'getCivicaCardSalesHistoryAmount'
-            );
+            throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
         }
 
         //Users with POS role can only search the sales that they have performed
         const isPOS = roles['POS'];
         if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
-            return this.createCustomError$(
-                PERMISSION_DENIED,
-                'getCivicaCardSalesHistoryAmount'
-            );
+            throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
         }
 
         return of(roles);
@@ -409,7 +397,7 @@ class CivicaCardCQRS {
    * @param {*} args args
    */
   getCivicaCardSaleHistoryById$({ args }, authToken) {
-    console.log('getCivicaCardSaleHistoryById');
+    //console.log('getCivicaCardSaleHistoryById');
     return RoleValidator.checkPermissions$(
       authToken.realm_access.roles,
       "Civica-Card",
