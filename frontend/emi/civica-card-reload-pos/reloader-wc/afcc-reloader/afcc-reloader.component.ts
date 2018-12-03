@@ -130,6 +130,15 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     private keycloakService: KeycloakService
   ) {}
   async ngOnInit() {
+    if (!this.afccRealoderService.isBluetoothAvailable()) {
+      console.log('envia a nueva pagina');
+      this.afccRealoderService.operabilityState$.next(
+        OperabilityState.BLUETOOTH_NOT_AVAILABLE
+      );
+      this.operabilityState$.next(
+        OperabilityState.BLUETOOTH_NOT_AVAILABLE
+      );
+    } else {
     this.afccRealoderService.gateway.initService();
     this.afccRealoderService.gateway.token = await this.keycloakService.getToken();
     console.log('navigator.geolocation: ', navigator.geolocation);
@@ -203,9 +212,8 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
       }
       this.operabilityState$.next(state);
     });
-    this.afccRealoderService.getReaderKey().subscribe(key => {
-      console.log('llave de lectora: ', key)
-    });
+    this.afccRealoderService.getReaderKey().subscribe();
+  }
   }
 
   ngOnDestroy(): void {
@@ -222,6 +230,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
           case 'IDLE':
             return 'bluetooth_connected.svg';
           case 'DISCONNECTED':
+          case 'BLUETOOTH_NOT_AVAILABLE':
           case 'CONNECTING':
             return 'bluetooth_disabled.svg';
           case 'READING_CARD_ERROR':
@@ -244,6 +253,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     );
   }
 
+
   getHeaderIconColor$() {
     return this.operabilityState$.pipe(
       map(state => {
@@ -254,6 +264,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
             return '#3f51b5';
           case 'DISCONNECTED':
           case 'CONNECTING':
+          case 'BLUETOOTH_NOT_AVAILABLE':
           case 'RELOAD_CARD_ABORTED':
           case 'RELOAD_CARD_REFUSED':
           case 'RELOADING_CARD_ERROR':

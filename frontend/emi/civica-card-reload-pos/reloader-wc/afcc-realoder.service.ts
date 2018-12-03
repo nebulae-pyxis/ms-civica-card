@@ -94,6 +94,10 @@ export class AfccRealoderService {
     });
   }
 
+  isBluetoothAvailable() {
+    return this.bluetoothService.isBluetoothAvailable();
+  }
+
   // #region CONNECTION ACR1255
   stablishNewConnection$() {
     this.deviceConnectionStatus$.next(ConnectionStatus.CONNECTING);
@@ -174,14 +178,14 @@ export class AfccRealoderService {
     );
   }
 
-  getReaderKey() { 
+  getReaderKey() {
     return this.gateway.apollo.use('sales-gateway')
     .query<any>({
       query: getMasterKeyReloader,
       errorPolicy: 'all',
       fetchPolicy: 'network-only'
       }).pipe(
-      map(result => { 
+      map(result => {
         this.keyReader = result.data.getMasterKeyReloader.key;
         this.cypherAesService.config(this.keyReader);
         return this.keyReader;

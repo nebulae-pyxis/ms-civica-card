@@ -25,6 +25,7 @@ import { UnknownPositionComponent } from './reloader-wc/afcc-reloader/unknown-po
 import { CurrencyMaskModule } from 'ng2-currency-mask';
 import { AngularBleModule } from '@nebulae/angular-ble';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { BluetoothNotAvailableComponent } from './reloader-wc/afcc-reloader/bluetooth-not-available/bluetooth-not-available.component';
 
 const routes: Routes = [
   {
@@ -48,6 +49,7 @@ const routes: Routes = [
     CivicaCardReloadPosComponent,
     AfccReloaderComponent,
     BluetoothConnectionComponent,
+    BluetoothNotAvailableComponent,
     AfccInfoComponent,
     ReadCardComponent,
     ReadCardErrorComponent,

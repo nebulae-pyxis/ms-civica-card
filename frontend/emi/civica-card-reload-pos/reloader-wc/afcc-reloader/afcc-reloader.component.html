@@ -74,6 +74,9 @@
               'REQUESTING_RELOAD_PERMISSION'
           "
         ></app-read-card>
+        <bluetooth-not-available
+          *ngIf="(operabilityState$ | async).valueOf() === 'BLUETOOTH_NOT_AVAILABLE'"
+        ></bluetooth-not-available>
         <app-internal-error
           *ngIf="(operabilityState$ | async).valueOf() === 'INTERNAL_ERROR'"
         ></app-internal-error>
