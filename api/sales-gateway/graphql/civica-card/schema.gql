@@ -112,6 +112,7 @@ type Query{
   getMasterKeyReloader: ReaderKeyResponse  @requireAuth
 }
 
+
 type Mutation {
   # abortCardReload(conversationId: String): AbortCardReloadResp,
   startCivicaCardReloadConversation(
