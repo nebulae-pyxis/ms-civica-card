@@ -61,7 +61,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
       .pipe(
       catchError(error => {
         delete this.afccReloadService.conversation.cardUid;
-          this.afccReloadService.readingCard = false;
+        this.afccReloadService.readingCard = false;
+        console.log('Error leyendo tarjeta: ', error);
           if (error.toString().indexOf('CARD_NOT_SUPPORTED') !== -1) {
             this.afccReloadService.conversation.error =
               'CARD_READED_NOT_SUPPORTED';

@@ -81,26 +81,6 @@ export class AfccRealoderService {
     this.readerAcr1255 = new ReaderAcr1255();
     this.myfarePlusSl3 = new MyfarePlusSl3();
     // TODO: ESTA LLAVE SE DEBE CONSULTAR POR GRAPHQL Y SE DEBE QUITAR DEL CONSTRUCTOR
-    const key = [
-      65,
-      67,
-      82,
-      49,
-      50,
-      53,
-      53,
-      85,
-      45,
-      74,
-      49,
-      32,
-      65,
-      117,
-      116,
-      104
-    ];
-    this.keyReader = key;
-    this.cypherAesService.config(key);
 
     this.operabilityState$.subscribe(operabilityState => {
       if (
@@ -159,24 +139,22 @@ export class AfccRealoderService {
       return Rx.of('connection succeful');
     }).pipe(
       mergeMap(() => {
-      console.log('se consulta conversacion: ', localStorage.conversationId);
         return this.gateway.apollo.use('sales-gateway')
           .query<any>({
             query: CivicaCardReloadConversation,
             variables: {
               id: localStorage.conversationId
             },
-            errorPolicy: 'all'
+            errorPolicy: 'all',
+            fetchPolicy: 'network-only'
           })
           .pipe(
-          catchError(error => {
-            console.log('error consultando conversacion: ', error);
+            catchError(error => {
               return Rx.of(undefined);
             })
           );
       }),
       map(rawData => {
-        console.log('rawData:', rawData);
         if (rawData) {
           return JSON.parse(
             JSON.stringify(rawData.data.CivicaCardReloadConversation)
@@ -199,13 +177,16 @@ export class AfccRealoderService {
   getReaderKey() { 
     return this.gateway.apollo.use('sales-gateway')
     .query<any>({
-      query: CivicaCardReloadConversation,
-      variables: {
-        id: '9490d7dc-460d-4ea6-8a0b-e0320ebdc467'
-      },
+      query: getMasterKeyReloader,
       errorPolicy: 'all',
       fetchPolicy: 'network-only'
-    });
+      }).pipe(
+      map(result => { 
+        this.keyReader = result.data.getMasterKeyReloader.key;
+        this.cypherAesService.config(this.keyReader);
+        return this.keyReader;
+      })
+    );
   }
 
   /**
@@ -279,9 +260,6 @@ export class AfccRealoderService {
         .pipe(
           mergeMap(cardPowerOnResult => {
           const cardPowerOnResp = new CardPowerOnResp(cardPowerOnResult);
-          console.log('tipo de tarjeta: ',this.cypherAesService.bytesTohex(
-            cardPowerOnResp.data.slice(13, 15)
-          ));
             if (
               this.cypherAesService.bytesTohex(
                 cardPowerOnResp.data.slice(3, 5)
