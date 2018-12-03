@@ -139,11 +139,7 @@ export class SalesHistoryDetailComponent implements OnInit, OnDestroy {
           userId: this.selectedSaleHistory.terminal.userId || " ",
           username: this.selectedSaleHistory.terminal.username || " "
         };
-        this.selectedBusiness = business;
-
-        console.log('Conversation ====> ', conversation);
-        
-
+        this.selectedBusiness = business;      
         
         if(conversation){
           this.selectedCivicaCardReloadConversation = JSON.parse(conversation);

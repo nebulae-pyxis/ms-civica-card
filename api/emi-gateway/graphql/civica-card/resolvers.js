@@ -34,7 +34,6 @@ module.exports = {
           ["SYSADMIN", "platform-admin", "business-owner", "POS"]
         )
           .mergeMap(response => {
-            console.log('civicaCardSalesHistory => ',args);
             return broker.forwardAndGetReply$(
               "CivicaCard",
               "emigateway.graphql.query.civicaCardSalesHistory",
@@ -68,7 +67,6 @@ module.exports = {
           .toPromise();
       },
       civicaCardSaleHistory(root, args, context) {
-        console.log('civicaCardSaleHistory *** ', args);
         return RoleValidator.checkPermissions$(
           context.authToken.realm_access.roles,
           'ms-civica-card',
@@ -90,7 +88,6 @@ module.exports = {
           .toPromise();
       },
       civicaCardReloadConversation(root, args, context) {
-        console.log('civicaCardReloadConversation *** ', args);
         return RoleValidator.checkPermissions$(
           context.authToken.realm_access.roles,
           'ms-civica-card',

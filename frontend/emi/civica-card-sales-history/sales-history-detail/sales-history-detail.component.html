@@ -63,7 +63,7 @@
 
                   <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                     <span class="title">{{'SALES_HISTORY.CONSOLIDATED_BALANCE' | translate}}:</span>
-                    <span class="value" [ngClass]="{'green-fg':selectedSaleHistory.value > 0, 'red-fg':selectedSaleHistory.value < 0}">{{selectedSaleHistory.finalCard.value | currency}}</span>
+                    <span class="value" [ngClass]="{'green-fg':selectedSaleHistory.finalCard._saldoConsolidado > 0, 'red-fg':selectedSaleHistory.finalCard._saldoConsolidado < 0}">{{selectedSaleHistory.finalCard._saldoConsolidado | currency}}</span>
                   </div>
 
 
@@ -246,150 +246,205 @@
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.FECHA_HORA_RECARGA' | translate}}</span>
                             <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaHoraRecarga != null">{{selectedSaleHistory.finalCard.fechaHoraRecarga * 1000 | date: "dd/MM/y HH:mm:ss"}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaHoraRecarga == null">{{selectedSaleHistory.initialCard.fechaHoraRecarga * 1000 | date: "dd/MM/y HH:mm:ss"}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.NUMERO_TARJETA_UNICO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.numeroTarjetaPublico}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.numeroTarjetaPublico != null">{{selectedSaleHistory.finalCard.numeroTarjetaPublico}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.numeroTarjetaPublico == null">{{selectedSaleHistory.initialCard.numeroTarjetaPublico}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY._SALDO_TARJETA' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard._saldoTarjeta | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard._saldoTarjeta != null">{{selectedSaleHistory.finalCard._saldoTarjeta | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard._saldoTarjeta == null">{{selectedSaleHistory.initialCard._saldoTarjeta | currency}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY._SALDO_CONSOLIDADO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard._saldoConsolidado | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard._saldoConsolidado != null">{{selectedSaleHistory.finalCard._saldoConsolidado | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard._saldoConsolidado == null">{{selectedSaleHistory.initialCard._saldoConsolidado | currency}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY._SALDO_CREDITO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard._saldoCredito | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard._saldoCredito != null">{{selectedSaleHistory.finalCard._saldoCredito | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard._saldoCredito == null">{{selectedSaleHistory.initialCard._saldoCredito | currency}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.IDENTIFICACION_EMPRESA' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.identificacionEmpresa}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.identificacionEmpresa != null">{{selectedSaleHistory.finalCard.identificacionEmpresa}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.identificacionEmpresa == null">{{selectedSaleHistory.initialCard.identificacionEmpresa}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.IDENTIFICACION_EMPLEADO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.identificacionEmpleado}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.identificacionEmpleado != null">{{selectedSaleHistory.finalCard.identificacionEmpleado}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.identificacionEmpleado == null">{{selectedSaleHistory.initialCard.identificacionEmpleado}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.TIPO_NUMERO_DOCUMENTO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.tipoNumeroDocumento}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.tipoNumeroDocumento != null">{{selectedSaleHistory.finalCard.tipoNumeroDocumento}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.tipoNumeroDocumento == null">{{selectedSaleHistory.initialCard.tipoNumeroDocumento}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.NUMERO_TARJETA_DEBITO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.numeroTarjetaDebito}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.numeroTarjetaDebito != null">{{selectedSaleHistory.finalCard.numeroTarjetaDebito}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.numeroTarjetaDebito == null">{{selectedSaleHistory.initialCard.numeroTarjetaDebito}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.FECHA_ULTIMO_DESBLOQUEO_TARJETA' | translate}}</span>
                             <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta == 0">N/A</span>
-                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta != 0">{{selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta > 0">{{selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta == null && selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta == 0">
+                                N/A
+                            </span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta == null && selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta > 0">
+                                {{selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta * 1000 | date: "dd/MM/y HH:mm:ss"}}
+                            </span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.FECHA_VALIDEZ' | translate}}</span>
                             <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidez == 0">N/A</span>
-                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidez != 0">{{selectedSaleHistory.finalCard.fechaValidez}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidez > 0">{{selectedSaleHistory.finalCard.fechaValidez}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidez == null && selectedSaleHistory.initialCard.fechaValidez == 0">
+                                N/A
+                            </span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidez == null && selectedSaleHistory.initialCard.fechaValidez > 0">
+                                {{selectedSaleHistory.initialCard.fechaValidez * 1000 | date: "dd/MM/y HH:mm:ss"}}
+                            </span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.FECHA_VALIDEZ_VIAJE_BENEFICIO' | translate}}</span>
                             <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidezVajeBeneficio == 0">N/A</span>
-                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidezVajeBeneficio != 0">{{selectedSaleHistory.finalCard.fechaValidezVajeBeneficio}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidezVajeBeneficio > 0">{{selectedSaleHistory.finalCard.fechaValidezVajeBeneficio}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidezVajeBeneficio == null && selectedSaleHistory.initialCard.fechaValidezVajeBeneficio == 0">
+                                N/A
+                            </span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaValidezVajeBeneficio == null && selectedSaleHistory.initialCard.fechaValidezVajeBeneficio > 0">
+                                {{selectedSaleHistory.initialCard.fechaValidezVajeBeneficio * 1000 | date: "dd/MM/y HH:mm:ss"}}
+                            </span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.PERFIL_USUARIO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.perfilUsuario}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.perfilUsuario != null">{{selectedSaleHistory.finalCard.perfilUsuario}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.perfilUsuario == null">{{selectedSaleHistory.initialCard.perfilUsuario}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.GRUPO_PERFIL' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.grupoPerfil}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.grupoPerfil != null">{{selectedSaleHistory.finalCard.grupoPerfil}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.grupoPerfil == null">{{selectedSaleHistory.initialCard.grupoPerfil}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.NUMERO_ACOMPANNANTES' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.numeroAcompannantes}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.grupoPerfil != null">{{selectedSaleHistory.finalCard.numeroAcompannantes}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.grupoPerfil == null">{{selectedSaleHistory.initialCard.numeroAcompannantes}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.VALOR_PAGO_SALDO_CREDITO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.valorPagoSaldoCredito | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.grupoPerfil != null">{{selectedSaleHistory.finalCard.valorPagoSaldoCredito | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.grupoPerfil == null">{{selectedSaleHistory.initialCard.valorPagoSaldoCredito | currency}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.LIMITE_USO_DIARIO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.limiteUsoDiario}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.limiteUsoDiario != null">{{selectedSaleHistory.finalCard.limiteUsoDiario}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.limiteUsoDiario == null">{{selectedSaleHistory.initialCard.limiteUsoDiario}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.CODIGO_ULTIMA_RECARGA' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.codigoUltimaRecarga}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.codigoUltimaRecarga != null">{{selectedSaleHistory.finalCard.codigoUltimaRecarga}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.codigoUltimaRecarga == null">{{selectedSaleHistory.initialCard.codigoUltimaRecarga}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.VERSION_MAPPING' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.VersionMapping}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.VersionMapping != null">{{selectedSaleHistory.finalCard.VersionMapping}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.VersionMapping == null">{{selectedSaleHistory.initialCard.VersionMapping}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
+
                             <span class="title">{{'SALES_HISTORY.INIDICADOR_TARJETA_BLOQUEADA' | translate}}</span>
-                            <span class="value green-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == 0">{{'SALES_HISTORY.INDICATOR_OK' | translate}}</span>
-                            <span class="value red-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == 1">{{'SALES_HISTORY.INDICATOR_BLOCKED' | translate}}</span>
+                            <span class="value green-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada != null && selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == 0">
+                                {{'SALES_HISTORY.INDICATOR_OK' | translate}}
+                            </span>
+                            <span class="value red-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada != null && selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == 1">
+                                {{'SALES_HISTORY.INDICATOR_BLOCKED' | translate}}
+                            </span>
+
+                            <span class="value green-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == null && selectedSaleHistory.initialCard.indicadorTarjetaBloqueada == 0">
+                                {{'SALES_HISTORY.INDICATOR_OK' | translate}}
+                            </span>
+                            <span class="value red-fg" *ngIf="selectedSaleHistory.finalCard.indicadorTarjetaBloqueada == null && selectedSaleHistory.initialCard.indicadorTarjetaBloqueada == 1">
+                                {{'SALES_HISTORY.INDICATOR_BLOCKED' | translate}}
+                            </span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.NUM_SEC_TRANSACCION' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.numeroSequenciaTransaccion}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.numeroSequenciaTransaccion != null">{{selectedSaleHistory.finalCard.numeroSequenciaTransaccion}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.numeroSequenciaTransaccion == null">{{selectedSaleHistory.initialCard.numeroSequenciaTransaccion}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.PIN_STATUS' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.pinStatus}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.pinStatus != null">{{selectedSaleHistory.finalCard.pinStatus}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.pinStatus == null">{{selectedSaleHistory.initialCard.pinStatus}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.PIN_USUARIO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.pinUsuario}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.pinUsuario != null">{{selectedSaleHistory.finalCard.pinUsuario}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.pinUsuario == null">{{selectedSaleHistory.initialCard.pinUsuario}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.CANTIDAD_INTENTOS_ERRONEOS' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.cantidadIntentosErroneos}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.cantidadIntentosErroneos != null">{{selectedSaleHistory.finalCard.cantidadIntentosErroneos}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.cantidadIntentosErroneos == null">{{selectedSaleHistory.initialCard.cantidadIntentosErroneos}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
                             <span class="title">{{'SALES_HISTORY.SALDO_CREDITO_BK' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.saldoCreditoBk | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoCreditoBk != null">{{selectedSaleHistory.finalCard.saldoCreditoBk | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoCreditoBk == null">{{selectedSaleHistory.initialCard.saldoCreditoBk | currency}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
                             <span class="title">{{'SALES_HISTORY.SALDO_CREDITO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.saldoCredito | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoCredito != null">{{selectedSaleHistory.finalCard.saldoCredito | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.saldoCredito == null">{{selectedSaleHistory.initialCard.saldoCredito | currency}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
                             <span class="title">{{'SALES_HISTORY.SALDO_BENEFICIO' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.saldoBeneficio}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoBeneficio != null">{{selectedSaleHistory.finalCard.saldoBeneficio}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.saldoBeneficio == null">{{selectedSaleHistory.initialCard.saldoBeneficio}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
                             <span class="title">{{'SALES_HISTORY.SALDO_TARJETA' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.saldoTarjeta | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoTarjeta != null">{{selectedSaleHistory.finalCard.saldoTarjeta | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoTarjeta == null">{{selectedSaleHistory.initialCard.saldoTarjeta | currency}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center" *ngIf="false">
                             <span class="title">{{'SALES_HISTORY.SALDO_TARJETA_BK' | translate}}</span>
-                            <span class="value">{{selectedSaleHistory.finalCard.saldoTarjetaBk | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoTarjetaBk != null">{{selectedSaleHistory.finalCard.saldoTarjetaBk | currency}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.saldoTarjetaBk == null">{{selectedSaleHistory.initialCard.saldoTarjetaBk | currency}}</span>
                         </div>
                       
                     </div>

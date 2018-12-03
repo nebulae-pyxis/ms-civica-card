@@ -121,7 +121,7 @@ class EventStoreService {
   ////////////////////////////////////////////////////////////////////////////////////////
 
   generateFunctionMap() {
-    return {      
+    return {
       BusinessActivated: {
         fn: businessES.handleBusinessActivatedEvent$,
         obj: businessES

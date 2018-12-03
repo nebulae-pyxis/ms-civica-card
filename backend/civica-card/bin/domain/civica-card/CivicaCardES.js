@@ -19,7 +19,6 @@ class CivicaCardES {
      * Persist the civica card reload
      */
     handleCivicaCardReload$(civicaCaredReloadEvent){
-        console.log('handleCivicaCardReload => ', civicaCaredReloadEvent);
         return of(civicaCaredReloadEvent)
         .pipe(
             mergeMap(event => {
@@ -32,7 +31,6 @@ class CivicaCardES {
      * Persist final civica card updated
      */
     handleCivicaCardReloadFinalCardUpdated$(finalCivicaCardUpdatedEvent){
-        console.log('handleFinalCivicaCardUpdated => ', finalCivicaCardUpdatedEvent);
         return of(finalCivicaCardUpdatedEvent)
         .pipe(
             mergeMap(event => {
