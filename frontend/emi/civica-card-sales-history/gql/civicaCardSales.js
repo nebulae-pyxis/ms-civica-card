@@ -112,6 +112,7 @@ export const civicaCardSalesHistory = gql`
         coordinates
       }
       conversationId
+      user
     }
   }
   ${civicaCardDataFragment}
@@ -155,6 +156,7 @@ export const civicaCardSalesHistoryById = gql`
         coordinates
       }
       conversationId
+      user
     }
   }
   ${civicaCardDataFragment}

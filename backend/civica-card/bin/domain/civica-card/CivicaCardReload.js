@@ -130,7 +130,31 @@ class CivicaCardReload {
                 initialCard: conversation.initialCard,
                 finalCard: conversation.finalCard,
                 location: conversation.pos.location,
-                conversationId: conversation._id
+                conversationId: conversation._id,
+                timestamp : conversation.timestamp
+            },
+            user: conversation.user.name
+        })).pipe(
+            mergeMap(event => eventSourcing.eventStore.emitEvent$(event)),
+            map(emitResult => emitResult.storeResult.event)
+        );
+    } 
+
+    /**
+     * Sends CivicaCardReloadFinalCardUpdated Event so this transaction is commited in the evet store
+     * @param {*} conversation 
+     */
+    static sendCivicaCardReloadFinalCardUpdatedEvent$(conversation) {
+        return Rx.of(new Event({
+            eventType: "CivicaCardReloadFinalCardUpdated",
+            eventTypeVersion: 1,
+            aggregateType: "CivicaCard",
+            aggregateId: conversation.initialCard.civicaData.numeroTarjetaPublico,
+            data: {
+                businessId: conversation.businessId,                
+                finalCard: conversation.finalCard,                
+                conversationId: conversation._id,
+                timestamp : conversation.timestamp
             },
             user: conversation.user.name
         })).pipe(

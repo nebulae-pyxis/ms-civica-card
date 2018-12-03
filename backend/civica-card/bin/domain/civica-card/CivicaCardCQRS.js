@@ -237,8 +237,15 @@ class CivicaCardCQRS {
                 mergeMap(({ conversation, mifareCard }) =>
                     CivicaCardReloadConversationDA.setFinalCardRawData$(conversation._id, mifareCard).pipe(
                         mergeMap(mifareCard => CivicaCardDataExtractor.extractCivicaData$(mifareCard)),
-                        mergeMap(civicaData => CivicaCardReloadConversationDA.setFinalCardCivicaData$(conversation._id, civicaData))
+                        mergeMap(civicaData => CivicaCardReloadConversationDA.setFinalCardCivicaData$(conversation._id, civicaData)),
                     )),
+                mergeMap((rawResponse) =>
+                    CivicaCardReloadConversationDA.find$(args.conversationId)
+                        .pipe(
+                            mergeMap(conv => CivicaCardReload.sendCivicaCardReloadFinalCardUpdatedEvent$(conv)),
+                            mapTo(rawResponse)
+                        )
+                ),
                 mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse))
             ).pipe(
                 catchError(error => {
@@ -321,113 +328,113 @@ class CivicaCardCQRS {
 
     //#region QUERIES
 
-  /**  
-   * Gets the civica card sales history according to the filter and pagination data
-   *
-   * @param {*} args args
-   */
-  getCivicaCardSalesHistory$({ args }, authToken) {
-    return RoleValidator.checkPermissions$(
-      authToken.realm_access.roles,
-      "Civica-Card",
-      "getCivicaCardSalesHistory",
-      PERMISSION_DENIED,
-      ["SYSADMIN", "platform-admin", "business-owner", "POS"]
-    ).pipe(
-      mergeMap(roles => {
-        const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
-        //If an user does not have the role to get the civica card sales history from other business, we must return an error
-        if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
-            throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
-        }
-
-        //Users with POS role can only search the sales that they have performed
-        const isPOS = roles['POS'];
-        if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
-            throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
-        }
-
-        return of(roles);
-      }),
-      mergeMap(roles => CivicaCardReloadDA.getCivicaCardReloadsHistory$(args.civicaSaleFilterInput, args.civicaSalePaginationInput)),
-      toArray(),
-      mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-      catchError(err => GraphqlResponseTools.handleError$(err))
-    );
-  }
-
-
-   /**
-   * Gets the amount of civica card reload of a business
-   *
-   * @param {*} args args
-   */
-  getCivicaCardSalesHistoryAmount$({ args }, authToken) {
-    //console.log('getCivicaCardSalesHistoryAmount');
-    return RoleValidator.checkPermissions$(
-      authToken.realm_access.roles,
-      "Civica-Card",
-      "getCivicaCardSalesHistoryAmount",
-      PERMISSION_DENIED,
-      ["SYSADMIN", "platform-admin", "business-owner", "POS"]
-    ).pipe(
-      mergeMap(roles => {
-        const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
-        //If an user does not have the role to get the transaction history from other business, we must return an error
-        if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
-            throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
-        }
-
-        //Users with POS role can only search the sales that they have performed
-        const isPOS = roles['POS'];
-        if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
-            throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
-        }
-
-        return of(roles);
-      }),
-      mergeMap(val => CivicaCardReloadDA.getCivicaCardReloadAmount$(args.civicaSaleFilterInput)),
-      toArray(),
-      mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-      catchError(err => GraphqlResponseTools.handleError$(err))
-    );
-  }
-
-  /**
-   * Gets the civica card reload history by ID
-   *
-   * @param {*} args args
-   */
-  getCivicaCardSaleHistoryById$({ args }, authToken) {
-    // console.log('getCivicaCardSaleHistoryById');
-    return RoleValidator.checkPermissions$(
-      authToken.realm_access.roles,
-      "Civica-Card",
-      "getCivicaCardSaleHistoryById",
-      PERMISSION_DENIED,
-      ["SYSADMIN", "platform-admin", "business-owner", "POS"]
-    ).pipe(
-      mergeMap(roles => {
-        const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
-        //If an user does not have the role to get the transaction history from other business, the query must be filtered with the businessId of the user
-        const businessId = !isAdmin? (authToken.businessId || ''): null;
-
-        let user = null;
-        const isPOS = roles['POS'];
-        if(isPOS){
-            user = authToken.preferred_username;
-        }
-
-        return CivicaCardReloadDA.getCivicaCardReloadHistoryById$(businessId, args.id, user);
-      }),
-      mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-      catchError(err => GraphqlResponseTools.handleError$(err))
-    );
-  }
-
-      /**
-     * Finds a CivicaCardReloadConversation by its ID, format it to the graphql schema and returns it
+    /**  
+     * Gets the civica card sales history according to the filter and pagination data
+     *
+     * @param {*} args args
      */
+    getCivicaCardSalesHistory$({ args }, authToken) {
+        return RoleValidator.checkPermissions$(
+            authToken.realm_access.roles,
+            "Civica-Card",
+            "getCivicaCardSalesHistory",
+            PERMISSION_DENIED,
+            ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+        ).pipe(
+            mergeMap(roles => {
+                const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+                //If an user does not have the role to get the civica card sales history from other business, we must return an error
+                if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
+                    throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
+                }
+
+                //Users with POS role can only search the sales that they have performed
+                const isPOS = roles['POS'];
+                if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
+                    throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
+                }
+
+                return of(roles);
+            }),
+            mergeMap(roles => CivicaCardReloadDA.getCivicaCardReloadsHistory$(args.civicaSaleFilterInput, args.civicaSalePaginationInput)),
+            toArray(),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(err => GraphqlResponseTools.handleError$(err))
+        );
+    }
+
+
+    /**
+    * Gets the amount of civica card reload of a business
+    *
+    * @param {*} args args
+    */
+    getCivicaCardSalesHistoryAmount$({ args }, authToken) {
+        //console.log('getCivicaCardSalesHistoryAmount');
+        return RoleValidator.checkPermissions$(
+            authToken.realm_access.roles,
+            "Civica-Card",
+            "getCivicaCardSalesHistoryAmount",
+            PERMISSION_DENIED,
+            ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+        ).pipe(
+            mergeMap(roles => {
+                const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+                //If an user does not have the role to get the transaction history from other business, we must return an error
+                if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
+                    throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
+                }
+
+                //Users with POS role can only search the sales that they have performed
+                const isPOS = roles['POS'];
+                if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
+                    throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
+                }
+
+                return of(roles);
+            }),
+            mergeMap(val => CivicaCardReloadDA.getCivicaCardReloadAmount$(args.civicaSaleFilterInput)),
+            toArray(),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(err => GraphqlResponseTools.handleError$(err))
+        );
+    }
+
+    /**
+     * Gets the civica card reload history by ID
+     *
+     * @param {*} args args
+     */
+    getCivicaCardSaleHistoryById$({ args }, authToken) {
+        // console.log('getCivicaCardSaleHistoryById');
+        return RoleValidator.checkPermissions$(
+            authToken.realm_access.roles,
+            "Civica-Card",
+            "getCivicaCardSaleHistoryById",
+            PERMISSION_DENIED,
+            ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+        ).pipe(
+            mergeMap(roles => {
+                const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+                //If an user does not have the role to get the transaction history from other business, the query must be filtered with the businessId of the user
+                const businessId = !isAdmin ? (authToken.businessId || '') : null;
+
+                let user = null;
+                const isPOS = roles['POS'];
+                if (isPOS) {
+                    user = authToken.preferred_username;
+                }
+
+                return CivicaCardReloadDA.getCivicaCardReloadHistoryById$(businessId, args.id, user);
+            }),
+            mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            catchError(err => GraphqlResponseTools.handleError$(err))
+        );
+    }
+
+    /**
+   * Finds a CivicaCardReloadConversation by its ID, format it to the graphql schema and returns it
+   */
     getCivicaCardReloadConversationDetailed$({ root, args, jwt }, authToken) {
         return RoleValidator.checkPermissions$(
             authToken.realm_access.roles,
@@ -435,7 +442,7 @@ class CivicaCardCQRS {
             "getCivicaCardReloadConversationDetailed",
             PERMISSION_DENIED,
             ["SYSADMIN"]
-        ).pipe(            
+        ).pipe(
             mergeMap(roles => CivicaCardReloadConversationDA.find$(args.id)),
             map(conversation => JSON.stringify(conversation)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
@@ -447,7 +454,7 @@ class CivicaCardCQRS {
     }
 
     //#endregion
-    
+
 }
 
 

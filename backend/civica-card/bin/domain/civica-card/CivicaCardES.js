@@ -31,12 +31,12 @@ class CivicaCardES {
     /**
      * Persist final civica card updated
      */
-    handleFinalCivicaCardUpdated$(finalCivicaCardUpdatedEvent){
+    handleCivicaCardReloadFinalCardUpdated$(finalCivicaCardUpdatedEvent){
         console.log('handleFinalCivicaCardUpdated => ', finalCivicaCardUpdatedEvent);
         return of(finalCivicaCardUpdatedEvent)
         .pipe(
             mergeMap(event => {
-                return CivicaCardReloadDA.saveCivicaCardReloadHistory$(event)
+                return CivicaCardReloadDA.updateCivicaCardReloadFinalCard$(event)
             })
         );
     }
