@@ -27,7 +27,6 @@ export class CivicaCardReloadPosService {
       variables: {
         businessId: businessId
       },
-      fetchPolicy: 'network-only',
       errorPolicy: 'all'
     });
   }

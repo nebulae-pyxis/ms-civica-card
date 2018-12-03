@@ -203,6 +203,9 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
       }
       this.operabilityState$.next(state);
     });
+    this.afccRealoderService.getReaderKey().subscribe(key => {
+      console.log('llave de lectora: ', key)
+    });
   }
 
   ngOnDestroy(): void {
