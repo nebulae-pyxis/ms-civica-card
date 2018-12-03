@@ -31,7 +31,7 @@ class GraphQlService {
 
     //default onComplete handler
     const onCompleteHandler = () => {
-      () => console.log("GraphQlService incoming event subscription completed");
+      () => console.log("GraphQlService incoming event subscription completed.");
     };
     return Rx.from(this.getSubscriptionDescriptors()).pipe(
       map(aggregateEvent => ({ ...aggregateEvent, onErrorHandler, onCompleteHandler }))

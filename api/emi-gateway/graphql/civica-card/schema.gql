@@ -94,7 +94,7 @@ type CivicaCardReloadPurchaseReceipt {
 }
 
 input CivicaSaleFilterInput {
-  "ID of the business with which the information will be filter"
+  "ID of the business with which the information will be filter."
   businessId: String!
   "Init date"
   initDate: BigInt!

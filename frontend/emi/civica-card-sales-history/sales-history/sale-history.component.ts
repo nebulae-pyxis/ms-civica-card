@@ -462,9 +462,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
         } else {
           return this.getBusiness$().pipe(
             tap(business => {
-              // this.myBusiness = business;
-              console.log(' -------------- business ', business);
-              
+              // this.myBusiness = business;              
               this.selectedBusinessData = business;
               this.selectedBusinessName = this.selectedBusinessData.generalInfo.name;
               this.onSelectBusinessEvent(this.selectedBusinessData);
