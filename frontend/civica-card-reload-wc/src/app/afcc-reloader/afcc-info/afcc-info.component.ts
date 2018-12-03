@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { AfccRealoderService } from '../../afcc-realoder.service';
 import { OperabilityState } from '../../utils/operability-sate';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { of, Subject, BehaviorSubject } from 'rxjs';
-import * as JwtDecode from "jwt-decode";
+import * as JwtDecode from 'jwt-decode';
 
 @Component({
   selector: 'app-afcc-info',
@@ -16,6 +16,7 @@ export class AfccInfoComponent implements OnInit {
   jwtName;
   posUserName;
   deviceName;
+  isBatteryLoaded = false;
   batteryLevel$ = new BehaviorSubject<Number>(0);
   constructor(private afccReloaderService: AfccRealoderService) {}
 
@@ -38,6 +39,7 @@ export class AfccInfoComponent implements OnInit {
     });
     this.afccReloaderService.batteryLevel$.subscribe(batteryLevel => {
       this.batteryLevel$.next(batteryLevel);
+      this.isBatteryLoaded = true;
     });
   }
 

@@ -22,7 +22,8 @@ import { MyfarePlusSl3 } from './utils/cards/mifare-plus-sl3';
 import {
   purchaseCivicaCardReload,
   setCivicaCardReloadConversationUiState,
-  CivicaCardReloadConversation
+  CivicaCardReloadConversation,
+  getMasterKeyReloader
 } from './api/gql/afcc-reloader.js';
 import { v4 as uuid } from 'uuid';
 import { CardPowerOnResp } from './utils/communication_profile/messages/response/card-power-on-resp';
@@ -79,27 +80,6 @@ export class AfccRealoderService {
     this.cypherAesService = new CypherAes();
     this.readerAcr1255 = new ReaderAcr1255();
     this.myfarePlusSl3 = new MyfarePlusSl3();
-    // TODO: ESTA LLAVE SE DEBE CONSULTAR POR GRAPHQL Y SE DEBE QUITAR DEL CONSTRUCTOR
-    const key = [
-      65,
-      67,
-      82,
-      49,
-      50,
-      53,
-      53,
-      85,
-      45,
-      74,
-      49,
-      32,
-      65,
-      117,
-      116,
-      104
-    ];
-    this.keyReader = key;
-    this.cypherAesService.config(key);
 
     this.operabilityState$.subscribe(operabilityState => {
       if (
@@ -111,6 +91,10 @@ export class AfccRealoderService {
         this.conversation.state = operabilityState;
       }
     });
+  }
+
+  isBluetoothAvailable() {
+    return this.bluetoothService.isBluetoothAvailable();
   }
 
   // #region CONNECTION ACR1255
@@ -189,6 +173,21 @@ export class AfccRealoderService {
           this.conversation = result;
           this.operabilityState$.next(OperabilityState.RELOADING_CARD);
         }
+      })
+    );
+  }
+
+  getReaderKey() {
+    return this.gateway.apollo.use('sales-gateway')
+    .query<any>({
+      query: getMasterKeyReloader,
+      errorPolicy: 'all',
+      fetchPolicy: 'network-only'
+      }).pipe(
+      map(result => {
+        this.keyReader = result.data.getMasterKeyReloader.key;
+        this.cypherAesService.config(this.keyReader);
+        return this.keyReader;
       })
     );
   }
@@ -315,7 +314,7 @@ export class AfccRealoderService {
                 cardPowerOnResp.data.slice(13, 15)
               ) === '0001' || this.cypherAesService.bytesTohex(
                 cardPowerOnResp.data.slice(13, 15)
-              ) === 'FF88'
+              ) === 'ff88'
             ) {
               return this.myfarePlusSl3.readCurrentCard$(
                 this.bluetoothService,

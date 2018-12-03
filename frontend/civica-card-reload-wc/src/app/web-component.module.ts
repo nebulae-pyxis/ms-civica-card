@@ -26,12 +26,14 @@ import { HttpLinkModule } from 'apollo-angular-link-http';
 import { ElementZoneStrategyFactory } from 'elements-zone-strategy';
 import { ReloadConfirmationDialogComponent } from './afcc-reloader/read-card/reload-confirmation-dialog/reload-confirmation-dialog.component';
 import { ReloadCardRefusedComponent } from './afcc-reloader/reload-card-refused/reload-card-refused.component';
+import { BluetoothNotAvailableComponent } from './afcc-reloader/bluetooth-not-available/bluetooth-not-available.component';
 
 @NgModule({
   declarations: [
     AfccReloaderComponent,
     BluetoothConnectionComponent,
     AfccInfoComponent,
+    BluetoothNotAvailableComponent,
     ReadCardComponent,
     ReadCardErrorComponent,
     InternalErrorComponent,

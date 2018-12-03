@@ -114,6 +114,9 @@ export class MyfarePlusSl3 {
         return uid;
       }),
       mergeMap(uid => {
+        if (conversation.cardUid && conversation.cardUid !== uid) {
+          throw new Error('INVALID_CARD_TO_RELOAD');
+        }
         return this.startReloadConversation(gateway, conversation, uid);
       }),
       mergeMap(conversationResult => {
@@ -312,7 +315,7 @@ export class MyfarePlusSl3 {
         errorPolicy: 'all'
       })
       .pipe(
-        map(rawData => rawData.data.generateCivicaCardReloadSecondAuthToken)
+      map(rawData => (rawData as any).data.generateCivicaCardReloadSecondAuthToken)
       );
   }
 
@@ -473,8 +476,8 @@ export class MyfarePlusSl3 {
           })
           .pipe(
           map(rawData => {
-            if (rawData.errors) {
-              const error = rawData.errors[0];
+            if ((rawData as any).errors) {
+              const error = (rawData as any).errors[0];
               switch (error.message.code) {
                 case 18020:
                   throw new Error('CIVICA_CARD_CORRUPTED_DATA');
@@ -488,7 +491,7 @@ export class MyfarePlusSl3 {
             } else {
               return JSON.parse(
                 JSON.stringify(
-                  rawData.data.processCivicaCardReloadReadApduCommandRespones
+                  (rawData as any).data.processCivicaCardReloadReadApduCommandRespones
                 )
               );
             }
@@ -533,8 +536,8 @@ export class MyfarePlusSl3 {
       .pipe(
         map(rawData => {
           console.log('Inicio de conversacion: ', rawData);
-          if (rawData.errors) {
-            const error = rawData.errors[0];
+          if ((rawData as any).errors) {
+            const error = (rawData as any).errors[0];
             switch (error.message.code) {
               case 18010:
                 throw new Error('BUSINESS_NOT_FOUND');
@@ -548,7 +551,7 @@ export class MyfarePlusSl3 {
                 throw new Error('INVALID_SESSION');
             }
           } else {
-            return rawData.data.startCivicaCardReloadConversation;
+            return (rawData as any).data.startCivicaCardReloadConversation;
           }
         })
       );
@@ -578,7 +581,7 @@ export class MyfarePlusSl3 {
         errorPolicy: 'all'
       })
       .pipe(
-        map(rawData => rawData.data.generateCivicaCardReloadReadApduCommands)
+        map(rawData => (rawData as any).data.generateCivicaCardReloadReadApduCommands)
       );
   }
 
@@ -669,7 +672,7 @@ export class MyfarePlusSl3 {
             map(rawData =>
               JSON.parse(
                 JSON.stringify(
-                  rawData.data
+                  (rawData as any).data
                     .processCivicaCardReloadWriteAndReadApduCommandResponses
                 )
               )
@@ -703,8 +706,12 @@ export class MyfarePlusSl3 {
       })
       .pipe(
         map(
-          rawData =>
-            rawData.data.generateCivicaCardReloadWriteAndReadApduCommands
+        rawData => {
+          if ((rawData as any).errors) {
+            throw new Error('ERROR_REQUESTING_APDUS');
+          }
+          return (rawData as any).data.generateCivicaCardReloadWriteAndReadApduCommands;
+        }
         )
       );
   }
@@ -734,7 +741,10 @@ export class MyfarePlusSl3 {
       sessionKey
     ).pipe(
       mergeMap(result => {
-        const cardPowerOnResp = new CardPowerOnResp(result);
+      const cardPowerOnResp = new CardPowerOnResp(result);
+      if (cardPowerOnResp.data.byteLength < 1) {
+        throw new Error('CARD_NOT_FOUND');
+      }
         if (conversation.cardType === 'SL3') {
           return this.cardAuthenticationFirstStep$(
             bluetoothService,
