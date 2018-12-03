@@ -1,3 +1,4 @@
+import { PrintDialogComponent } from './print-dialog/print-dialog.component';
 import { CivicaCardSalesHistoryService } from './civica-card-sales-history.service';
 import { SaleHistoryService } from './sales-history/sale-history.service';
 import { SaleHistoryComponent } from './sales-history/sale-history.component';
@@ -17,7 +18,14 @@ const routes: Routes = [
   {
     path: ':id',
     component: SalesHistoryDetailComponent,
-  }
+  },
+  // { path: 'civica-print',
+  //   outlet: 'print',
+  //   component: PrintLayoutComponent,
+  //   children: [
+  //     { path: 'invoice/:invoiceIds', component: CivicaCardInvoiceComponent }
+  //   ]
+  // }
 ];
 
 @NgModule({
@@ -28,8 +36,9 @@ const routes: Routes = [
     NgxJsonViewerModule
   ],
   declarations: [
-    SaleHistoryComponent, SalesHistoryDetailComponent
+    SaleHistoryComponent, SalesHistoryDetailComponent, PrintDialogComponent
   ],
+  entryComponents: [PrintDialogComponent],
   providers: [CivicaCardSalesHistoryService, SaleHistoryService, SalesHistoryDetailService],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })

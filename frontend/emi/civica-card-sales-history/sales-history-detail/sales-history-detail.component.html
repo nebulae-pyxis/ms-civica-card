@@ -47,6 +47,9 @@
                 <div class="pb-16" fxLayout="row" fxLayoutAlign="start center">
                     <mat-icon class="m-0 mr-16">attach_money</mat-icon>
                     <div class="h2 secondary-text">{{'SALES_HISTORY.SALE' | translate}}(ID: {{selectedSaleHistory._id}})</div>
+                    <button mat-fab (click)="printInvoice()">
+                        <mat-icon aria-label="Print invoice">print</mat-icon>
+                    </button>
                 </div>
 
                 <div class="w-100-p" fxLayout="column" class="mat-white-bg p-24 mr-24">
@@ -470,4 +473,7 @@
     <!-- / CONTENT CARD -->
   </div>
   <!-- / CENTER -->
+
+  <router-outlet></router-outlet>
+  <router-outlet name="print"></router-outlet>
 </div>

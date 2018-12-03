@@ -1,0 +1,118 @@
+<mat-dialog-content>
+
+<div id="print-section" class="centered">
+  <table>
+    <thead>
+      <tr><td>
+        <div class="header-space" style="text-align: center;">Metro de Medellín Ltda.</div>
+      </td></tr>
+      <tr><td>
+        <div class="header-space" style="text-align: center;">NIT 90000815598</div>
+      </td></tr>
+      <tr><td>
+        <div class="header-space" style="text-align: center;">Fecha: {{receipt.timestamp * 1000 | date: "dd/MM/y HH:mm:ss"}}</div>
+      </td></tr>
+    </thead>
+    <tbody>
+      <tr><td style="text-align: center;">Recibo recarga</td></tr>
+      <tr><td>
+
+        <table class="centered">
+          <tr>
+            <th>PRODUCTO</th>
+            <th>CANT</th>
+            <th>VALOR</th>
+            <th>TOTAL</th>
+          </tr>
+
+          <tr>
+            <td>RECARGA</td>
+            <td>1 x </td>
+            <td>{{receipt.reloadValue | currency}}</td>
+            <td>{{receipt.reloadValue | currency}}</td>
+          </tr>
+
+          <tr>
+            <td colspan="3" style="text-align: left">TOTAL</td>
+            <td>{{receipt.reloadValue | currency}}</td>
+          </tr>
+
+          <tr>
+            <td colspan="4" style="text-align: left">
+              <div class="header-space">&nbsp;</div>            
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="2" style="text-align: left">
+              Valor inicial tarjeta:          
+            </td>
+            <td colspan="2" style="text-align: left">
+              {{receipt.cardInitialValue | currency}}   
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="2" style="text-align: left">
+              Valor final tarjeta:          
+            </td>
+            <td colspan="2" style="text-align: left">
+              {{receipt.cardFinalValue | currency}}   
+            </td>
+          </tr>
+
+          <tr *ngIf="false">
+            <td colspan="2" style="text-align: left" >
+              Identificación:          
+            </td>
+            <td colspan="2" style="text-align: left">
+              AP 901 661 478           
+            </td>
+          </tr>
+
+          <tr *ngIf="false">
+            <td colspan="2" style="text-align: left">
+              Nombre:          
+            </td>
+            <td colspan="2" style="text-align: left">
+              Al portador       
+            </td>
+          </tr>
+
+          <tr *ngIf="false">
+            <td colspan="2" style="text-align: left">
+              Tarjeta:          
+            </td>
+            <td colspan="2" style="text-align: left">
+              57632246         
+            </td>
+          </tr>
+          
+        </table>
+
+      </td></tr>
+      <tr><td> 
+        <div class="header-space">&nbsp;</div>      
+      </td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td>
+        <div class="footer-space"  style="text-align: center;">Recuerde verificar su saldo y dinero después de la carga</div>
+      </td></tr>
+      <tr><td>
+        <div class="footer-space"  style="text-align: center;">GRACIAS POR SU COMPRA</div>
+      </td></tr>
+      <tr><td>
+        <div class="footer-space" style="text-align: center;">" No válido como factura o documento equivalente. "</div>
+      </td></tr>
+    </tfoot>
+  </table>
+
+</div>
+  
+
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-raised-button (click)="printInvoice()">{{'SALES_HISTORY.PRINT' | translate}}</button>
+  <button mat-raised-button mat-dialog-close color="warn" (click)="close()">{{'SALES_HISTORY.CANCEL' | translate}}</button>
+</mat-dialog-actions>

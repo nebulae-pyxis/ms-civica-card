@@ -82,7 +82,8 @@ export const locale = {
       CARD_AFTER: 'After',
       GENERAL: 'General',
       CONVERSATION: 'Conversation',
-      USER: 'User'
+      USER: 'User',
+      PRINT: 'Print'
     },
     ERRORS: {
       1: 'Internal server error',
