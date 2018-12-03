@@ -150,7 +150,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('sale history => onInit1');
     this.buildFilterForm();
     this.onLangChange();
     this.loadBusinessFilter();
@@ -206,6 +205,9 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
           if (filterAndPaginator.filter) {
             const filterData: any = filterAndPaginator.filter;
             const terminal: any = filterAndPaginator.filter.terminal || {};
+
+            this.minEndDate = moment(filterData.initDate);
+            this.maxEndDate =  moment(filterData.initDate.valueOf()).endOf("month");
 
             this.filterForm.patchValue({
               initDate: filterData.initDate,
@@ -282,23 +284,21 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
 
     this.minEndDate = moment(start);
     if (startMonthYear != endMonthYear) {
-      console.log("Select last day of month or current date");
       this.filterForm.patchValue({
-        endDate: start.endOf("month")
+        endDate: moment(start.valueOf()).endOf("month")
       });
-      this.maxEndDate = start.endOf("month");
-    } else {
-      console.log("Same month");
+      
+      this.maxEndDate =  moment(start.valueOf()).endOf("month");
     }
 
-    console.log(
-      "minEndDate => ",
-      this.minEndDate.format("MMMM Do YYYY, h:mm:ss a")
-    );
-    console.log(
-      "maxEndDate => ",
-      this.maxEndDate.format("MMMM Do YYYY, h:mm:ss a")
-    );
+    // console.log(
+    //   "minEndDate => ",
+    //   this.minEndDate.format("MMMM Do YYYY, h:mm:ss a")
+    // );
+    // console.log(
+    //   "maxEndDate => ",
+    //   this.maxEndDate.format("MMMM Do YYYY, h:mm:ss a")
+    // );
   }
 
   onEndDateChange() {
@@ -328,7 +328,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
           return this.filterForm.enabled;
         }),
         map(([formChanges, paginator]) => {
-          console.log("detectFilterAndPaginatorChanges2 => ", formChanges);
 
           const data = {
             filter: {
@@ -372,7 +371,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     )
       .pipe(
         filter(([filterAndPagination, selectedBusiness]) => {
-          console.log('refreshTable => ', ([filterAndPagination, selectedBusiness]));
           return filterAndPagination != null && selectedBusiness != null;
         }),
         map(([filterAndPagination, selectedBusiness]) => {
@@ -408,7 +406,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       )
       .subscribe(([salesHistory, salesHistoryAmount]) => {
         this.outdatedData = false;      
-        console.log('salesHistory.data.civicaCardSalesHistory =>', salesHistoryAmount);
 
         if(salesHistory.data && salesHistory.data.civicaCardSalesHistory){
           this.dataSource.data = salesHistory.data.civicaCardSalesHistory;
@@ -451,10 +448,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   loadBusinessFilter() {
-    console.log('loadBusinessFilter');
     this.businessQueryFiltered$ = this.checkIfUserIsAdmin$().pipe(
       mergeMap(isAdmin => {
-        console.log("loadBusinessFilter1 => ", isAdmin);
         if (isAdmin) {
           return this.businessFilterCtrl.valueChanges.pipe(
             startWith(undefined),
@@ -467,9 +462,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
         } else {
           return this.getBusiness$().pipe(
             tap(business => {
-              // this.myBusiness = business;
-              console.log(' -------------- business ', business);
-              
+              // this.myBusiness = business;              
               this.selectedBusinessData = business;
               this.selectedBusinessName = this.selectedBusinessData.generalInfo.name;
               this.onSelectBusinessEvent(this.selectedBusinessData);

@@ -36,7 +36,6 @@ class CivicaCardReloadDA {
    * @param {*} civicaCardReloadData sale to create
    */
   static saveCivicaCardReloadHistory$(civicaCardReloadEvent) {
-    //console.log('saveCivicaCardReloadHistory => ', civicaCardReloadEvent);
     const civicaCardReload = {
       _id: Crosscutting.generateHistoricalUuid(new Date(civicaCardReloadEvent.data.timestamp)),
       user: civicaCardReloadEvent.user,
@@ -116,26 +115,6 @@ class CivicaCardReloadDA {
     );
   }
 
-    /**
-   * Gets civica reload history by id.
-   * @param {*} civicaCardReloadsIds ID of the transaction history
-   */
-  static getCivicaCardReloadsHistoryByIds$(id, civicaCardReloadsIds, businessId) {
-    const monthYear = id.substr(id.length - 4);
-    const collection = mongoDB.db.collection(`${COLLECTION_NAME}${monthYear}`);
-    return of(civicaCardReloadsIds)
-    .pipe(
-      map(data => {
-        let query = {
-          _id: {$in: civicaCardReloadsIds},
-          businessId: businessId
-        };
-        return query;
-      }),
-      mergeMap(query => defer(() => collection.find(query).limit(10).toArray()))
-    );
-  }
-
 /**
  * Gets transaction hsitory from a business according to the filters and the pagination.
  * 
@@ -202,7 +181,27 @@ class CivicaCardReloadDA {
       }
 
       observer.complete();
-    });
+    })
+    .pipe(
+      map(civicaCardReload => {
+        const data = {
+          ...civicaCardReload
+        };
+
+        if(civicaCardReload.initialCard){
+          data.initialCard = {
+            ...civicaCardReload.initialCard.civicaData
+          }
+        }
+
+        if(civicaCardReload.finalCard){
+          data.finalCard = {
+            ...civicaCardReload.finalCard.civicaData
+          }
+        }
+        return data;
+      })
+    );
   }
 
   /**

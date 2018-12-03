@@ -180,13 +180,11 @@ class CivicaCardCQRS {
      * @param {*} authToken 
      */
     purchaseCivicaCardReload$({ root, args, jwt }, authToken) {
-        console.log('purchaseCivicaCardReload => ', args);
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
             mergeMap(conversation => this.verifyBusiness$(conversation.businessId, conversation)),
             mergeMap(conversation => CivicaCardReload.purchaseCivicaCardReload$(conversation, args.value)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
-                console.log('Error => ', error);
                 this.logError(error);
                 return GraphqlResponseTools.handleError$(error);
             })
@@ -350,7 +348,7 @@ class CivicaCardCQRS {
 
                 //Users with POS role can only search the sales that they have performed
                 const isPOS = roles['POS'];
-                if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
+                if (!isAdmin && isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
                     throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
                 }
 
@@ -387,7 +385,7 @@ class CivicaCardCQRS {
 
                 //Users with POS role can only search the sales that they have performed
                 const isPOS = roles['POS'];
-                if (isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
+                if (!isAdmin && isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
                     throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
                 }
 
@@ -421,7 +419,7 @@ class CivicaCardCQRS {
 
                 let user = null;
                 const isPOS = roles['POS'];
-                if (isPOS) {
+                if (!isAdmin && isPOS) {
                     user = authToken.preferred_username;
                 }
 

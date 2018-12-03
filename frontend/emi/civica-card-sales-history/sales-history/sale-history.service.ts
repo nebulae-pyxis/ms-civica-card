@@ -28,7 +28,6 @@ export class SaleHistoryService {
   constructor(private gateway: GatewayService) {}
 
   addFilterAndPaginatorData(filterAndPaginator) {
-    console.log(`addFilterAndPaginatorData => ${JSON.stringify(filterAndPaginator)}`);
     this._filterAndPaginator$.next(filterAndPaginator);
   }
 
@@ -61,7 +60,6 @@ export class SaleHistoryService {
    * @returns {Observable}
    */
   getSalesHistory$(civicaSaleFilterInput, civicaSalePaginationInput) {
-    console.log('getSalesHistory => ', civicaSaleFilterInput);
     return this.gateway.apollo.query<any>({
       query: civicaCardSalesHistory,
       variables: {
