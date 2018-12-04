@@ -17,6 +17,14 @@ class BusinessES {
 
     /**
      * updates business active flag
+     * @param {*} event business created event
+     */
+    handleBusinessCreated$(event) {
+        return BusinessDA.updateBusinessActive$(event.data._id,event.data.state);
+    }
+
+    /**
+     * updates business active flag
      * @param {Event} event 
      */
     handleBusinessActivatedEvent$(event) {

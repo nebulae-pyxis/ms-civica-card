@@ -122,6 +122,10 @@ class EventStoreService {
 
   generateFunctionMap() {
     return {
+      BusinessCreated: {
+        fn: businessES.handleBusinessCreated$,
+        obj: businessES
+      },
       BusinessActivated: {
         fn: businessES.handleBusinessActivatedEvent$,
         obj: businessES
@@ -154,7 +158,10 @@ class EventStoreService {
   */
   generateAggregateEventsArray() {
     return [
-    
+      {
+        aggregateType: "Business",
+        eventType: "BusinessCreated"
+      },
       {
         aggregateType: "Business",
         eventType: "BusinessActivated"
