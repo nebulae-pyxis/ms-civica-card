@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { AfccRealoderService } from '../afcc-realoder.service';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
-import { map, tap, distinctUntilChanged } from 'rxjs/operators';
+import { map, tap, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { OperabilityState } from '../utils/operability-sate';
 import { BackButtonDialogComponent } from './back-button-dialog/back-button-dialog.component';
 import { MatDialog, MatSnackBar } from '@angular/material';
@@ -120,8 +120,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     return this.afccRealoderService.posUserId;
   }
   // #endregion
-
-  connectionSub;
+  private ngUnsubscribe = new Subject();
 
   constructor(
     private afccRealoderService: AfccRealoderService,
@@ -172,26 +171,28 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         }
       );
     }
-    this.afccRealoderService.error$.subscribe(val => {
+      this.afccRealoderService.error$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(val => {
       this.error.next(val);
     });
-    this.afccRealoderService.cardReloadAborted$.subscribe(val => {
+    this.afccRealoderService.cardReloadAborted$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(val => {
       this.cardReloadAborted.next(val);
     });
-    this.afccRealoderService.cardReloadDone$.subscribe(val => {
+    this.afccRealoderService.cardReloadDone$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(val => {
       this.cardReloadDone.next(val);
     });
-    this.afccRealoderService.reloaderConnected$.subscribe(val => {
+    this.afccRealoderService.reloaderConnected$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(val => {
       this.reloaderConnected.next(val);
     });
-    this.afccRealoderService.reloaderStandByMode$.subscribe(val => {
+    this.afccRealoderService.reloaderStandByMode$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(val => {
       this.reloaderStandByMode.next(val);
     });
-    this.afccRealoderService.receipt$.subscribe(val => {
+    this.afccRealoderService.receipt$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(val => {
       this.receipt.next(val);
     });
-      this.afccRealoderService.operabilityState$.subscribe(state => {
-        this.operation.next(state);
+      this.operabilityState$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(val => {
+        this.operation.next(val);
+      });
+      this.afccRealoderService.operabilityState$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(state => {
       if (state === OperabilityState.CONNECTING) {
         this.stablishNewConnection();
       }
@@ -212,18 +213,17 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         state === OperabilityState.RELOAD_CARD_SUCCESS ||
         state === OperabilityState.RELOAD_CARD_REFUSED
       ) {
-        this.afccRealoderService.changeOperationState$(state).subscribe();
+        this.afccRealoderService.changeOperationState$(state).pipe(takeUntil(this.ngUnsubscribe)).subscribe();
       }
       this.operabilityState$.next(state);
     });
-    this.afccRealoderService.getReaderKey().subscribe();
+    this.afccRealoderService.getReaderKey().pipe(takeUntil(this.ngUnsubscribe)).subscribe();
   }
   }
 
   ngOnDestroy(): void {
-    if (this.connectionSub) {
-      this.connectionSub.unsubscribe();
-    }
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   getHeaderIcon$() {
@@ -302,10 +302,10 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   stablishNewConnection() {
     if (!this.afccRealoderService.keyReader) {
       console.log('No se encuentra keyReader');
-      this.afccRealoderService.getReaderKey().subscribe();
+      this.afccRealoderService.getReaderKey().pipe(takeUntil(this.ngUnsubscribe)).subscribe();
     }
-    this.connectionSub = this.afccRealoderService
-      .stablishNewConnection$()
+    this.afccRealoderService
+      .stablishNewConnection$().pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(
         status => {
           if (status === ConnectionStatus.IDLE) {
@@ -313,7 +313,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
               'reloader enter on standByMode'
             );
           } else if (status === ConnectionStatus.CONNECTED) {
-            this.afccRealoderService.getCurrentConversation$().subscribe(result => {
+            this.afccRealoderService.getCurrentConversation$().pipe(takeUntil(this.ngUnsubscribe)).subscribe(result => {
               if (
                 result &&
                 ((result as any).uiState === OperabilityState.RELOADING_CARD ||

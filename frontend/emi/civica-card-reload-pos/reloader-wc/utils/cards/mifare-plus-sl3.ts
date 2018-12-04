@@ -487,6 +487,8 @@ export class MyfarePlusSl3 {
                   throw new Error('CIVICA_CARD_DATA_EXTRACTION_FAILED');
                 case 18024:
                   throw new Error('CIVICA_CARD_AUTH_FAILED');
+                default:
+                  throw new Error('ERROR_PROCESSING_INFO');
               }
             } else {
               return JSON.parse(
@@ -794,7 +796,7 @@ export class MyfarePlusSl3 {
             })
           );
         } else if (conversation.cardType === 'SL1') {
-          
+
           return this.getUid$(
             bluetoothService,
             readerAcr1255,

@@ -51,6 +51,7 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
     this.webcomponent.operation
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(operation => {
+        console.log('se cambia operacion: ', operation);
         this.operation = operation;
       });
     this.userDetails = await this.keycloakService.loadUserProfile();
