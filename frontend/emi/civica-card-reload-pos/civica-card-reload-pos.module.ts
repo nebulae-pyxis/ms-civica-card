@@ -26,6 +26,7 @@ import { CurrencyMaskModule } from 'ng2-currency-mask';
 import { AngularBleModule } from '@nebulae/angular-ble';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { BluetoothNotAvailableComponent } from './reloader-wc/afcc-reloader/bluetooth-not-available/bluetooth-not-available.component';
+import { PrintDialogComponent } from './print-dialog/print-dialog.component';
 
 const routes: Routes = [
   {
@@ -52,6 +53,7 @@ const routes: Routes = [
     BluetoothNotAvailableComponent,
     AfccInfoComponent,
     ReadCardComponent,
+    PrintDialogComponent,
     ReadCardErrorComponent,
     InternalErrorComponent,
     ReloadCardComponent,
@@ -67,7 +69,8 @@ const routes: Routes = [
   providers: [CivicaCardReloadPosService, DatePipe, AfccRealoderService],
   entryComponents: [
     ReloadConfirmationDialogComponent,
-    BackButtonDialogComponent
+    BackButtonDialogComponent,
+    PrintDialogComponent
   ],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
 })

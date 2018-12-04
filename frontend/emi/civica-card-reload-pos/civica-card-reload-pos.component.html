@@ -1,149 +1,162 @@
 <div id="mail" class="page-layout carded left-sidenav" fusePerfectScrollbar>
-    <!-- TOP BACKGROUND -->
-    <div class="top-bg mat-accent-bg"></div>
-    <!-- / TOP BACKGROUND -->
+  <!-- TOP BACKGROUND -->
+  <div class="top-bg mat-accent-bg"></div>
+  <!-- / TOP BACKGROUND -->
 
-    <mat-sidenav-container>
-        <!-- SIDENAV -->
-        <mat-sidenav
-          class="sidenav"
-          align="start"
-          mode="side"
-          opened="true"
-          fuseMatSidenavHelper="carded-left-sidenav"
-          mat-is-locked-open="gt-md"
+  <mat-sidenav-container>
+    <!-- SIDENAV -->
+    <mat-sidenav
+      class="sidenav"
+      align="start"
+      mode="side"
+      opened="true"
+      fuseMatSidenavHelper="carded-left-sidenav"
+      mat-is-locked-open="gt-md"
+    >
+      <!-- SIDENAV HEADER -->
+      <div
+        fxLayout="column"
+        fxLayoutAlign="space-between start"
+        class="header p-24 pb-4"
+        ngClass="mat-accent-bg"
+        ngClass.gt-md="white-fg"
+      >
+        <div
+          class="account"
+          fxFlex
+          fxFill
+          fxLayout="row"
+          fxLayoutAlign="space-between end"
         >
-          <!-- SIDENAV HEADER -->
-          <div
-            fxLayout="column"
-            fxLayoutAlign="space-between start"
-            class="header p-24 pb-4"
-            ngClass="mat-accent-bg"
-            ngClass.gt-md="white-fg"
-          >
-            <div class="account" fxFlex fxFill fxLayout="row" fxLayoutAlign="space-between end">
-              <span
-                class="mat-title"
-                *fuseIfOnDom
-                [@animate]="{ value: '*', params: { delay: '100ms', x: '-25px' } }"
-                >bolsas
-              </span>
-            </div>
-
-          </div>
-          <!-- / SIDENAV HEADER -->
-
-          <!-- SIDENAV CONTENT -->
-          <div
-            class="content"
-            fusePerfectScrollbar
+          <span
+            class="mat-title"
             *fuseIfOnDom
-            [@animate]="{ value: '*', params: { y: '50px' } }"
-          >
+            [@animate]="{ value: '*', params: { delay: '100ms', x: '-25px' } }"
+            >bolsas
+          </span>
+        </div>
+      </div>
+      <!-- / SIDENAV HEADER -->
 
-
-
-          <div
-              *ngIf="walletData"
-              class="grey-300-bg p-4"
-              fxLayout="column"
+      <!-- SIDENAV CONTENT -->
+      <div
+        class="content"
+        fusePerfectScrollbar
+        *fuseIfOnDom
+        [@animate]="{ value: '*', params: { y: '50px' } }"
+      >
+        <div
+          *ngIf="walletData"
+          class="grey-300-bg p-4"
+          fxLayout="column"
+          fxLayoutAlign="start center"
+        >
+          <div fxLayout="column" fxFill>
+            <div
+              class="px-16 py-12"
+              fxFlex="100"
+              fxLayout="row"
               fxLayoutAlign="start center"
             >
-
-              <div fxLayout="column" fxFill>
-                <div
-                  class="px-16 py-12"
-                  fxFlex="100"
-                  fxLayout="row"
-                  fxLayoutAlign="start center"
+              <div class="h4 secondary-text" fxFlex="35">Saldo</div>
+              <div
+                class="pt-0 mat-title m-0 font-weight-300 text-nowrap"
+                fxFlex="65"
+              >
+                <span
+                  [ngStyle]="{
+                    color: 0 >= 0 ? 'green' : 'red'
+                  }"
+                  >{{ walletData.pockets.main | currency }}</span
                 >
-                  <div
-                    class="h4 secondary-text"
-                    fxFlex="35">
-                    Saldo
-                  </div>
-                  <div
-                    class="pt-0 mat-title m-0 font-weight-300 text-nowrap"
-                    fxFlex="65"
-                  >
-                    <span
-                      [ngStyle]="{
-                        color: 0 >= 0 ? 'green' : 'red'
-                      }"
-                      >{{ walletData.pockets.main  | currency }}</span
-                    >
-                  </div>
-                </div>
-
-                <div
-                  class="px-16 py-12"
-                  fxLayout="row"
-                  fxLayoutAlign="start center"
-                >
-                    <div class="h4 secondary-text" fxFlex="35">Comisión</div>
-                    <div class="pt-0 mat-title m-0 font-weight-300 text-nowrap" fxFlex="65">
-                      <span
-                        [ngStyle]="{
-                          color: walletData.pockets.bonus >= 0 ? 'green' : 'red'
-                        }"
-                        >{{ walletData.pockets.bonus | currency }}</span
-                      >
-                    </div>
-                </div>
-
-                <div
-                  class="px-16 py-12"
-                  fxLayout="row"
-                  fxLayoutAlign="start center"
-                >
-                    <div class="h4 secondary-text" fxFlex="35">Crédito</div>
-                    <div class="pt-0 mat-title m-0 font-weight-300 text-nowrap" fxFlex="65">
-                      <span
-                        [ngStyle]="{
-                          color: walletData.pockets.credit >= 0 ? 'green' : 'red'
-                        }"
-                        >{{ walletData.pockets.credit | currency }}</span
-                      >
-                    </div>
-                  </div>
               </div>
             </div>
 
-          </div>
-          <!-- / SIDENAV CONTENT -->
-        </mat-sidenav>
-        <!-- / SIDENAV -->
-
-        <!-- CENTER -->
-        <div class="center">
-          <!-- CONTENT HEADER -->
-          <div class="header" fxLayout="row" fxLayoutAlign="start center">
-              <button
-              mat-mini-fab color="primary"
-              class="sidenav-toggle"
-              fuseMatSidenavToggler="carded-left-sidenav"
-              fxHide.gt-md
-              aria-label="Toggle Sidenav"
-              class="green"
+            <div
+              class="px-16 py-12"
+              fxLayout="row"
+              fxLayoutAlign="start center"
             >
-              <mat-icon style="color: #ffffff "> monetization_on</mat-icon>
-            </button>
-            <span
-                class="header-tittle"
-                *fuseIfOnDom
-                [@animate]="{ value: '*', params: { delay: '100ms', x: '-25px' } }"
-                style="margin-top: 20px; margin-left: 15px"
-                >Puesto De Venta</span>
-          </div>
-          <!-- / CONTENT HEADER -->
+              <div class="h4 secondary-text" fxFlex="35">Comisión</div>
+              <div
+                class="pt-0 mat-title m-0 font-weight-300 text-nowrap"
+                fxFlex="65"
+              >
+                <span
+                  [ngStyle]="{
+                    color: walletData.pockets.bonus >= 0 ? 'green' : 'red'
+                  }"
+                  >{{ walletData.pockets.bonus | currency }}</span
+                >
+              </div>
+            </div>
 
-          <!-- CONTENT CARD -->
-          <div class="content-card mat-white-bg">
-              <afcc-reloader #webcomponent
-              pos_id="testPosId" pos_terminal="testPosTerminal" pos_user_name="testPosUser" pos_user_id="testPosUserId"></afcc-reloader>
+            <div
+              class="px-16 py-12"
+              fxLayout="row"
+              fxLayoutAlign="start center"
+            >
+              <div class="h4 secondary-text" fxFlex="35">Crédito</div>
+              <div
+                class="pt-0 mat-title m-0 font-weight-300 text-nowrap"
+                fxFlex="65"
+              >
+                <span
+                  [ngStyle]="{
+                    color: walletData.pockets.credit >= 0 ? 'green' : 'red'
+                  }"
+                  >{{ walletData.pockets.credit | currency }}</span
+                >
+              </div>
+            </div>
           </div>
-          <!-- / CONTENT CARD -->
         </div>
-        <!-- / CENTER -->
-      </mat-sidenav-container>
+      </div>
+      <!-- / SIDENAV CONTENT -->
+    </mat-sidenav>
+    <!-- / SIDENAV -->
+
+    <!-- CENTER -->
+    <div class="center">
+      <!-- CONTENT HEADER -->
+      <div class="header" fxLayout="row" fxLayoutAlign="start center">
+        <button
+          mat-mini-fab
+          color="primary"
+          class="sidenav-toggle"
+          fuseMatSidenavToggler="carded-left-sidenav"
+          fxHide.gt-md
+          aria-label="Toggle Sidenav"
+          class="green"
+        >
+          <mat-icon style="color: #ffffff "> monetization_on</mat-icon>
+        </button>
+
+        <span
+          class="header-tittle"
+          *fuseIfOnDom
+          [@animate]="{ value: '*', params: { delay: '100ms', x: '-25px' } }"
+          style="margin-top: 20px; margin-left: 15px"
+          > Puesto De Venta
+          <button *ngIf="operation === 'RELOAD_CARD_SUCCESS'" mat-mini-fab (click)="printInvoice()">
+            <mat-icon aria-label="Print invoice" style="color: white">print</mat-icon>
+          </button></span
+        >
+      </div>
+      <!-- / CONTENT HEADER -->
+
+      <!-- CONTENT CARD -->
+      <div class="content-card mat-white-bg">
+        <afcc-reloader
+          #webcomponent
+          pos_id="testPosId"
+          pos_terminal="testPosTerminal"
+          pos_user_name="testPosUser"
+          pos_user_id="testPosUserId"
+        ></afcc-reloader>
+      </div>
+      <!-- / CONTENT CARD -->
+    </div>
+    <!-- / CENTER -->
+  </mat-sidenav-container>
 </div>

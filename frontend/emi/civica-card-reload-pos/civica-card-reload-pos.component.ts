@@ -15,7 +15,8 @@ import {
 } from 'rxjs/operators';
 import { concat, Subject } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar, MatDialog } from '@angular/material';
+import { PrintDialogComponent } from './print-dialog/print-dialog.component';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -28,14 +29,30 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
   userDetails: KeycloakProfile = {};
   private ngUnsubscribe = new Subject();
   walletData;
+  @ViewChild('webcomponent')
+  webcomponent;
+  operation;
+  receipt;
   constructor(
     private civicaCardReloadPosService: CivicaCardReloadPosService,
     private keycloakService: KeycloakService,
     private translate: TranslateService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   async ngOnInit() {
+    this.webcomponent.receipt
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(receipt => {
+        this.receipt = receipt;
+        console.log('llega recibo', receipt);
+      });
+    this.webcomponent.operation
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(operation => {
+        this.operation = operation;
+      });
     this.userDetails = await this.keycloakService.loadUserProfile();
     this.loadWalletData();
     this.startWalletUpdatedSubscription$().subscribe(result => {
@@ -48,8 +65,23 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
+  printInvoice() {
+    this.dialog
+      // Opens confirm dialog
+      .open(PrintDialogComponent, {
+        data: this.receipt
+      })
+      .afterClosed()
+      .pipe(filter(print => print))
+      .subscribe(print => {
+        console.log('print => ', print);
+      });
+  }
+
   startWalletUpdatedSubscription$() {
-    return this.civicaCardReloadPosService.getWalletUpdatedSubscription$((this.userDetails as any).attributes.businessId[0]);
+    return this.civicaCardReloadPosService.getWalletUpdatedSubscription$(
+      (this.userDetails as any).attributes.businessId[0]
+    );
   }
 
   /**
@@ -83,7 +115,8 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
           return walletCopy;
         }),
         takeUntil(this.ngUnsubscribe)
-      ).subscribe(wallet => {
+      )
+      .subscribe(wallet => {
         console.log('new Wallet => ', wallet);
         this.walletData = wallet;
       });

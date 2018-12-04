@@ -13,7 +13,8 @@ export class ReloadCardSuccessfullyComponent implements OnInit {
 
   ngOnInit() {
     this.receipt = this.afccReloaderService.conversation.purchase.receipt;
-    this.afccReloaderService.cardReloadDone$.next(this.receipt);
+    this.afccReloaderService.cardReloadDone$.next(true);
+    this.afccReloaderService.receipt$.next(this.receipt);
   }
 
   retry() {
