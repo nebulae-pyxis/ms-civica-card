@@ -373,7 +373,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Refreshes the table data according to the filters and the paginator.
+   * Refreshes the table data according to the filters and the paginator
    */
   refreshTransactionHistoryTable() {
     Rx.Observable.combineLatest(

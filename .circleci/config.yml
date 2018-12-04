@@ -178,7 +178,7 @@ jobs:
             mkdir ~/nebulae/backend
             cp ~/nebulae/go/mbinit ~/nebulae/repo/backend/civica-card/
             export DOCKERHUB_IMAGE=civica-card.backend.civica-card
-            export DOCKERHUB_TAG=1.0.14
+            export DOCKERHUB_TAG=1.0.15
             gitChanged backend/civica-card || docker build  -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG -t $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:latest ~/nebulae/repo/backend/civica-card/
             gitChanged backend/civica-card || docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS
             gitChanged backend/civica-card || docker push $DOCKERHUB_NAMESPACE/$DOCKERHUB_IMAGE:$DOCKERHUB_TAG

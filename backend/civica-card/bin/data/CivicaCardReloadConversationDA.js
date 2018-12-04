@@ -253,7 +253,7 @@ class CivicaCardReloadConversationDA {
   }
 
   /**
-   * Sets the final (after being written) client's card  data
+   * Sets the final (after being written) client's card  data.
    * @param {String} id conversation id
    * @param {*} rawData client's card data
    */
