@@ -20,7 +20,14 @@ export class ReloadCardComponent implements OnInit {
     this.afccReloaderService.writeCard$().subscribe(result => {
       this.reloadCardSuccessfully();
     },
-    error => this.reloadCardError());
+      error => {
+        console.log('llega error de escritura: ', error);
+        if (error.toString().indexOf('INVALID_CARD_TO_RELOAD') !== -1) {
+          this.afccReloaderService.conversation.error =
+            'INVALID_CARD_TO_RELOAD';
+        }
+        this.reloadCardError();
+      });
   }
 
   refreshReloadState$() {

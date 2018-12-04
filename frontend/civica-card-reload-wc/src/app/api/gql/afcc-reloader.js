@@ -145,6 +145,15 @@ export const purchaseCivicaCardReload = gql`
   }
 `;
 
+export const getMasterKeyReloader = gql`
+  query {
+    getMasterKeyReloader {
+      key
+    }
+  }
+`;
+
+
 export const CivicaCardReloadConversation = gql`
   query CivicaCardReloadConversation($id: ID!) {
     CivicaCardReloadConversation(id: $id) {

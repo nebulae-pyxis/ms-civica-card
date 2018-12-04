@@ -55,6 +55,18 @@ export class ReadCardComponent implements OnInit, OnDestroy {
     this.afccReloadService.cardRead$.next('Here card readed info');
   }
 
+  prevValidValue;
+  onReloadValueChanged(event: any) { 
+    const intValue = parseInt(event.target.value.replace(/,/g, "").replace("$", ""));
+    if (intValue <= 50000) {
+      this.prevValidValue = intValue;
+    } else { 
+      this.openSnackBar('Monto máximo es $50,000')
+      this.value = this.prevValidValue;
+    }
+  }
+  
+
   readCard() {
     this.afccReloadService
       .readCard$()
@@ -130,6 +142,9 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.dialog) {
+      this.dialog.closeAll();
+    }
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }

@@ -178,7 +178,7 @@ export class AfccRealoderService {
   }
 
   getReaderKey() {
-    return this.gateway.apollo.use('sales-gateway')
+    return this.gateway.apollo
     .query<any>({
       query: getMasterKeyReloader,
       errorPolicy: 'all',

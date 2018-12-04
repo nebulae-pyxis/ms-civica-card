@@ -143,27 +143,7 @@ export class AfccRealoderService {
       return Rx.of('connection succeful');
     }).pipe(
       mergeMap(() => {
-        return this.gateway.apollo.use('sales-gateway')
-          .query<any>({
-            query: CivicaCardReloadConversation,
-            variables: {
-              id: localStorage.conversationId
-            },
-            errorPolicy: 'all',
-            fetchPolicy: 'network-only'
-          })
-          .pipe(
-            catchError(error => {
-              return Rx.of(undefined);
-            })
-          );
-      }),
-      map(rawData => {
-        if (rawData) {
-          return JSON.parse(
-            JSON.stringify(rawData.data.CivicaCardReloadConversation)
-          );
-        }
+        return this.getCurrentConversation$();
       }),
       tap(result => {
         if (
@@ -176,6 +156,34 @@ export class AfccRealoderService {
         }
       })
     );
+  }
+  getCurrentConversation$() { 
+    if (localStorage.conversationId) {
+      return this.gateway.apollo.use('sales-gateway')
+        .query<any>({
+          query: CivicaCardReloadConversation,
+          variables: {
+            id: localStorage.conversationId
+          },
+          errorPolicy: 'all',
+          fetchPolicy: 'network-only'
+        })
+        .pipe(
+          catchError(error => {
+            return Rx.of(undefined);
+          }),
+          map(rawData => {
+            if (rawData) {
+              return JSON.parse(
+                JSON.stringify(rawData.data.CivicaCardReloadConversation)
+              );
+            }
+          }),
+        );
+    } else { 
+      return Rx.of(undefined);
+    }
+    
   }
 
   getReaderKey() {

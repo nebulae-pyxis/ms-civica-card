@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AfccRealoderService } from '../../afcc-realoder.service';
+import { OperabilityState } from '../../utils/operability-sate';
 
 @Component({
   selector: 'app-reload-card-successfully',
@@ -13,6 +14,10 @@ export class ReloadCardSuccessfullyComponent implements OnInit {
   ngOnInit() {
     this.receipt = this.afccReloaderService.conversation.purchase.receipt;
     this.afccReloaderService.cardReloadDone$.next(this.receipt);
+  }
+
+  retry() {
+    this.afccReloaderService.operabilityState$.next(OperabilityState.CONNECTED);
   }
 
 }

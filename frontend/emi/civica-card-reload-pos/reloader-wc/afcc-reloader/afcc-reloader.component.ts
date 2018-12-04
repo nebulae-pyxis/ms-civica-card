@@ -296,6 +296,10 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   }
 
   stablishNewConnection() {
+    if (!this.afccRealoderService.keyReader) { 
+      console.log('No se encuentra keyReader')
+      this.afccRealoderService.getReaderKey().subscribe();
+    }
     this.connectionSub = this.afccRealoderService
       .stablishNewConnection$()
       .subscribe(
@@ -305,6 +309,16 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
               'reloader enter on standByMode'
             );
           } else if (status === ConnectionStatus.CONNECTED) {
+            this.afccRealoderService.getCurrentConversation$().subscribe(result => { 
+              if (
+                result &&
+                ((result as any).uiState === OperabilityState.RELOADING_CARD ||
+                  (result as any).uiState === OperabilityState.RELOADING_CARD_ERROR)
+              ) {
+                this.afccRealoderService.conversation = result;
+                this.operabilityState$.next(OperabilityState.RELOADING_CARD);
+              }
+            });
             this.afccRealoderService.reloaderWorkingMode$.next(
               'reloader end the standByMode'
             );
@@ -342,8 +356,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
       map(state => {
         this.afccRealoderService.operation$.next(state);
         return (
-          state === OperabilityState.CARD_READED ||
-          state === OperabilityState.RELOAD_CARD_SUCCESS
+          state === OperabilityState.CARD_READED
         );
       })
     );
