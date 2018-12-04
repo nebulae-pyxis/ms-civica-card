@@ -509,52 +509,58 @@ export class MyfarePlusSl3 {
    * @param uid Card uid
    */
   startReloadConversation(gateway: GatewayService, conversation, uid) {
-    if (uid === conversation.cardUid) {
+    console.log('UID: ', uid);
+    console.log('CONVERSATION ID: ', conversation.cardUid);
+    if (!conversation.cardUid) {
+      const posLocation = [
+        conversation.position.latitude,
+        conversation.position.longitude
+      ];
+      conversation.cardUid = uid;
+      return gateway.apollo.use('sales-gateway')
+        .mutate<any>({
+          mutation: startCivicaCardReloadConversation,
+          variables: {
+            id: conversation.id,
+            cardUid: uid,
+            posId: conversation.posId,
+            posUserName: conversation.posUserName,
+            posUserId: conversation.posUserId,
+            posTerminal: conversation.posTerminal,
+            posLocation: posLocation,
+            readerType: conversation.readerType,
+            cardType: conversation.cardType
+          },
+          errorPolicy: 'all'
+        })
+        .pipe(
+          map(rawData => {
+            console.log('Inicio de conversacion: ', rawData);
+            if ((rawData as any).errors) {
+              const error = (rawData as any).errors[0];
+              switch (error.message.code) {
+                case 18010:
+                  throw new Error('BUSINESS_NOT_FOUND');
+                case 18011:
+                  throw new Error('BUSINESS_NOT_ACTIVE');
+                case 18012:
+                  throw new Error('BUSINESS_WALLET_NOT_FOUND');
+                case 18013:
+                  throw new Error('BUSINESS_WALLET_SPENDING_FORBIDDEN');
+                case 2001:
+                  throw new Error('INVALID_SESSION');
+              }
+            } else {
+              return (rawData as any).data.startCivicaCardReloadConversation;
+            }
+          })
+        );
+    } else if (uid !== conversation.cardUid) {
+      throw new Error('NON_EQUAL_CARD');
+    }
+    else if (conversation.cardUid) {
       return of(conversation);
     }
-    const posLocation = [
-      conversation.position.latitude,
-      conversation.position.longitude
-    ];
-    conversation.cardUid = uid;
-    return gateway.apollo.use('sales-gateway')
-      .mutate<any>({
-        mutation: startCivicaCardReloadConversation,
-        variables: {
-          id: conversation.id,
-          cardUid: uid,
-          posId: conversation.posId,
-          posUserName: conversation.posUserName,
-          posUserId: conversation.posUserId,
-          posTerminal: conversation.posTerminal,
-          posLocation: posLocation,
-          readerType: conversation.readerType,
-          cardType: conversation.cardType
-        },
-        errorPolicy: 'all'
-      })
-      .pipe(
-        map(rawData => {
-          console.log('Inicio de conversacion: ', rawData);
-          if ((rawData as any).errors) {
-            const error = (rawData as any).errors[0];
-            switch (error.message.code) {
-              case 18010:
-                throw new Error('BUSINESS_NOT_FOUND');
-              case 18011:
-                throw new Error('BUSINESS_NOT_ACTIVE');
-              case 18012:
-                throw new Error('BUSINESS_WALLET_NOT_FOUND');
-              case 18013:
-                throw new Error('BUSINESS_WALLET_SPENDING_FORBIDDEN');
-              case 2001:
-                throw new Error('INVALID_SESSION');
-            }
-          } else {
-            return (rawData as any).data.startCivicaCardReloadConversation;
-          }
-        })
-      );
   }
 
   /**
@@ -669,13 +675,17 @@ export class MyfarePlusSl3 {
             errorPolicy: 'all'
           })
           .pipe(
-            map(rawData =>
-              JSON.parse(
-                JSON.stringify(
-                  (rawData as any).data
-                    .processCivicaCardReloadWriteAndReadApduCommandResponses
-                )
+          map(rawData => {
+            if (rawData.errors) {
+              throw new Error(rawData.errors[0].message.method);
+            }
+            return JSON.parse(
+              JSON.stringify(
+                (rawData as any).data
+                  .processCivicaCardReloadWriteAndReadApduCommandResponses
               )
+            );
+          }
             )
           );
       })
@@ -784,7 +794,26 @@ export class MyfarePlusSl3 {
             })
           );
         } else if (conversation.cardType === 'SL1') {
-          return this.getWriteCardApduCommands(gateway, '', conversation);
+          
+          return this.getUid$(
+            bluetoothService,
+            readerAcr1255,
+            cypherAesService,
+            sessionKey
+          ).pipe(
+            map(resultUid => {
+              const resp = new DeviceUiidResp(resultUid);
+              // get the last 4 bytes of the uid and remove the las 2 bytes
+              // of the data(this bytes is onle to verify if is a correct answer)
+              const uid = cypherAesService.bytesTohex(resp.data.slice(-6, -2));
+              return uid;
+            }),
+            mergeMap(uid => {
+              if (conversation.cardUid && conversation.cardUid !== uid) {
+                throw new Error('INVALID_CARD_TO_RELOAD');
+              }
+              return this.getWriteCardApduCommands(gateway, '', conversation);
+            }));
         } else {
           throw new Error('CARD_NOT_SUPPORTED');
         }

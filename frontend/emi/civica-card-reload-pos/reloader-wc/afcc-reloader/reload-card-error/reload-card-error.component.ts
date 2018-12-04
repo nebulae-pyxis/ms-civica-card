@@ -9,9 +9,11 @@ import { OperabilityState } from '../../utils/operability-sate';
 })
 export class ReloadCardErrorComponent implements OnInit {
 
+  errorType;
   constructor(private afccReloaderService: AfccRealoderService) { }
 
   ngOnInit() {
+    this.errorType = this.afccReloaderService.conversation.error;
   }
 
   retry() {

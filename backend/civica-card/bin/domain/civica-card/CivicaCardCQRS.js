@@ -315,6 +315,7 @@ class CivicaCardCQRS {
     logError(error) {
         if (!error.stack) {
             console.error(error);
+            return;
         }
         const stackLines = error.stack.split('\n');
         console.error(

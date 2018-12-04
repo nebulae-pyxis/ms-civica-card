@@ -4,9 +4,17 @@
 <div style="margin-top: 20px;" class="horizontal-container">
   <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
     <mat-list>
-      <mat-list-item>
+      <mat-list-item *ngIf="errorType !== 'INVALID_CARD_TO_RELOAD'">
         <svg-icon src="assets/civica-card-reload-pos/arrow_right.svg" style="margin-right: 10px" [svgStyle]="{'fill':'#3f51b5'}"></svg-icon>
         Asegúrese que la tarjeta se encuentra de forma fija y centrada en el lector
+      </mat-list-item>
+      <mat-list-item *ngIf="errorType === 'INVALID_CARD_TO_RELOAD'">
+        <svg-icon
+          src="assets/civica-card-reload-pos/arrow_right.svg"
+          style="margin-right: 10px"
+          [svgStyle]="{ fill: '#3f51b5' }"
+        ></svg-icon>
+        Tarjeta ingresada no coincide con la anteriormente leida
       </mat-list-item>
     </mat-list>
   </div>

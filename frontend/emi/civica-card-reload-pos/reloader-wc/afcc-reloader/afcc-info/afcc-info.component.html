@@ -3,7 +3,7 @@
   <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
       <b style="font-size: 16px; color: #444">Lectora conectada:</b>
       <p style="font-size: 16px; ">{{deviceName}}</p>
-      <button (click)="readCard()" mat-stroked-button color="primary">realizar recarga</button>
+      <button (click)="readCard()" mat-stroked-button color="primary">Realizar Recarga</button>
   </div>
   <div class="vertical-container">
       <svg-icon *ngIf="isBatteryLoaded" src="assets/civica-card-reload-pos/{{getBatteryIcon() | async}}.svg" [svgStyle]="{'width':40, 'height': 40,'fill': getBatteryColor() | async }"></svg-icon>
