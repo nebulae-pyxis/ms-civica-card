@@ -132,7 +132,6 @@ class CivicaCardReloadDA {
  * @param {*} pagination.sortTimestamp Indicates if the info should be sorted asc or desc according to the timestamp.
  */
   static getCivicaCardReloadsHistory$(filter, pagination) {
-
     return Observable.create(async observer => {
       const initDateFormat = new Date(filter.initDate);
       const monthYear = Crosscutting.getMonthYear(initDateFormat);
@@ -152,23 +151,23 @@ class CivicaCardReloadDA {
       }
 
       if(filter.terminal && filter.terminal.id){
-        query['receipt.posTerminal'] = filter.terminal.id;
+        query['receipt.posTerminal'] = { $regex: filter.terminal.id, $options: 'i'};
       }
 
       if(filter.terminal && filter.terminal.userId){
-        query['receipt.posUserId'] = filter.terminal.userId;
+        query['receipt.posUserId'] = { $regex: filter.terminal.userId, $options: 'i'};
       }
 
       if(filter.terminal && filter.terminal.username){
-        query['receipt.posUserName'] = filter.terminal.username;
+        query['receipt.posUserName'] = { $regex: filter.terminal.username, $options: 'i'};
       }
 
       if(filter.terminal && filter.terminal.posId){
-        query['receipt.posId'] = filter.terminal.posId;
+        query['receipt.posId'] = { $regex: filter.terminal.posId, $options: 'i'};
       }
 
       if(filter.user && filter.user){
-        query['user'] = filter.user;
+        query['user'] = { $regex: filter.user, $options: 'i'};
       }
 
       //console.log('Query => ', query);

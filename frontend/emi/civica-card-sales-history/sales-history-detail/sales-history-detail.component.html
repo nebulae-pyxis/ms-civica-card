@@ -141,7 +141,7 @@
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.FECHA_ULTIMO_DESBLOQUEO_TARJETA' | translate}}</span>
                             <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta == 0">N/A</span>
-                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta != 0">{{selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta != 0">{{selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta  * 1000 | date: "dd/MM/y HH:mm:ss"}}</span>
                         </div>
 
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
@@ -303,7 +303,7 @@
                         <div class="form-field" fxLayout="row" fxLayoutAlign="start center">
                             <span class="title">{{'SALES_HISTORY.FECHA_ULTIMO_DESBLOQUEO_TARJETA' | translate}}</span>
                             <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta == 0">N/A</span>
-                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta > 0">{{selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta}}</span>
+                            <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta > 0">{{selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta  * 1000 | date: "dd/MM/y HH:mm:ss"}}</span>
                             <span class="value" *ngIf="selectedSaleHistory.finalCard.fechaUltimoDesbloqueoTarjeta == null && selectedSaleHistory.initialCard.fechaUltimoDesbloqueoTarjeta == 0">
                                 N/A
                             </span>

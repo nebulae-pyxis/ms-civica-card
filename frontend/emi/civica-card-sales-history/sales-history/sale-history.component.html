@@ -171,6 +171,7 @@
                     formControlName="user"
                     id="user"
                     maxlength="20"
+                    [readonly]="isPOS"
                   />
                 </mat-form-field>
 
@@ -308,7 +309,7 @@
             <mat-header-cell *cdkHeaderCellDef>{{"SALES_HISTORY.CONSOLIDATED_BALANCE" | translate}}</mat-header-cell>
             <mat-cell *cdkCellDef="let civicaCardReload">
               <p class="text-truncate">
-                {{ civicaCardReload.finalCard._saldoConsolidado }}
+                {{ civicaCardReload.finalCard._saldoConsolidado | currency }}
               </p>
             </mat-cell>
           </ng-container>

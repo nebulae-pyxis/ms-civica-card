@@ -67,18 +67,42 @@ export class PrintDialogComponent implements OnInit {
   printInvoice(){
     let printContents, popupWin;
     printContents = document.getElementById('print-section').innerHTML;
-    popupWin = window.open('', '_blank', 'top=0,left=0,height=100%,width=auto');
-    popupWin.document.open();
-    popupWin.document.write(`
-      <html>
-        <head>
-          <title>Print tab</title>
-        </head>
-      <body onload="window.print();window.close()">${printContents}</body>
-      </html>`
-    );
-    popupWin.document.close();
-    this.dialogRef.close(true);
+
+    var frame1 = document.createElement('iframe');
+    frame1.name = "frame3";
+    frame1.style.position = "absolute";
+    frame1.style.top = "-1000000px";
+    document.body.appendChild(frame1);
+    var frameDoc = frame1.contentWindow ? frame1.contentWindow : frame1.contentDocument.document ? frame1.contentDocument.document : frame1.contentDocument;
+    frameDoc.document.open();
+    frameDoc.document.write(`
+    <html>
+      <head>
+        <title>Print tab</title>
+      </head>
+    <body>${printContents}</body>
+    </html>`);
+    setTimeout(function () {
+      window.frames["frame3"].focus();
+      window.frames["frame3"].print();
+      document.body.removeChild(frame1);
+    }, 500);
+    return false;
+
+
+
+    // popupWin = window.open('', '_blank', 'top=0,left=0,height=100%,width=auto');
+    // popupWin.document.open();
+    // popupWin.document.write(`
+    //   <html>
+    //     <head>
+    //       <title>Print tab</title>
+    //     </head>
+    //   <body onload="window.print();window.close()">${printContents}</body>
+    //   </html>`
+    // );
+    //popupWin.document.close();
+    //this.dialogRef.close(true);
   }
 
   close(){

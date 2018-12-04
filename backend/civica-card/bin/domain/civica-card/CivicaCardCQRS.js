@@ -339,7 +339,7 @@ class CivicaCardCQRS {
             PERMISSION_DENIED,
             ["SYSADMIN", "platform-admin", "business-owner", "POS"]
         ).pipe(
-            mergeMap(roles => {
+            mergeMap(roles => {                
                 const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
                 //If an user does not have the role to get the civica card sales history from other business, we must return an error
                 if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
@@ -348,7 +348,7 @@ class CivicaCardCQRS {
 
                 //Users with POS role can only search the sales that they have performed
                 const isPOS = roles['POS'];
-                if (!isAdmin && isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
+                if (!isAdmin && isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {                    
                     throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
                 }
 

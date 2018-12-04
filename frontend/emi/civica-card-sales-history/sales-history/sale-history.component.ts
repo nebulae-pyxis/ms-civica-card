@@ -109,6 +109,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   selectedBusinessName: any = "";
   selectedSaleHistory: any = null;
   isSystemAdmin: Boolean = false;
+  isPOS: Boolean = false;
+  userProfile: any = null;
 
   businessQueryFiltered$: Observable<any[]>;
 
@@ -155,7 +157,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     this.loadBusinessFilter();
     this.detectFilterAndPaginatorChanges();
     this.loadDataInForm();
-    this.loadRoleData();
+    // this.loadRoleData();
     this.refreshTransactionHistoryTable();
   }
 
@@ -266,7 +268,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   getFormChanges$() {
     return this.filterForm.valueChanges.pipe(
       debounceTime(500),
-      distinctUntilChanged()
+      distinctUntilChanged(),      
     );
   }
 
@@ -314,10 +316,19 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
 
     const startOfMonth = moment().startOf("month");
     const endOfMonth = moment().endOf("day");
-    this.filterForm.patchValue({
-      initDate: startOfMonth,
-      endDate: endOfMonth
-    });
+
+    if(!this.isSystemAdmin && this.isPOS){
+      this.filterForm.patchValue({
+        initDate: startOfMonth,
+        endDate: endOfMonth,
+        user: this.userProfile.username
+      });
+    }else{
+      this.filterForm.patchValue({
+        initDate: startOfMonth,
+        endDate: endOfMonth
+      });
+    }
     this.outdatedData = false;
   }
 
@@ -328,19 +339,19 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
           return this.filterForm.enabled;
         }),
         map(([formChanges, paginator]) => {
-
           const data = {
             filter: {
               initDate: formChanges.initDate,
               endDate: formChanges.endDate,
               // transactionType: {type: 'SALE', concepts: ['ADIOS']},
-              transactionConcept: formChanges.transactionConcept,
+              //transactionConcept: formChanges.transactionConcept,
               terminal: {
                 id: formChanges.terminalId,
                 userId: formChanges.terminalUserId,
                 username: formChanges.terminalUsername,
                 posId: formChanges.terminalPosId
-              }
+              },
+              user: formChanges.user
             },
             pagination: {
               page: paginator.pageIndex,
@@ -370,6 +381,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       this.saleHistoryService.selectedBusinessEvent$
     )
       .pipe(
+        debounceTime(500),
         filter(([filterAndPagination, selectedBusiness]) => {
           return filterAndPagination != null && selectedBusiness != null;
         }),
@@ -386,7 +398,8 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
               ? filterAndPagination.filter.transactionTypeData.type
               : undefined,
             transactionConcept: filterAndPagination.filter.transactionConcept,
-            terminal: filterAndPagination.filter.terminal
+            terminal: filterAndPagination.filter.terminal,
+            user: filterAndPagination.filter.user
           };
 
           const CivicaSalePaginationInput = filterAndPagination.pagination;
@@ -417,16 +430,16 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   *
-   */
-  loadRoleData() {
-    this.checkIfUserIsAdmin$()
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(hasSysAdminRole => {
-        this.isSystemAdmin = hasSysAdminRole;
-      });
-  }
+  // /**
+  //  *
+  //  */
+  // loadRoleData() {
+  //   this.checkIfUserIsAdmin$()
+  //     .pipe(takeUntil(this.ngUnsubscribe))
+  //     .subscribe(hasSysAdminRole => {
+  //       this.isSystemAdmin = hasSysAdminRole;
+  //     });
+  // }
 
   /**
    * Creates the transaction history filter
@@ -439,11 +452,29 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
    * Checks if the logged user has role SYSADMIN
    */
   checkIfUserIsAdmin$() {
-    return Rx.Observable.of(this.keycloakService.getUserRoles(true)).pipe(
-      map(userRoles => userRoles.some(role => role === "SYSADMIN" || role === "platform-admin")),
-      tap(isAdmin => {
-        this.isSystemAdmin = isAdmin;
-      })
+    return forkJoin(
+      of(this.keycloakService.getUserRoles(true)),
+      this.keycloakService.loadUserProfile()
+    ).pipe(
+      tap(([userRoles, userProfile]) => {
+        // console.log('userRoles => ', userRoles);
+        // console.log('userProfile => ', userProfile);
+        this.isSystemAdmin = userRoles.some(role => role.toUpperCase() === "SYSADMIN" || role.toUpperCase() === "PLATFORM-ADMIN");
+        this.isPOS = userRoles.some(role => role.toUpperCase() === "POS");
+
+        if(!this.isSystemAdmin && this.isPOS){
+          this.filterForm.patchValue({
+            user: userProfile.username
+          });
+
+          this.userProfile = userProfile;
+          //this.filterForm.controls['user'].disable();
+        }
+      }),
+      map(([userRoles, userProfile]) => userRoles.some(role => role.toUpperCase() === "SYSADMIN" || role.toUpperCase() === "PLATFORM-ADMIN")),
+      // tap(isAdmin => {
+      //   this.isSystemAdmin = isAdmin;
+      // })
     );
   }
 
