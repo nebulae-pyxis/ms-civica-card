@@ -338,10 +338,10 @@ class CivicaCardCQRS {
             "Civica-Card",
             "getCivicaCardSalesHistory",
             PERMISSION_DENIED,
-            ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+            ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         ).pipe(
             mergeMap(roles => {                
-                const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+                const isAdmin = roles['PLATFORM-ADMIN'];
                 //If an user does not have the role to get the civica card sales history from other business, we must return an error
                 if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
                     throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
@@ -375,10 +375,10 @@ class CivicaCardCQRS {
             "Civica-Card",
             "getCivicaCardSalesHistoryAmount",
             PERMISSION_DENIED,
-            ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+            ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         ).pipe(
             mergeMap(roles => {
-                const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+                const isAdmin = roles['PLATFORM-ADMIN'];
                 //If an user does not have the role to get the transaction history from other business, we must return an error
                 if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
                     throw new CustomError('Permiso denegado', `Solo puede consultar información de su propia unidad de negocio.`, PERMISSION_DENIED);
@@ -411,10 +411,10 @@ class CivicaCardCQRS {
             "Civica-Card",
             "getCivicaCardSaleHistoryById",
             PERMISSION_DENIED,
-            ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+            ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         ).pipe(
             mergeMap(roles => {
-                const isAdmin = roles['SYSADMIN'] || roles['platform-admin'];
+                const isAdmin = roles['PLATFORM-ADMIN'];
                 //If an user does not have the role to get the transaction history from other business, the query must be filtered with the businessId of the user
                 const businessId = !isAdmin ? (authToken.businessId || '') : null;
 
@@ -440,7 +440,7 @@ class CivicaCardCQRS {
             "Civica-Card",
             "getCivicaCardReloadConversationDetailed",
             PERMISSION_DENIED,
-            ["SYSADMIN"]
+            ["PLATFORM-ADMIN"]
         ).pipe(
             mergeMap(roles => CivicaCardReloadConversationDA.find$(args.id)),
             map(conversation => JSON.stringify(conversation)),

@@ -31,7 +31,7 @@ module.exports = {
           "civicaCardSalesHistory",
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
-          ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+          ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         )
           .mergeMap(response => {
             return broker.forwardAndGetReply$(
@@ -52,7 +52,7 @@ module.exports = {
           "civicaCardSalesHistoryAmount",
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
-          ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+          ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         )
           .mergeMap(response => {
             return broker.forwardAndGetReply$(
@@ -73,7 +73,7 @@ module.exports = {
           "civicaCardSaleHistory",
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
-          ["SYSADMIN", "platform-admin", "business-owner", "POS"]
+          ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         )
           .mergeMap(response => {
             return broker.forwardAndGetReply$(
@@ -94,7 +94,7 @@ module.exports = {
           "civicaCardReloadConversation",
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
-          ["SYSADMIN"]
+          ["PLATFORM-ADMIN"]
         )
           .mergeMap(response => {
             return broker.forwardAndGetReply$(

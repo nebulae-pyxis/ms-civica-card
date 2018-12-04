@@ -108,7 +108,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   selectedBusinessData: any = null;
   selectedBusinessName: any = "";
   selectedSaleHistory: any = null;
-  isSystemAdmin: Boolean = false;
+  isAdmin: Boolean = false;
   isPOS: Boolean = false;
   userProfile: any = null;
 
@@ -317,7 +317,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
     const startOfMonth = moment().startOf("month");
     const endOfMonth = moment().endOf("day");
 
-    if(!this.isSystemAdmin && this.isPOS){
+    if(!this.isAdmin && this.isPOS){
       this.filterForm.patchValue({
         initDate: startOfMonth,
         endDate: endOfMonth,
@@ -430,17 +430,6 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  // /**
-  //  *
-  //  */
-  // loadRoleData() {
-  //   this.checkIfUserIsAdmin$()
-  //     .pipe(takeUntil(this.ngUnsubscribe))
-  //     .subscribe(hasSysAdminRole => {
-  //       this.isSystemAdmin = hasSysAdminRole;
-  //     });
-  // }
-
   /**
    * Creates the transaction history filter
    */
@@ -449,7 +438,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Checks if the logged user has role SYSADMIN
+   * Checks if the logged user has role PLATFORM-ADMIN
    */
   checkIfUserIsAdmin$() {
     return forkJoin(
@@ -459,10 +448,10 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
       tap(([userRoles, userProfile]) => {
         // console.log('userRoles => ', userRoles);
         // console.log('userProfile => ', userProfile);
-        this.isSystemAdmin = userRoles.some(role => role.toUpperCase() === "SYSADMIN" || role.toUpperCase() === "PLATFORM-ADMIN");
-        this.isPOS = userRoles.some(role => role.toUpperCase() === "POS");
+        this.isAdmin = userRoles.some(role => role === "PLATFORM-ADMIN");
+        this.isPOS = userRoles.some(role => role === "POS");
 
-        if(!this.isSystemAdmin && this.isPOS){
+        if(!this.isAdmin && this.isPOS){
           this.filterForm.patchValue({
             user: userProfile.username
           });
@@ -471,10 +460,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
           //this.filterForm.controls['user'].disable();
         }
       }),
-      map(([userRoles, userProfile]) => userRoles.some(role => role.toUpperCase() === "SYSADMIN" || role.toUpperCase() === "PLATFORM-ADMIN")),
-      // tap(isAdmin => {
-      //   this.isSystemAdmin = isAdmin;
-      // })
+      map(([userRoles, userProfile]) => userRoles.some(role => role === "PLATFORM-ADMIN")),
     );
   }
 
