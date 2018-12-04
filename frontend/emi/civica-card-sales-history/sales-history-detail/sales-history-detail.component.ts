@@ -59,8 +59,6 @@ export class SalesHistoryDetailComponent implements OnInit, OnDestroy {
   ];
 
   userRoles: any;
-  isSystemAdmin: Boolean = false;
-  isPlatformAdmin: Boolean = false;
   isAdmin: Boolean = false;
 
   selectedSaleHistory: any = null;
@@ -79,18 +77,16 @@ export class SalesHistoryDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.checkIfUserIsSystemAdmin();
+    this.checkIfUserIsAdmin();
     this.loadSaleHistory();
   }
 
   /**
-   * Checks if the user is system admin
+   * Checks if the user is admin
    */
-  async checkIfUserIsSystemAdmin() {
+  async checkIfUserIsAdmin() {
     this.userRoles = await this.keycloakService.getUserRoles(true);
-    this.isAdmin = this.userRoles.some(role => role === 'SYSADMIN' || role === 'platform-admin');
-    this.isSystemAdmin = this.userRoles.some(role => role === 'SYSADMIN');
-    this.isPlatformAdmin = this.userRoles.some(role => role === 'platform-admin');
+    this.isAdmin = this.userRoles.some(role => role === 'PLATFORM-ADMIN');
   }
 
 
@@ -99,7 +95,7 @@ export class SalesHistoryDetailComponent implements OnInit, OnDestroy {
    */
   checkIfUserIsAdmin$() {
     return of(this.keycloakService.getUserRoles(true)).pipe(
-      map(userRoles => userRoles.some(role => role === 'SYSADMIN')),
+      map(userRoles => userRoles.some(role => role === 'PLATFORM-ADMIN')),
       tap(isAdmin => {
         this.isAdmin = isAdmin;
       })

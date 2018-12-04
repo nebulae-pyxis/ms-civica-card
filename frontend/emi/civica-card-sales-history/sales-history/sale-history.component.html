@@ -232,12 +232,12 @@
             fxLayout="row"
             fxLayoutAlign="start center"
           >
-            <mat-icon *ngIf="isSystemAdmin">search</mat-icon>
+            <mat-icon *ngIf="isAdmin">search</mat-icon>
 
             <input
               [placeholder]="'SALES_HISTORY.SELECT_BUSINESS' | translate"
               aria-label="Business"
-              *ngIf="!isSystemAdmin"
+              *ngIf="!isAdmin"
               [formControl]="businessFilterCtrl"
               [(value)]="selectedBusinessName"
               fxFlex
@@ -248,7 +248,7 @@
               [placeholder]="'SALES_HISTORY.SELECT_BUSINESS' | translate"
               aria-label="Business"
               [matAutocomplete]="auto"
-              *ngIf="isSystemAdmin"
+              *ngIf="isAdmin"
               [(value)]="selectedBusinessData"
               [formControl]="businessFilterCtrl"
               fxFlex

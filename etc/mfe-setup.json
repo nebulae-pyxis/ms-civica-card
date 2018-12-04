@@ -88,7 +88,7 @@
         "path": "civica-card-sales-history",
         "loadChildren": "./main/content/civica-card-sales-history/civica-card-sales-history.module#CivicaCardSalesHistoryModule",
         "priority": 1000,
-        "roles": ["SYSADMIN", "PLATFORM-ADMIN", "business-owner", "POS"],
+        "roles": ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"],
         "default": false
       }
     ],
