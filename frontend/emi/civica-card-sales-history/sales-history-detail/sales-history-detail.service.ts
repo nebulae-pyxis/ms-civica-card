@@ -8,7 +8,10 @@ import {
 @Injectable()
 export class SalesHistoryDetailService {
 
-  constructor(private gateway: GatewayService) { }
+  isPrinting = false;
+
+  constructor(private gateway: GatewayService
+    ) { }
 
   /**
    * Gets the civica card reload sale history by id

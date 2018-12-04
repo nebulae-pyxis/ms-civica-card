@@ -20,6 +20,7 @@ import { Subject, fromEvent, of, Observable } from "rxjs";
 import { KeycloakService } from "keycloak-angular";
 import { CivicaCardSalesHistoryService } from "./../civica-card-sales-history.service";
 import { SalesHistoryDetailService } from "./sales-history-detail.service";
+import { PrintDialogComponent } from "../print-dialog/print-dialog.component";
 
 //////////// i18n ////////////
 import { FuseTranslationLoaderService } from "../../../../core/services/translation-loader.service";
@@ -32,7 +33,8 @@ import {
   MatPaginator,
   MatSort,
   MatTableDataSource,
-  MatSnackBar
+  MatSnackBar,
+  MatDialog
 } from "@angular/material";
 import { fuseAnimations } from "../../../../core/animations";
 
@@ -70,7 +72,8 @@ export class SalesHistoryDetailComponent implements OnInit, OnDestroy {
     private keycloakService: KeycloakService,
     private activatedRouter: ActivatedRoute,
     private civicaCardSalesHistoryService: CivicaCardSalesHistoryService,
-    private salesHistoryDetailService: SalesHistoryDetailService
+    private salesHistoryDetailService: SalesHistoryDetailService,
+    private dialog: MatDialog,
   ) {
     this.translationLoader.loadTranslations(english, spanish);
   }
@@ -147,6 +150,26 @@ export class SalesHistoryDetailComponent implements OnInit, OnDestroy {
           this.selectedCivicaCardReloadConversation = null;
         }        
       });
+  }
+
+  printInvoice(){
+    this.dialog
+    //Opens confirm dialog
+    .open(PrintDialogComponent, {
+      data: {saleHistoryId: this.selectedSaleHistory._id}
+    })
+    .afterClosed()
+    .pipe(filter(print => print))
+    .subscribe(print => {
+      console.log('print => ', print);
+      if(print){
+
+      }
+    })
+
+    // const invoiceIds = ['101', '102'];
+    // this.salesHistoryDetailService
+    //   .printDocument('invoice', invoiceIds);
   }
 
   /**

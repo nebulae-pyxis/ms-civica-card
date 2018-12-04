@@ -16,6 +16,7 @@ import { BehaviorSubject, Subject } from 'rxjs/Rx';
 export class civicaCardComponent implements OnInit, OnDestroy {
 
   @ViewChild('webcomponent') webComponent;
+  
   constructor( private keycloakService: KeycloakService) {
   }
 

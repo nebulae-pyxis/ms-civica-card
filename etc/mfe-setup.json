@@ -10,30 +10,30 @@
           "en": "POS",
           "es": "POS"
         },
-        "priority": 1000
+        "priority": 190
       }
     ],
     "subgroups": [
       {
-        "groupId": "SYSTEM",
-        "id": "civica-recharge",
+        "groupId": "POS",
+        "id": "CIVICA_RECHARGE",
         "icon": "credit_card",
         "translate": {
-          "en": "Cívica recharge",
-          "es": "Recarga cívica"
+          "en": "Cívica",
+          "es": "Civica"
         },
-        "priority": 2000
+        "priority": 3000
       }
     ],
     "contents": [
       {
         "groupId": "POS",
-        "subgroupId": "civica-recharge",
+        "subgroupId": "CIVICA_RECHARGE",
         "id": "civica-card-reload-pos",
         "icon": "credit_card",
         "translate": {
-          "en": "Cívica",
-          "es": "Cívica"
+          "en": "Sale",
+          "es": "Venta"
         },
         "navURL": "/civica-card-reload-pos",
         "path": "civica-card-reload-pos",
@@ -59,30 +59,30 @@
           "en": "POS",
           "es": "POS"
         },
-        "priority": 1000
+        "priority": 190
       }
     ],
     "subgroups": [
       {
-        "groupId": "SYSTEM",
-        "id": "civica-recharge",
+        "groupId": "POS",
+        "id": "CIVICA_RECHARGE",
         "icon": "credit_card",
         "translate": {
-          "en": "Cívica recharge",
-          "es": "Recarga cívica"
+          "en": "Civica",
+          "es": "Cívica"
         },
-        "priority": 2000
+        "priority": 3000
       }
     ],
     "contents": [
       {
         "groupId": "POS",
-        "subgroupId": "civica-recharge",
+        "subgroupId": "CIVICA_RECHARGE",
         "id": "civica-card-sales-history",
         "icon": "history",
         "translate": {
-          "en": "Sales history",
-          "es": "Historial de ventas"
+          "en": "history",
+          "es": "Historial"
         },
         "navURL": "/civica-card-sales-history",
         "path": "civica-card-sales-history",
