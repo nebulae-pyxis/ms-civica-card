@@ -9,7 +9,7 @@ const { tap } = require('rxjs/operators');
 class BusinessDA {
 
   /**
-   * set the DA ready for work
+   * set the DA ready for work.
    * @param {*} mongoDbInstance 
    */
   static start$(mongoDbInstance) {

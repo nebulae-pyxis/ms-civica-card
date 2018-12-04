@@ -68,7 +68,7 @@ export class PrintDialogComponent implements OnInit {
     let printContents, popupWin;
     printContents = document.getElementById('print-section').innerHTML;
 
-    var frame1 = document.createElement('iframe');
+    const frame1:any = document.createElement('iframe');
     frame1.name = "frame3";
     frame1.style.position = "absolute";
     frame1.style.top = "-1000000px";
