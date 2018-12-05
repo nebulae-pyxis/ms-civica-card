@@ -10,7 +10,6 @@ export class BluetoothNotAvailableComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    console.log('llega a nueva pagina');
   }
 
 }

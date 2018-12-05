@@ -130,7 +130,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   ) {}
   async ngOnInit() {
     if (!this.afccRealoderService.isBluetoothAvailable()) {
-      console.log('envia a nueva pagina');
       this.afccRealoderService.operabilityState$.next(
         OperabilityState.BLUETOOTH_NOT_AVAILABLE
       );
@@ -138,10 +137,8 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
         OperabilityState.BLUETOOTH_NOT_AVAILABLE
       );
     } else {
-    this.afccRealoderService.gateway.initService();
     this.afccRealoderService.gateway.token = await this.keycloakService.getToken();
-    console.log('navigator.geolocation: ', navigator.geolocation);
-    if (this.position) {
+      if (this.position) {
       const arrPosition = this.position.split(',');
       this.afccRealoderService.conversation.position = {
         latitude: parseInt(arrPosition[0], 0),
@@ -153,7 +150,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
     } else if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         position => {
-          console.log('toma ubicación: ', position);
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
           this.afccRealoderService.posPosition = {
@@ -224,6 +220,7 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+    this.afccRealoderService.posPosition = undefined;
   }
 
   getHeaderIcon$() {
@@ -301,7 +298,6 @@ export class AfccReloaderComponent implements OnInit, OnDestroy {
 
   stablishNewConnection() {
     if (!this.afccRealoderService.keyReader) {
-      console.log('No se encuentra keyReader');
       this.afccRealoderService.getReaderKey().pipe(takeUntil(this.ngUnsubscribe)).subscribe();
     }
     this.afccRealoderService

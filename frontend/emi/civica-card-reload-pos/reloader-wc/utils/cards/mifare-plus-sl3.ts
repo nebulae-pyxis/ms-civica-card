@@ -234,8 +234,7 @@ export class MyfarePlusSl3 {
             conversation,
             dataType
           );
-        }),
-        tap(apdus => console.log('APDU!!!!!: ', apdus))
+        })
       );
     } else {
       throw new Error('CARD_NOT_SUPPORTED');
@@ -353,9 +352,6 @@ export class MyfarePlusSl3 {
       dataType,
       cardType
     ).pipe(
-      tap(resp => {
-        console.log('Llegan apdu de lectura: ', resp);
-      }),
       mergeMap(apduCommands => {
         return this.sendApduCommandsCard(
           apduCommands,
@@ -511,8 +507,6 @@ export class MyfarePlusSl3 {
    * @param uid Card uid
    */
   startReloadConversation(gateway: GatewayService, conversation, uid) {
-    console.log('UID: ', uid);
-    console.log('CONVERSATION ID: ', conversation.cardUid);
     if (!conversation.cardUid) {
       const posLocation = [
         conversation.position.latitude,
@@ -537,7 +531,6 @@ export class MyfarePlusSl3 {
         })
         .pipe(
           map(rawData => {
-            console.log('Inicio de conversacion: ', rawData);
             if ((rawData as any).errors) {
               const error = (rawData as any).errors[0];
               switch (error.message.code) {
