@@ -119,6 +119,7 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
               credit: credit
             }
           };
+          console.log('WalletCopy: ', walletCopy);
           return walletCopy;
         }),
         takeUntil(this.ngUnsubscribe)
