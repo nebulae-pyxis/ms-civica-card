@@ -352,6 +352,7 @@ export class MyfarePlusSl3 {
       dataType,
       cardType
     ).pipe(
+      tap(apdu => console.log('Se obtienen apdus: ', apdu)),
       mergeMap(apduCommands => {
         return this.sendApduCommandsCard(
           apduCommands,
@@ -361,6 +362,7 @@ export class MyfarePlusSl3 {
           sessionKey
         );
       }),
+      tap(apdu => console.log('finaliza el envio de apdus a la lectora: ', apdu)),
       mergeMap(apduCommandsResp => {
         return this.processReadApduCommandsCard(
           apduCommandsResp,
@@ -368,6 +370,7 @@ export class MyfarePlusSl3 {
           gateway
         );
       }),
+      tap(apdu => console.log('finaliza el envio de apdus al servidor: ', apdu)),
       mergeMap(result => {
         return this.cardPowerOff$(
           bluetoothService,
@@ -660,6 +663,7 @@ export class MyfarePlusSl3 {
       }),
       toArray(),
       mergeMap(apduCommands => {
+        console.log('ApduCommands: ', apduCommands);
         return gateway.apollo.use('sales-gateway')
           .mutate<any>({
             mutation: processCivicaCardReloadWriteAndReadApduCommandResponses,
