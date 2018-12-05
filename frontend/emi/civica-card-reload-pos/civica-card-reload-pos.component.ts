@@ -17,6 +17,9 @@ import { concat, Subject } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSnackBar, MatDialog } from '@angular/material';
 import { PrintDialogComponent } from './print-dialog/print-dialog.component';
+import { locale as english } from './i18n/en';
+import { locale as spanish } from './i18n/es';
+import { FuseTranslationLoaderService } from '../../../core/services/translation-loader.service';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -34,12 +37,15 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
   operation;
   receipt;
   constructor(
+    private translationLoader: FuseTranslationLoaderService,
     private civicaCardReloadPosService: CivicaCardReloadPosService,
     private keycloakService: KeycloakService,
     private translate: TranslateService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
-  ) {}
+  ) {
+    this.translationLoader.loadTranslations(english, spanish);
+  }
 
   async ngOnInit() {
     this.webcomponent.receipt

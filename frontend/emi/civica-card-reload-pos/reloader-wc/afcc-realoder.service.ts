@@ -81,7 +81,7 @@ export class AfccRealoderService {
     this.readerAcr1255 = new ReaderAcr1255();
     this.myfarePlusSl3 = new MyfarePlusSl3();
     // TODO: ESTA LLAVE SE DEBE CONSULTAR POR GRAPHQL Y SE DEBE QUITAR DEL CONSTRUCTOR
-
+    this.gateway.initService();
     this.operabilityState$.subscribe(operabilityState => {
       if (
         operabilityState === OperabilityState.RELOADING_CARD ||
@@ -157,7 +157,7 @@ export class AfccRealoderService {
       })
     );
   }
-  getCurrentConversation$() { 
+  getCurrentConversation$() {
     if (localStorage.conversationId) {
       return this.gateway.apollo.use('sales-gateway')
         .query<any>({
@@ -180,10 +180,10 @@ export class AfccRealoderService {
             }
           }),
         );
-    } else { 
+    } else {
       return Rx.of(undefined);
     }
-    
+
   }
 
   getReaderKey() {
