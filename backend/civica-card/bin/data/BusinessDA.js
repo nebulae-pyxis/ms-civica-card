@@ -36,6 +36,14 @@ class BusinessDA {
 
 
   /**
+   * Creates a new business
+   * @param {*} business business to create
+   */
+  static persistBusiness$(business) {       
+    return this.updateBusinessActive$(business._id, business.state);
+  }
+
+  /**
    * updates business active flag
    * @param {String} businessId 
    * @param {boolean} active 
