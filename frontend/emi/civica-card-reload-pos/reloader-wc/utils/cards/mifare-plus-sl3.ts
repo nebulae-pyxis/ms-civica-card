@@ -114,14 +114,17 @@ export class MyfarePlusSl3 {
         return uid;
       }),
       mergeMap(uid => {
+        console.log('toma UID: ', uid);
         if (conversation.cardUid && conversation.cardUid !== uid) {
           throw new Error('INVALID_CARD_TO_RELOAD');
         }
         return this.startReloadConversation(gateway, conversation, uid);
       }),
       mergeMap(conversationResult => {
+        console.log('inicia conversacion: ', conversationResult);
         conversation = conversationResult;
         // after succesful getted the card uiid start the first step of auth in the card
+        console.log('se envia mensaje de auth a la lectora');
         return bluetoothService
           .sendAndWaitResponse$(
             message,
@@ -180,6 +183,7 @@ export class MyfarePlusSl3 {
         gateway
       ).pipe(
         mergeMap(authToken => {
+          console.log('se envia segundo paso de auth');
           return this.getReadCardSecondAuthToken(
             gateway,
             authToken,
@@ -188,6 +192,7 @@ export class MyfarePlusSl3 {
           );
         }),
         mergeMap(serverResp => {
+          console.log('se recibe segundo paso de auth');
           return this.cardAuthenticationSecondStep$(
             bluetoothService,
             readerAcr1255,
@@ -197,6 +202,7 @@ export class MyfarePlusSl3 {
           );
         }),
         mergeMap(authCardConfirmation => {
+          console.log('se recibe confirmación de auth');
           const authCardSecondStep = new AuthCardSecondStepResp(
             authCardConfirmation
           );

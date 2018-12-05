@@ -289,7 +289,6 @@ export class AfccRealoderService {
                   'SL3'
                 )
                 .pipe(
-                  delay(500),
                   mergeMap(cardNumberResult => {
                     return this.myfarePlusSl3
                       .cardPowerOn$(
