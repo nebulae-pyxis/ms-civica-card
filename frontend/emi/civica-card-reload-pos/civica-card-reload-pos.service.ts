@@ -44,8 +44,17 @@ export class CivicaCardReloadPosService {
         },
       })
       .map(resp => {
-        console.log('resp.data.walletUpdated => ', resp);
-        return resp.data.walletUpdated;
+        const wallet = resp.data.walletUpdated;
+        let credit = 0;
+          if (wallet.pockets.main < 0) {
+            credit += wallet.pockets.main;
+          }
+
+          if (wallet.pockets.bonus < 0) {
+            credit += wallet.pockets.bonus;
+          }
+        wallet.pockets.credit = credit;
+        return wallet;
       });
   }
 

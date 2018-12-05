@@ -98,7 +98,6 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
     this.civicaCardReloadPosService
       .getWallet$((this.userDetails as any).attributes.businessId[0])
       .pipe(
-        tap(resp => console.log('Llega respuesta del servidor: ', resp)),
         mergeMap(resp => this.graphQlAlarmsErrorHandler$(resp)),
         filter((resp: any) => !resp.errors || resp.errors.length === 0),
         map(result => result.data.getWallet),
@@ -119,13 +118,11 @@ export class CivicaCardReloadPosComponent implements OnInit, OnDestroy {
               credit: credit
             }
           };
-          console.log('WalletCopy: ', walletCopy);
           return walletCopy;
         }),
         takeUntil(this.ngUnsubscribe)
       )
       .subscribe(wallet => {
-        console.log('new Wallet => ', wallet);
         this.walletData = wallet;
       });
   }
