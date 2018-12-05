@@ -438,7 +438,7 @@ export class SaleHistoryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Checks if the logged user has role PLATFORM-ADMIN
+   * Checks if the logged user has role PLATFORM-ADMIN.
    */
   checkIfUserIsAdmin$() {
     return forkJoin(
