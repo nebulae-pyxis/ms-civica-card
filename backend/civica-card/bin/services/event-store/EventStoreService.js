@@ -150,6 +150,10 @@ class EventStoreService {
         fn: civicaCardES.handleCivicaCardReloadFinalCardUpdated$,
         obj: civicaCardES
       },
+      IndexesCivicaTriggered: { 
+        fn: civicaCardES.createIndexesCivica$, 
+        obj: civicaCardES 
+      },      
     };
   }
 
@@ -186,6 +190,10 @@ class EventStoreService {
         aggregateType: "CivicaCard",
         eventType: "CivicaCardReloadFinalCardUpdated"
       },
+      {
+        aggregateType: "Cronjob",
+        eventType: "IndexesCivicaTriggered"
+      }
     ]
   }
 }
