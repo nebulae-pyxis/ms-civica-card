@@ -49,7 +49,7 @@ class CivicaCardCQRS {
      */
     startCivicaCardReloadConversation$({ root, args, jwt }, authToken) {
         return this.verifyBusiness$(authToken.businessId, undefined).pipe(
-            mergeMap(() => CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.name, businessId: authToken.businessId })),
+            mergeMap(() => CivicaCardReloadConversationDA.create$({ ...args, userJwt: jwt, userName: authToken.preferred_username, businessId: authToken.businessId })),
             map(conversation => this.formatCivicaCardReloadConversationToGraphQLSchema(conversation)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
