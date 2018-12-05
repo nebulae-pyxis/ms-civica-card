@@ -87,7 +87,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
             this.afccReloadService.operabilityState$.next(
               OperabilityState.INTERNAL_ERROR
             );
-          } else if (error.toString().indexOf('BUSINESS_NOT_FOUND') !== -1) {
+          }
+          else if (error.toString().indexOf('BUSINESS_NOT_FOUND') !== -1) {
             this.afccReloadService.readCardAttempts = 10;
             this.afccReloadService.conversation.error = 'BUSINESS_NOT_FOUND';
             this.readCardError();
