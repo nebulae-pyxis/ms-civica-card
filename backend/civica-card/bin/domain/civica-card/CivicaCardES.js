@@ -1,6 +1,6 @@
 'use strict'
 
-const { of } = require('rxjs');
+const { of, from } = require('rxjs');
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const CivicaCardReloadDA = require("../../data/CivicaCardReloadDA");
 const Crosscutting = require("../../tools/Crosscutting");
@@ -59,7 +59,7 @@ class CivicaCardES {
       })
     );
   }
-  
+
 }
 
 
