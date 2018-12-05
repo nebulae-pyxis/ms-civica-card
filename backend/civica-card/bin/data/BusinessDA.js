@@ -36,7 +36,7 @@ class BusinessDA {
 
 
   /**
-   * Creates a new business
+   * Creates a new business.
    * @param {*} business business to create
    */
   static persistBusiness$(business) {       
