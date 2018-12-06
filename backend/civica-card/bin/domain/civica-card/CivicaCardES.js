@@ -1,8 +1,10 @@
 'use strict'
 
-const { of } = require('rxjs');
+const { of, from } = require('rxjs');
 const { tap, mergeMap, catchError, map, mapTo } = require('rxjs/operators');
 const CivicaCardReloadDA = require("../../data/CivicaCardReloadDA");
+const Crosscutting = require("../../tools/Crosscutting");
+const mongoDB = require('../../data/MongoDB').singleton();
 
 
 /**
@@ -38,6 +40,27 @@ class CivicaCardES {
             })
         );
     }
+
+/**
+ * Creates the indexes
+ * @param {*} indexesCivica 
+ */
+  createIndexesCivica$(indexesCivica){
+    const indexes = [{
+      collection: 'CivicaCardReloadHistory_', 
+      fields: {'user': 1, 'receipt.posTerminal': 1, 'receipt.posUserId': 1, 'receipt.posUserName': 1, 'receipt.posId': 1},
+      indexName: 'CivicaCardReloadHistoryIndex'
+    }];
+    return from(indexes)
+    .pipe(
+      //Get the business implied in the transactions
+      mergeMap(index =>  {
+        index.collection = index.collection+Crosscutting.getMonthYear(new Date());
+        return mongoDB.createIndexBackground$(index);
+      })
+    );
+  }
+
 }
 
 

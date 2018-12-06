@@ -1,10 +1,11 @@
 'use strict'
 
-const Rx = require('rxjs');
+const { Observable, of, bindNodeCallback} = require('rxjs');
+const { map, mergeMap } = require('rxjs/operators');
+
 const MongoClient = require('mongodb').MongoClient;
 const CollectionName = "Business";
 let instance = null;
-const { map } = require('rxjs/operators');
 
 class MongoDB {
 
@@ -23,7 +24,7 @@ class MongoDB {
      */
     start$() {
         console.log("MongoDB.start$()... ");
-        return Rx.bindNodeCallback(MongoClient.connect)(this.url).pipe(
+        return bindNodeCallback(MongoClient.connect)(this.url).pipe(
             map(client => {
                 console.log(this.url);
                 this.client = client;
@@ -37,26 +38,45 @@ class MongoDB {
    * Stops DB connections
    * Returns an Obserable that resolve to a string log
    */
-    stop$() {
-        return Rx.Observable.create((observer) => {
-            this.client.close();
-            observer.next('Mongo DB Client closed');
-            observer.complete();
-        });
-    }
+  stop$() {
+    return Observable.create((observer) => {
+        this.client.close();
+        observer.next('Mongo DB Client closed');
+        observer.complete();
+    });
+}
 
     /**
      * Ensure Index creation
      * Returns an Obserable that resolve to a string log
      */
     createIndexes$() {
-        return Rx.Observable.create(async (observer) => {
+        return Observable.create(async (observer) => {
             //observer.next('Creating index for DB_NAME.COLLECTION_NAME => ({ xxxx: 1 })  ');
             //await this.db.collection('COLLECTION_NAME').createIndex( { xxxx: 1});  
 
             observer.next('All indexes created');
             observer.complete();
         });
+    }
+
+    /**
+     * Creates an index in the background
+     * @param {*} indexData 
+     */
+    createIndexBackground$(indexData){
+        return of(indexData)
+        .pipe(
+            mergeMap(index => {
+                const options = {
+                    background: true
+                };
+                if(index.indexName){
+                    options.name = index.indexName
+                }
+                return this.db.collection(index.collection).createIndex(index.fields, options)
+            })
+        );
     }
 
 }
