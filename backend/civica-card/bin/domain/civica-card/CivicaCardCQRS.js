@@ -319,7 +319,7 @@ class CivicaCardCQRS {
         }
         const stackLines = error.stack.split('\n');
         console.error(
-            stackLines[0] + '\n' + stackLines.filter(line => line.includes('civica-card/bin')).join('\n') + '\n'
+            new Date().toString()+': '+stackLines[0] + '\n' + stackLines.filter(line => line.includes('civica-card/bin')).join('\n') + '\n'
         );
     }
 
@@ -435,6 +435,7 @@ class CivicaCardCQRS {
    * Finds a CivicaCardReloadConversation by its ID, format it to the graphql schema and returns it
    */
     getCivicaCardReloadConversationDetailed$({ root, args, jwt }, authToken) {
+        const reqTs = Date.now();
         return RoleValidator.checkPermissions$(
             authToken.realm_access.roles,
             "Civica-Card",
@@ -447,8 +448,9 @@ class CivicaCardCQRS {
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
             catchError(error => {
                 this.logError(error);
+                console.error(`${new Date().toString()} getCivicaCardReloadConversationDetailed error timelapse: ${reqTs - Date.now()}`);
                 return GraphqlResponseTools.handleError$(error);
-            })
+            }),                        
         );
     }
 
