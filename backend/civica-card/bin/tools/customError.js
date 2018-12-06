@@ -67,6 +67,7 @@ class DefaultError extends Error {
 module.exports = {
   CustomError,
   DefaultError,
+  INTERNAL_SERVER_ERROR_CODE,
   PERMISSION_DENIED,
   BUSINESS_NOT_FOUND,
   BUSINESS_NOT_ACTIVE,
