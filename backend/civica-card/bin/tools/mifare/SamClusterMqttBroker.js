@@ -72,7 +72,7 @@ class SamClusterMqttBroker {
       this.send$(appId, transactionId, samId, apdu)
     ).pipe(
       map(([reply]) => reply),
-      catchError(err => Rx.throwError(new CustomError('Fallo operación interna', `Por favor intente de nuevo`, INTERNAL_SERVER_ERROR_CODE) ))
+      catchError(err => Rx.throwError(new CustomError('SAM cluster response timeout', `The cluster did not transmit a reponse within ${this.replyTimeout} ms`, INTERNAL_SERVER_ERROR_CODE) ))
       //tap(data  => console.log(`DATA ====> ${data}`)),
     );
   }

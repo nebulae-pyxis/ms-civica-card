@@ -98,7 +98,7 @@ module.exports = {
                 .mergeMap(() =>
                     broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadWriteAndReadApduCommands", { root, args, jwt: context.encodedToken }, 4000)
                         .mergeMap(response => getResponseFromBackEnd$(response))
-                        .do(x => console.log(`generateCivicaCardReloadWriteAndReadApduCommands resp: ${JSON.stringify(x)}`))
+                        //.do(x => console.log(`generateCivicaCardReloadWriteAndReadApduCommands resp: ${JSON.stringify(x)}`))
                 ).toPromise();
         },
 

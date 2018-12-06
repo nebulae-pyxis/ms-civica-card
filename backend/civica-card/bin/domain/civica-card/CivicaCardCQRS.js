@@ -33,7 +33,7 @@ class CivicaCardCQRS {
         return Rx.Observable.create(observer => {
             const mqttServerUrl = process.env.SAM_CLUSTER_MQTT_CONN_STR;
             const appId = `civica-card_be_civicacardcqrs_${(Math.floor(Math.random() * Math.floor(100)))}`
-            this.samClusterClient = new SamClusterClient({ mqttServerUrl, replyTimeout: 2000, appId });
+            this.samClusterClient = new SamClusterClient({ mqttServerUrl, replyTimeout: 5000, appId });
             this.bytecodeCompiler = new Compiler(this.samClusterClient);
             this.bytecodeMifareBindTools = new BytecodeMifareBindTools();
             observer.next(`samClusterClient connected to ${mqttServerUrl}`);
@@ -201,30 +201,30 @@ class CivicaCardCQRS {
     generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
         const reqTs = Date.now();
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
-            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: A: ${x}`)),
+            //tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: A: ${x}`)),
             map(conversation => (
                 {
                     conversation,
                     bytecode: CivicaCardReadWriteFlow.generateWriteBytecode(conversation.cardType, args.dataType, conversation)
                 }
             )),
-            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: B: ${x}`)),
+            //tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: B: ${x}`)),
             map(({ conversation, bytecode }) => (
                 {
                     conversation,
                     bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole !== undefined ? conversation.currentCardAuth.cardRole : 'CREDIT', bytecode)
                 }
             )),
-            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: C: ${x}`)),
+            //tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: C: ${x}`)),
             mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
-            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: D: ${x}`)),
+            //tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: D: ${x}`)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
-            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: E: ${x}`)),
+            //tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: E: ${x}`)),
             catchError(error => {
                 this.logError(error);
                 console.error(`${new Date().toString()} getCivicaCardReloadConversationDetailed error timelapse: ${reqTs - Date.now()}`);
                 return GraphqlResponseTools.handleError$(error);
-            }),      
+            }),
             tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: F: ${x}`)),
         );
     }
@@ -325,10 +325,19 @@ class CivicaCardCQRS {
             console.error(error);
             return;
         }
-        const stackLines = error.stack.split('\n');
-        console.error(
-            new Date().toString()+': '+stackLines[0] + '\n' + stackLines.filter(line => line.includes('civica-card/bin')).join('\n') + '\n'
-        );
+        try {
+            const stackLines = error.stack.split('\n');
+            console.error(
+                new Date().toString() + ': ' + stackLines[0] + '\n' + stackLines.filter(line => line.includes('civica-card/bin')).join('\n') + '\n'
+            );
+        }
+        catch (e) {
+            console.error(e);
+            console.error(error);
+        }
+
+
+
     }
 
     //#endregion
@@ -348,7 +357,7 @@ class CivicaCardCQRS {
             PERMISSION_DENIED,
             ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         ).pipe(
-            mergeMap(roles => {                
+            mergeMap(roles => {
                 const isAdmin = roles['PLATFORM-ADMIN'];
                 //If an user does not have the role to get the civica card sales history from other business, we must return an error
                 if (!isAdmin && authToken.businessId != args.civicaSaleFilterInput.businessId) {
@@ -357,7 +366,7 @@ class CivicaCardCQRS {
 
                 //Users with POS role can only search the sales that they have performed
                 const isPOS = roles['POS'];
-                if (!isAdmin && isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {                    
+                if (!isAdmin && isPOS && authToken.preferred_username != args.civicaSaleFilterInput.user) {
                     throw new CustomError('Permiso denegado', `Solo puede consultar información de su usuario.`, PERMISSION_DENIED);
                 }
 
@@ -442,7 +451,7 @@ class CivicaCardCQRS {
     /**
    * Finds a CivicaCardReloadConversation by its ID, format it to the graphql schema and returns it
    */
-    getCivicaCardReloadConversationDetailed$({ root, args, jwt }, authToken) {        
+    getCivicaCardReloadConversationDetailed$({ root, args, jwt }, authToken) {
         return RoleValidator.checkPermissions$(
             authToken.realm_access.roles,
             "Civica-Card",
@@ -457,7 +466,7 @@ class CivicaCardCQRS {
                 this.logError(error);
                 console.error(`${new Date().toString()} getCivicaCardReloadConversationDetailed error timelapse: ${reqTs - Date.now()}`);
                 return GraphqlResponseTools.handleError$(error);
-            }),                        
+            }),
         );
     }
 
