@@ -68,7 +68,13 @@ class MongoDB {
         return of(indexData)
         .pipe(
             mergeMap(index => {
-                return this.db.collection(index.collection).createIndex(index.fields, {background: true})
+                const options = {
+                    background: true
+                };
+                if(index.name){
+                    options.name = index.name
+                }
+                return this.db.collection(index.collection).createIndex(index.fields, options)
             })
         );
     }

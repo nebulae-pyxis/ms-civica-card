@@ -48,7 +48,8 @@ class CivicaCardES {
   createIndexesCivica$(indexesCivica){
     const indexes = [{
       collection: 'CivicaCardReloadHistory_', 
-      fields: {'user': 1, 'receipt.posTerminal': 1, 'receipt.posUserId': 1, 'receipt.posUserName': 1, 'receipt.posId': 1}
+      fields: {'user': 1, 'receipt.posTerminal': 1, 'receipt.posUserId': 1, 'receipt.posUserName': 1, 'receipt.posId': 1},
+      indexName: 'CivicaCardReloadHistoryIndex'
     }];
     return from(indexes)
     .pipe(
