@@ -37,7 +37,8 @@
     *ngIf="
       (operabilityState$ | async).valueOf() === 'CONNECTING' ||
       (operabilityState$ | async).valueOf() === 'READING_CARD' ||
-      (operabilityState$ | async).valueOf() === 'REQUESTING_RELOAD_PERMISSION'
+      (operabilityState$ | async).valueOf() === 'REQUESTING_RELOAD_PERMISSION' ||
+      (operabilityState$ | async).valueOf() === 'RELOADING_CARD'
     "
     color="primary"
     mode="indeterminate"

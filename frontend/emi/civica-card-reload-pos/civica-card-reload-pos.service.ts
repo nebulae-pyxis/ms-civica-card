@@ -53,8 +53,15 @@ export class CivicaCardReloadPosService {
           if (wallet.pockets.bonus < 0) {
             credit += wallet.pockets.bonus;
           }
-        wallet.pockets.credit = credit;
-        return wallet;
+          const walletCopy = {
+            ...wallet,
+            pockets: {
+              main: wallet.pockets.main < 0 ? 0 : wallet.pockets.main,
+              bonus: wallet.pockets.bonus < 0 ? 0 : wallet.pockets.bonus,
+              credit: credit
+            }
+          };
+        return walletCopy;
       });
   }
 
