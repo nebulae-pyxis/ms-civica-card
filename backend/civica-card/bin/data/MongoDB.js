@@ -71,8 +71,8 @@ class MongoDB {
                 const options = {
                     background: true
                 };
-                if(index.name){
-                    options.name = index.name
+                if(index.indexName){
+                    options.name = index.indexName
                 }
                 return this.db.collection(index.collection).createIndex(index.fields, options)
             })
