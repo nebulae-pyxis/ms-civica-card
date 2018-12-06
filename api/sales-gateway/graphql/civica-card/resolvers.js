@@ -97,7 +97,8 @@ module.exports = {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'generateCivicaCardReloadWriteAndReadApduCommands', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
                 .mergeMap(() =>
                     broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadWriteAndReadApduCommands", { root, args, jwt: context.encodedToken }, 4000)
-                        .mergeMap(response => getResponseFromBackEnd$(response))
+                        .mergeMap(response => getResponseFromBackEnd$(response)),
+                        tap(x => console.log(`generateCivicaCardReloadWriteAndReadApduCommands resp: ${JSON.stringify(x)}`))
                 ).toPromise();
         },
 
