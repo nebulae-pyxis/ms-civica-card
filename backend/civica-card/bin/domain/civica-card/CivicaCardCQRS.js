@@ -199,25 +199,33 @@ class CivicaCardCQRS {
      * Generates the write card sequence to recharge the card after the reload purchase and adds the read card sequence to verify written data
      */
     generateCivicaCardReloadWriteAndReadApduCommands$({ root, args, jwt }, authToken) {
+        const reqTs = Date.now();
         return CivicaCardReloadConversationDA.find$(args.conversationId).pipe(
+            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: A: ${x}`)),
             map(conversation => (
                 {
                     conversation,
                     bytecode: CivicaCardReadWriteFlow.generateWriteBytecode(conversation.cardType, args.dataType, conversation)
                 }
             )),
+            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: B: ${x}`)),
             map(({ conversation, bytecode }) => (
                 {
                     conversation,
                     bytecode: CivicaCardReadWriteFlow.generateReadBytecode(conversation.cardType, args.dataType, conversation.currentCardAuth.cardRole !== undefined ? conversation.currentCardAuth.cardRole : 'CREDIT', bytecode)
                 }
             )),
+            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: C: ${x}`)),
             mergeMap(({ conversation, bytecode }) => this.bytecodeCompiler.compile$(bytecode, conversation.cardType, conversation.readerType, { conversation, cardSecondStepAuthConfirmation: args.cardAuthConfirmationToken })),
+            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: D: ${x}`)),
             mergeMap(rawResponse => GraphqlResponseTools.buildSuccessResponse$(rawResponse)),
+            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: E: ${x}`)),
             catchError(error => {
                 this.logError(error);
+                console.error(`${new Date().toString()} getCivicaCardReloadConversationDetailed error timelapse: ${reqTs - Date.now()}`);
                 return GraphqlResponseTools.handleError$(error);
-            })
+            }),      
+            tap(x => console.log(`${new Date().toString()}: generateCivicaCardReloadWriteAndReadApduCommands: F: ${x}`)),
         );
     }
 
@@ -434,8 +442,7 @@ class CivicaCardCQRS {
     /**
    * Finds a CivicaCardReloadConversation by its ID, format it to the graphql schema and returns it
    */
-    getCivicaCardReloadConversationDetailed$({ root, args, jwt }, authToken) {
-        const reqTs = Date.now();
+    getCivicaCardReloadConversationDetailed$({ root, args, jwt }, authToken) {        
         return RoleValidator.checkPermissions$(
             authToken.realm_access.roles,
             "Civica-Card",
