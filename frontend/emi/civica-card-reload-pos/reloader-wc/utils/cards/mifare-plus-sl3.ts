@@ -723,6 +723,7 @@ export class MyfarePlusSl3 {
         map(
         rawData => {
           if ((rawData as any).errors) {
+            console.log('Error con apdus de escritura', (rawData as any).errors);
             throw new Error('ERROR_REQUESTING_APDUS');
           }
           return (rawData as any).data.generateCivicaCardReloadWriteAndReadApduCommands;
