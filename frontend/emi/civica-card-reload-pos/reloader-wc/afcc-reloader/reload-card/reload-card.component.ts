@@ -21,10 +21,32 @@ export class ReloadCardComponent implements OnInit {
       this.reloadCardSuccessfully();
     },
       error => {
-        console.log('llega error de escritura: ', error);
         if (error.toString().indexOf('INVALID_CARD_TO_RELOAD') !== -1) {
           this.afccReloaderService.conversation.error =
-            'INVALID_CARD_TO_RELOAD';
+            'Tarjeta ingresada no coincide con la anteriormente leida';
+        } else if (error.toString().indexOf('BUSINESS_NOT_FOUND') !== -1) {
+          this.afccReloaderService.conversation.error =
+            'Unidad de negocio no encontrada, por favor comuníquese con administración para solucionar este problema';
+        }
+        else if (error.toString().indexOf('BUSINESS_NOT_ACTIVE') !== -1) {
+          this.afccReloaderService.conversation.error =
+            ' Unidad de negocio inactiva, por favor comuníquese con administración para solucionar este problema';
+        }
+        else if (error.toString().indexOf('BUSINESS_WALLET_NOT_FOUND') !== -1) {
+          this.afccReloaderService.conversation.error =
+          'Su unidad de negocio no se encuentra con una billetera activa, , por favor comuníquese con administración para solucionar este problema';
+        }
+        else if (error.toString().indexOf('BUSINESS_WALLET_SPENDING_FORBIDDEN') !== -1) {
+          this.afccReloaderService.conversation.error =
+            'Saldo insuficiente para realizar la operación';
+        }
+        else if (error.toString().indexOf('INVALID_SESSION') !== -1) {
+          this.afccReloaderService.conversation.error =
+            'Error obteniendo información del servidor, por favor intentelo nuevamente';
+        }
+        else {
+          this.afccReloaderService.conversation.error =
+            'Sesión de usuario inválida, por favor comuníquese con soporte para verificar y solucionar este error';
         }
         this.reloadCardError();
       });

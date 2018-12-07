@@ -21,7 +21,7 @@ export class ReloadCardErrorComponent implements OnInit {
   }
 
   abort() {
-    this.afccReloaderService.cardReloadAborted$.next('Here current card information with part of the conversation');
+    this.afccReloaderService.cardReloadAborted$.next(this.afccReloaderService.conversation);
     this.afccReloaderService.operabilityState$.next(OperabilityState.RELOAD_CARD_ABORTED);
   }
 
