@@ -182,6 +182,7 @@ export class MyfarePlusSl3 {
         conversation,
         gateway
       ).pipe(
+        tap(() => 'incia auth con la lectora'),
         mergeMap(authToken => {
           console.log('se envia segundo paso de auth');
           return this.getReadCardSecondAuthToken(
@@ -611,7 +612,12 @@ export class MyfarePlusSl3 {
       .pipe(
       map(rawData => {
         if (rawData.errors) {
-          console.log('error en la obtencion de apdus de lectura: ', rawData.errors);
+          const errorCode = rawData.errors[0].message.code;
+          switch (errorCode) {
+            case 18030:
+            case 18001:
+              throw new Error('INTERNAL_SERVER_ERROR');
+          }
         }
         return (rawData as any).data.generateCivicaCardReloadReadApduCommands;
       })

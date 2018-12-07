@@ -102,6 +102,16 @@
         ></svg-icon>
         Fallo en la solicitud de autorización con la tarjeta
       </mat-list-item>
+      <mat-list-item
+        *ngIf="operationState === 'INTERNAL_SERVER_ERROR'"
+      >
+        <svg-icon
+          src="assets/civica-card-reload-pos/arrow_right.svg"
+          style="margin-right: 10px"
+          [svgStyle]="{ fill: '#3f51b5' }"
+        ></svg-icon>
+        Fallo en la comunicación con el servidor, por favor intentelo nuevamente
+      </mat-list-item>
     </mat-list>
   </div>
 </div>

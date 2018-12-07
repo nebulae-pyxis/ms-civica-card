@@ -76,38 +76,40 @@ export class ReadCardComponent implements OnInit, OnDestroy {
         console.log('ERROR leyendo tarjeta: ', error);
         delete this.afccReloadService.conversation.cardUid;
         this.afccReloadService.readingCard = false;
-          if (error.toString().indexOf('CARD_NOT_SUPPORTED') !== -1) {
-            this.afccReloadService.conversation.error =
-              'CARD_READED_NOT_SUPPORTED';
-            this.afccReloadService.operabilityState$.next(
-              OperabilityState.READING_CARD_ERROR
-            );
-          } else if (error.toString().indexOf('INVALID_SESSION') !== -1) {
-            this.afccReloadService.conversation.error = 'INVALID_SESSION';
-            this.afccReloadService.operabilityState$.next(
-              OperabilityState.INTERNAL_ERROR
-            );
-          }
-          else if (error.toString().indexOf('BUSINESS_NOT_FOUND') !== -1) {
-            this.afccReloadService.readCardAttempts = 10;
-            this.afccReloadService.conversation.error = 'BUSINESS_NOT_FOUND';
-            this.readCardError();
-          } else if (error.toString().indexOf('CIVICA_CARD_CORRUPTED_DATA') !== -1) {
-            this.afccReloadService.readCardAttempts = 10;
-            this.afccReloadService.conversation.error = 'CIVICA_CARD_CORRUPTED_DATA';
-          } else if (error.toString().indexOf('CIVICA_CARD_WRITE_FAILED') !== -1) {
-            this.afccReloadService.readCardAttempts = 10;
-            this.afccReloadService.conversation.error = 'CIVICA_CARD_WRITE_FAILED';
-            this.readCardError();
-          } else if (error.toString().indexOf('CIVICA_CARD_AUTH_FAILED') !== -1) {
-            this.afccReloadService.readCardAttempts = 10;
-            this.afccReloadService.conversation.error = 'CIVICA_CARD_AUTH_FAILED';
-            this.readCardError();
-          } else if (error.toString().indexOf('BUSINESS_WALLET_SPENDING_FORBIDDEN') !== -1) {
-            this.afccReloadService.readCardAttempts = 10;
-            this.afccReloadService.conversation.error = 'BUSINESS_WALLET_SPENDING_FORBIDDEN';
-            this.readCardError();
-          }
+        if (error.toString().indexOf('CARD_NOT_SUPPORTED') !== -1) {
+          this.afccReloadService.conversation.error =
+            'CARD_READED_NOT_SUPPORTED';
+          this.afccReloadService.operabilityState$.next(
+            OperabilityState.READING_CARD_ERROR
+          );
+        } else if (error.toString().indexOf('INVALID_SESSION') !== -1) {
+          this.afccReloadService.conversation.error = 'INVALID_SESSION';
+          this.afccReloadService.operabilityState$.next(
+            OperabilityState.INTERNAL_ERROR
+          );
+        }
+        else if (error.toString().indexOf('BUSINESS_NOT_FOUND') !== -1) {
+          this.afccReloadService.readCardAttempts = 10;
+          this.afccReloadService.conversation.error = 'BUSINESS_NOT_FOUND';
+          this.readCardError();
+        } else if (error.toString().indexOf('CIVICA_CARD_CORRUPTED_DATA') !== -1) {
+          this.afccReloadService.readCardAttempts = 10;
+          this.afccReloadService.conversation.error = 'CIVICA_CARD_CORRUPTED_DATA';
+        } else if (error.toString().indexOf('CIVICA_CARD_WRITE_FAILED') !== -1) {
+          this.afccReloadService.readCardAttempts = 10;
+          this.afccReloadService.conversation.error = 'CIVICA_CARD_WRITE_FAILED';
+          this.readCardError();
+        } else if (error.toString().indexOf('CIVICA_CARD_AUTH_FAILED') !== -1) {
+          this.afccReloadService.readCardAttempts = 10;
+          this.afccReloadService.conversation.error = 'CIVICA_CARD_AUTH_FAILED';
+          this.readCardError();
+        } else if (error.toString().indexOf('BUSINESS_WALLET_SPENDING_FORBIDDEN') !== -1) {
+          this.afccReloadService.readCardAttempts = 10;
+          this.afccReloadService.conversation.error = 'BUSINESS_WALLET_SPENDING_FORBIDDEN';
+          this.readCardError();
+        } else if (error.toString().indexOf('INTERNAL_SERVER_ERROR') !== -1) {
+          this.afccReloadService.conversation.error = 'INTERNAL_SERVER_ERROR';
+        }
           else if (error.toString().indexOf('BUSINESS_NOT_ACTIVE') !== -1) {
             this.afccReloadService.readCardAttempts = 10;
             this.afccReloadService.conversation.error = 'BUSINESS_NOT_ACTIVE';
