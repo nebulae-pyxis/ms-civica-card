@@ -1,6 +1,10 @@
 'use strict'
 
-const { CustomError, HW_CARD_TYPE_INVALID, HW_READER_TYPE_INVALID } = require('../../customError');
+const Rx = require('rxjs');
+const {
+  catchError
+} = require('rxjs/operators');
+const { CustomError, HW_CARD_TYPE_INVALID, HW_READER_TYPE_INVALID, BYTECODE_COMPILER_ERROR } = require('../../customError');
 const Sl3HighLevel = require('./especific-bytecodes-compilers/Sl3HighLevel');
 const Sl1ACR1255 = require('./especific-bytecodes-compilers/Sl1ACR1255');
 
@@ -23,7 +27,9 @@ class Compiler {
      * @param {*} ops Especial options for an especific card and reader pair
      */
     compile$(bytecode, cardType, readerType, ops) {
-        return this.getSpecificImplementation(cardType, readerType).compile$(bytecode, ops);
+        return this.getSpecificImplementation(cardType, readerType).compile$(bytecode, ops).pipe(
+            catchError(err => Rx.throwError(new CustomError('Bytecode Compile Error', `The bytecode compiler failed: ${err instanceof CustomError ? `[CustomError.Code: ${err.code}, name:${err.name}, method:${err.method}]` : '[Error.Code: ${err.code}, message:${err.message}' }`, BYTECODE_COMPILER_ERROR) ))
+        );
     }
 
     /**
@@ -34,7 +40,9 @@ class Compiler {
      * @param {*} ops Especial options for an especific card and reader pair
      */
     decompileResponses$(binaryCommands, cardType, readerType, ops) {
-        return this.getSpecificImplementation(cardType, readerType).decompileResponses$(binaryCommands, ops);
+        return this.getSpecificImplementation(cardType, readerType).decompileResponses$(binaryCommands, ops).pipe(
+            catchError(err => Rx.throwError(new CustomError('Bytecode Compile Error', `The bytecode compiler failed: ${err instanceof CustomError ? `[CustomError.Code: ${err.code}, name:${err.name}, method:${err.method}]` : '[Error.Code: ${err.code}, message:${err.message}' }`, BYTECODE_COMPILER_ERROR) ))
+        );
     }
 
     /**

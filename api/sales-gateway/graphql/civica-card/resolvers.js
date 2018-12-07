@@ -64,7 +64,7 @@ module.exports = {
         generateCivicaCardReloadSecondAuthToken(root, args, context) {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'generateCivicaCardReloadSecondAuthToken', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
                 .mergeMap(() =>
-                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadSecondAuthToken", { root, args, jwt: context.encodedToken }, 1000)
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadSecondAuthToken", { root, args, jwt: context.encodedToken }, 7000)
                         .mergeMap(response => getResponseFromBackEnd$(response))
                 ).toPromise();
         },
@@ -72,7 +72,7 @@ module.exports = {
         generateCivicaCardReloadReadApduCommands(root, args, context) {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'generateCivicaCardReloadReadApduCommands', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
                 .mergeMap(() =>
-                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadReadApduCommands", { root, args, jwt: context.encodedToken }, 1000)
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadReadApduCommands", { root, args, jwt: context.encodedToken }, 7000)
                         .mergeMap(response => getResponseFromBackEnd$(response))
                 ).toPromise();
         },
@@ -96,8 +96,9 @@ module.exports = {
         generateCivicaCardReloadWriteAndReadApduCommands(root, args, context) {
             return RoleValidator.checkPermissions$(context.authToken.realm_access.roles, 'ms-civca-card', 'generateCivicaCardReloadWriteAndReadApduCommands', USERS_PERMISSION_DENIED_ERROR_CODE, 'Permission denied', ['POS'])
                 .mergeMap(() =>
-                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadWriteAndReadApduCommands", { root, args, jwt: context.encodedToken }, 4000)
+                    broker.forwardAndGetReply$("CivicaCard", "salesgateway.graphql.mutation.generateCivicaCardReloadWriteAndReadApduCommands", { root, args, jwt: context.encodedToken }, 7000)
                         .mergeMap(response => getResponseFromBackEnd$(response))
+                        //.do(x => console.log(`generateCivicaCardReloadWriteAndReadApduCommands resp: ${JSON.stringify(x)}`))
                 ).toPromise();
         },
 
