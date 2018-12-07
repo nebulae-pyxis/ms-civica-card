@@ -536,6 +536,7 @@ export class MyfarePlusSl3 {
    */
   startReloadConversation(gateway: GatewayService, conversation, uid) {
     if (!conversation.cardUid) {
+      console.log('Inicia conversacion');
       const posLocation = [
         conversation.position.latitude,
         conversation.position.longitude
