@@ -21,6 +21,7 @@ export class ReloadCardComponent implements OnInit {
       this.reloadCardSuccessfully();
     },
       error => {
+        console.log('llega error de escritura: ', error);
         if (error.toString().indexOf('INVALID_CARD_TO_RELOAD') !== -1) {
           this.afccReloaderService.conversation.error =
             'Tarjeta ingresada no coincide con la anteriormente leida';
@@ -42,11 +43,11 @@ export class ReloadCardComponent implements OnInit {
         }
         else if (error.toString().indexOf('INVALID_SESSION') !== -1) {
           this.afccReloaderService.conversation.error =
-            'Error obteniendo información del servidor, por favor intentelo nuevamente';
+            'Sesión de usuario inválida, por favor comuníquese con soporte para verificar y solucionar este error';
         }
         else {
           this.afccReloaderService.conversation.error =
-            'Sesión de usuario inválida, por favor comuníquese con soporte para verificar y solucionar este error';
+            'Asegúrese que la tarjeta se encuentra de forma fija y centrada en el lector';
         }
         this.reloadCardError();
       });
