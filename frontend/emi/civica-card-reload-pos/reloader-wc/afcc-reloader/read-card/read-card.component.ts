@@ -18,6 +18,7 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   balance;
   state;
   prevValidValue;
+  readCardSubscription;
   private ngUnsubscribe = new Subject();
   constructor(
     private afccReloadService: AfccRealoderService,
@@ -70,7 +71,7 @@ export class ReadCardComponent implements OnInit, OnDestroy {
 
 
   readCard() {
-    this.afccReloadService
+    this.readCardSubscription = this.afccReloadService
       .readCard$()
       .pipe(
       catchError(error => {
@@ -207,6 +208,9 @@ export class ReadCardComponent implements OnInit, OnDestroy {
   }
 
   cancelReloadCard() {
+    if (this.readCardSubscription) {
+      this.readCardSubscription.unsubscribe();
+    }
     this.afccReloadService.operabilityState$.next(OperabilityState.CONNECTED);
   }
 
