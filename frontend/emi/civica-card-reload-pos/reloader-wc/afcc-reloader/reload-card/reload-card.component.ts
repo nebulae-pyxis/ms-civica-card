@@ -45,6 +45,10 @@ export class ReloadCardComponent implements OnInit {
           this.afccReloaderService.conversation.error =
             'Sesión de usuario inválida, por favor comuníquese con soporte para verificar y solucionar este error';
         }
+        else if (error.toString().indexOf('ERROR_REQUESTING_APDUS') !== -1) {
+          this.afccReloaderService.conversation.error =
+            'Error obteniendo información del servidor, por favor intentelo nuevamente';
+        }
         else {
           this.afccReloaderService.conversation.error =
             'Asegúrese que la tarjeta se encuentra de forma fija y centrada en el lector';
