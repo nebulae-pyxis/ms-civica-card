@@ -15,9 +15,9 @@ export const getWallet = gql`
   }
 `;
 
-export const walletUpdated = gql`
-  subscription walletUpdated($businessId: String!) {
-    walletUpdated(businessId: $businessId) {
+export const walletPocketUpdated = gql`
+  subscription walletPocketUpdated($businessId: String!) {
+    walletPocketUpdated(businessId: $businessId) {
       _id
       pockets {
         main

@@ -4,7 +4,7 @@ import * as Rx from 'rxjs';
 import { GatewayService } from '../../../api/gateway.service';
 import {
   getWallet,
-  walletUpdated
+  walletPocketUpdated
 } from './gql/wallet.js';
 
 @Injectable()
@@ -38,13 +38,13 @@ export class CivicaCardReloadPosService {
   getWalletUpdatedSubscription$(businessId): Observable<any> {
     return this.gateway.apollo
       .subscribe({
-        query: walletUpdated,
+        query: walletPocketUpdated,
         variables: {
           businessId: businessId
         },
       })
       .map(resp => {
-        const wallet = resp.data.walletUpdated;
+        const wallet = resp.data.walletPocketUpdated;
         let credit = 0;
           if (wallet.pockets.main < 0) {
             credit += wallet.pockets.main;
