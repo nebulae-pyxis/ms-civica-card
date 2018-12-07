@@ -4,13 +4,13 @@
 <div style="margin-top: 20px;" class="horizontal-container">
   <div style=" margin:auto; margin-left: 0px; color: #444;" class="vertical-container">
     <mat-form-field *ngIf="operationState === 'CARD_READED'" class="example-full-width">
-      <input matInput name="balance" [(ngModel)]="balance" currencyMask [options]="{ prefix: '$ ', thousands: ',', precision: '0' }" placeholder="Saldo" >
+      <input matInput name="balance" disabled="true" [(ngModel)]="balance" currencyMask [options]="{ prefix: '$ ', thousands: ',', precision: '0' }" placeholder="Saldo" >
     </mat-form-field>
     <mat-form-field *ngIf="false" class="example-full-width">
       <input matInput [(ngModel)]="state" placeholder="Estado">
     </mat-form-field>
     <mat-form-field *ngIf="operationState === 'CARD_READED'" class="example-full-width">
-      <input matInput placeholder="Valor recarga"  [(ngModel)]="value" currencyMask [options]="{ prefix: '$ ', thousands: ',', precision: '0' }" (keyup)="onReloadValueChanged($event)" min="0">
+      <input matInput placeholder="Valor recarga" type="tel" [(ngModel)]="value" currencyMask [options]="{ prefix: '$ ', thousands: ',', precision: '0' }" (keyup)="onReloadValueChanged($event)" min="0">
     </mat-form-field>
     <div class="button-container">
       <button *ngIf="operationState === 'CARD_READED'" style="margin-right: 10px" (click)="reloadCard()" mat-stroked-button color="primary">Realizar Recarga</button>

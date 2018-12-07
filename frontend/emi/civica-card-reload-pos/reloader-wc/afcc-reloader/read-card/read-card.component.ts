@@ -59,7 +59,8 @@ export class ReadCardComponent implements OnInit, OnDestroy {
 
   onReloadValueChanged(event: any) {
     const intValue = parseInt(event.target.value.replace(/,/g, '').replace('$', ''));
-    if (intValue <= 50000) {
+    console.log('intValue: ', intValue);
+    if (intValue <= 50000 || !intValue) {
       this.prevValidValue = intValue;
     } else {
       this.openSnackBar('Monto máximo es $50,000');
