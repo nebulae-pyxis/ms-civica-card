@@ -609,7 +609,12 @@ export class MyfarePlusSl3 {
         errorPolicy: 'all'
       })
       .pipe(
-        map(rawData => (rawData as any).data.generateCivicaCardReloadReadApduCommands)
+      map(rawData => {
+        if (rawData.errors) {
+          console.log('error en la obtencion de apdus de lectura: ', rawData.errors);
+        }
+        return (rawData as any).data.generateCivicaCardReloadReadApduCommands;
+      })
       );
   }
 
