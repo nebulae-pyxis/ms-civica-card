@@ -45,3 +45,4 @@ class Crosscutting{
  * @returns {Crosscutting}
  */
 module.exports = Crosscutting;
+
