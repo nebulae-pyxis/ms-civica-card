@@ -87,7 +87,7 @@ type CivicaCardReloadPurchase {
   receipt: CivicaCardReloadPurchaseReceipt
 }
 
-type CivicaCardReloadPurchaseReceipt{
+type CivicaCardReloadPurchaseReceipt {
   id: String,
   timestamp: BigInt,
 
@@ -102,12 +102,12 @@ type CivicaCardReloadPurchaseReceipt{
   posTerminal: String  
 }
 
-type ReaderKeyResponse{
+type ReaderKeyResponse {
   key: [Int]
 }
 
 
-type Query{
+type Query {
   CivicaCardReloadConversation(id: ID!): CivicaCardReloadConversation @requireAuth
   getMasterKeyReloader: ReaderKeyResponse  @requireAuth
 }

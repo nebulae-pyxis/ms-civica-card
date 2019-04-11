@@ -1,24 +1,30 @@
 const withFilter = require("graphql-subscriptions").withFilter;
 const PubSub = require("graphql-subscriptions").PubSub;
 const pubsub = new PubSub();
-const Rx = require("rxjs");
 const broker = require("../../broker/BrokerFactory")();
 const RoleValidator = require("../../tools/RoleValidator");
+const {handleError$} = require('../../tools/GraphqlResponseTools');
+
+const { of } = require('rxjs');
+const { map, mergeMap, catchError } = require('rxjs/operators');
+
 const INTERNAL_SERVER_ERROR_CODE = 1;
 const PERMISSION_DENIED_ERROR_CODE = 2;
 
 function getResponseFromBackEnd$(response) {
-  return Rx.Observable.of(response).map(resp => {
-    if (resp.result.code != 200) {
-      const err = new Error();
-      err.name = "Error";
-      err.message = resp.result.error;
-      // this[Symbol()] = resp.result.error;
-      Error.captureStackTrace(err, "Error");
-      throw err;
-    }
-    return resp.data;
-  });
+  return of(response)
+  .pipe(
+      map(resp => {
+          if (resp.result.code != 200) {
+              const err = new Error();
+              err.name = 'Error';
+              err.message = resp.result.error;
+              Error.captureStackTrace(err, 'Error');
+              throw err;
+          }
+          return resp.data;
+      })
+  );
 }
 
 module.exports = {
@@ -33,17 +39,17 @@ module.exports = {
           "Permission denied",
           ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         )
-          .mergeMap(response => {
+        .pipe(
+          mergeMap(response => {
             return broker.forwardAndGetReply$(
               "CivicaCard",
               "emigateway.graphql.query.civicaCardSalesHistory",
               { root, args, jwt: context.encodedToken },
               2000
             );
-          })
-          //.catch(err => handleError$(err, "civicaCardSalesHistory"))
-          .mergeMap(response => getResponseFromBackEnd$(response))
-          .toPromise();
+          }),
+          mergeMap(response => getResponseFromBackEnd$(response))
+        ).toPromise();
       },
       civicaCardSalesHistoryAmount(root, args, context) {
         return RoleValidator.checkPermissions$(
@@ -53,18 +59,17 @@ module.exports = {
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
           ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
-        )
-          .mergeMap(response => {
+        ).pipe(
+          mergeMap(response => {
             return broker.forwardAndGetReply$(
               "CivicaCard",
               "emigateway.graphql.query.civicaCardSalesHistoryAmount",
               { root, args, jwt: context.encodedToken },
               2000
             );
-          })
-          //.catch(err => handleError$(err, "civicaCardSalesHistoryAmount"))
-          .mergeMap(response => getResponseFromBackEnd$(response))
-          .toPromise();
+          }),
+          mergeMap(response => getResponseFromBackEnd$(response))
+        ).toPromise();
       },
       civicaCardSaleHistory(root, args, context) {
         return RoleValidator.checkPermissions$(
@@ -75,17 +80,18 @@ module.exports = {
           "Permission denied",
           ["PLATFORM-ADMIN", "BUSINESS-OWNER", "POS"]
         )
-          .mergeMap(response => {
+        .pipe(
+          mergeMap(response => {
             return broker.forwardAndGetReply$(
               "CivicaCard",
               "emigateway.graphql.query.civicaCardSaleHistory",
               { root, args, jwt: context.encodedToken },
               2000
             );
-          })
-          //.catch(err => handleError$(err, "civicaCardSaleHistory"))
-          .mergeMap(response => getResponseFromBackEnd$(response))
-          .toPromise();
+          }),
+          mergeMap(response => getResponseFromBackEnd$(response))
+        )
+        .toPromise();
       },
       civicaCardReloadConversation(root, args, context) {
         return RoleValidator.checkPermissions$(
@@ -95,18 +101,17 @@ module.exports = {
           PERMISSION_DENIED_ERROR_CODE,
           "Permission denied",
           ["PLATFORM-ADMIN"]
-        )
-          .mergeMap(response => {
+        ).pipe(
+          mergeMap(response => {
             return broker.forwardAndGetReply$(
               "CivicaCard",
               "emigateway.graphql.query.civicaCardReloadConversation",
               { root, args, jwt: context.encodedToken },
               2000
             );
-          })
-          //.catch(err => handleError$(err, "civicaCardSaleHistory"))
-          .mergeMap(response => getResponseFromBackEnd$(response))
-          .toPromise();
+          }),
+          mergeMap(response => getResponseFromBackEnd$(response))
+        ).toPromise();
       },
   },
 
